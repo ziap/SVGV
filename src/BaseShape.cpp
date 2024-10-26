@@ -260,7 +260,7 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
   double Ematrix[2][3];
   int start = 0, end = 0;
   while (value.size() > 0) {
-    while(isspace(value[0]) || value[0] == '\n') value = value.substr(1);
+    while (isspace(value[0]) || value[0] == '\n') value = value.substr(1);
     end = value.find(")");
     std::string_view type = value.substr(start, end - start);
     solve_transform(type, Ematrix);

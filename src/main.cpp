@@ -91,7 +91,7 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
       }
 
       while (tag_content.size() && isspace(tag_content[0])) tag_content = tag_content.substr(1);
-      int name_end = 0;
+      size_t name_end = 0;
 
       while (name_end < tag_content.size() && !isspace(tag_content[name_end])) ++name_end;
       std::string_view tag_name = tag_content.substr(0, name_end);
@@ -101,7 +101,7 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
 
       while (tag_content.size() && tag_content[0] != '/') {
         while (tag_content.size() && isspace(tag_content[0])) tag_content = tag_content.substr(1);
-        int eq = tag_content.find('=');
+        size_t eq = tag_content.find('=');
         if (eq == tag_content.npos) break;
         std::string_view attr_key = tag_content.substr(0, eq);
         tag_content = tag_content.substr(eq + 1);
@@ -111,7 +111,7 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
         if (tag_content.size() == 0) break;
         char quote = tag_content[0];
         tag_content = tag_content.substr(1);
-        int quote_end = tag_content.find(quote);
+        size_t quote_end = tag_content.find(quote);
         if (quote_end == tag_content.npos) break;
         std::string_view attr_value = tag_content.substr(0, quote_end);
         tag_content = tag_content.substr(quote_end + 1);
