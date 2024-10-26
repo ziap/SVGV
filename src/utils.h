@@ -9,10 +9,13 @@ public:
   Optional(T value) : has_value{true}, data{value} {};
   Optional() : has_value{false} {};
 
-  operator bool() { return this->has_value; }
-  T operator*() { return this->data; }
+  operator bool() const { return this->has_value; }
+  T operator*() const { return this->data; }
 
-  T operator||(T fallback) { return this->has_value ? this->data : fallback; }
+  T operator||(T fallback) const {
+    return this->has_value ? this->data : fallback;
+  }
+
 private:
   bool has_value;
   T data;
