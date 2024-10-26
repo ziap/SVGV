@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "XMLNode.h"
 #include "InverseIndex.h"
+#include <cstring>
 
 class Paint {
   public: 
@@ -83,7 +84,7 @@ public:
 
   std::unique_ptr<BaseShape> next;
 
-  void read_xml_node(XMLNode *node);
+  void read_xml_node(XMLNode *node, BaseShape *parent);
 };
 
 

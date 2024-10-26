@@ -68,8 +68,7 @@ static double convert_opacity(std::string_view value) {
   if (value[value.size() - 1] == '%') {
     std::from_chars(value.data(), value.data() + value.size() - 1, opacity);
     opacity /= 100;
-  }
-  else std::from_chars(value.data(), value.data() + value.size(), opacity);
+  } else std::from_chars(value.data(), value.data() + value.size(), opacity);
 
   return opacity;
 }
@@ -165,8 +164,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
       if (inf.size() > 0) {
         while (isspace(inf[0])) inf = inf.substr(1);
         std::from_chars(inf.data(), inf.data() + inf.size(), matrix[1][2]);
-      }
-      else matrix[1][2] = 0;
+      } else matrix[1][2] = 0;
 
     } break;
 
@@ -197,8 +195,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
           while (isspace(inf[0])) inf = inf.substr(1);
           res = std::from_chars(inf.data(), inf.data() + inf.size(), y);
           inf = inf.substr(res.ptr - inf.data());
-        }
-        else y = 0;
+        } else y = 0;
 
         //tranlate x, y
         matrix[0][2] = x;
@@ -221,9 +218,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
         I_matrix[1][2] = -y;  
 
         multiply_matrix(matrix, I_matrix);
-
-      }
-      else {
+      } else {
         create_matrix_rotate(num, matrix);
       }
       
@@ -275,26 +270,48 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
 }
 
 
-void BaseShape::read_xml_node(XMLNode *node) {
-  this->visible = true;
-  this->fill = Paint{0, 0, 0};
-  this->stroke = Paint{0, 0, 0};
-  this->opacity = 1.0;
-  this->fill_opacity = 1.0;
-  this->stroke_opacity = 1.0;
-  this->stroke_width = 1.0;
-  this->stroke_dash_offset = 0.0;
-  this->stroke_dash_count = 0;
-  this->stroke_line_join = StrokeLineJoin::LINE_JOIN_MITER;
-  this->stroke_line_cap = StrokeLineCap::LINE_CAP_BUTT;
-  this->miter_limit = 4;
-  this->transform[0][0] = 1;
-  this->transform[0][1] = 0;
-  this->transform[0][2] = 0;
-  this->transform[1][0] = 0;
-  this->transform[1][1] = 1;
-  this->transform[1][2] = 0;
-  this->fill_rule = FillRule::FILL_RULE_NONZERO;
+void BaseShape::read_xml_node(XMLNode *node, BaseShape *parent) {
+  if (parent == nullptr) {
+    this->visible = true;
+    this->fill = Paint{0, 0, 0};
+    this->stroke = Paint{0, 0, 0};
+    this->opacity = 1.0;
+    this->fill_opacity = 1.0;
+    this->stroke_opacity = 1.0;
+    this->stroke_width = 1.0;
+    this->stroke_dash_offset = 0.0;
+    this->stroke_dash_count = 0;
+    this->stroke_line_join = StrokeLineJoin::LINE_JOIN_MITER;
+    this->stroke_line_cap = StrokeLineCap::LINE_CAP_BUTT;
+    this->miter_limit = 4;
+    this->transform[0][0] = 1;
+    this->transform[0][1] = 0;
+    this->transform[0][2] = 0;
+    this->transform[1][0] = 0;
+    this->transform[1][1] = 1;
+    this->transform[1][2] = 0;
+    this->fill_rule = FillRule::FILL_RULE_NONZERO;
+  } else {
+    this->visible = parent->visible;
+    this->fill = parent->fill;
+    this->stroke = parent->stroke;
+    this->opacity = parent->opacity;
+    this->fill_opacity = parent->fill_opacity;
+    this->stroke_opacity = parent->stroke_opacity;
+    this->stroke_width = parent->stroke_width;
+    this->stroke_dash_offset = parent->stroke_dash_offset;
+    this->stroke_dash_count = parent->stroke_dash_count;
+    this->stroke_line_join = parent->stroke_line_join;
+    this->stroke_line_cap = parent->stroke_line_cap;
+    this->miter_limit = parent->miter_limit;
+    this->transform[0][0] = parent->transform[0][0];
+    this->transform[0][1] = parent->transform[0][1];
+    this->transform[0][2] = parent->transform[0][2];
+    this->transform[1][0] = parent->transform[1][0];
+    this->transform[1][1] = parent->transform[1][1];
+    this->transform[1][2] = parent->transform[1][2];
+    this->fill_rule = parent->fill_rule;
+  };
 
   for(int i = 0; i < node->attrs_count; i++) {
     std::string_view key = node->attrs[i].key;
