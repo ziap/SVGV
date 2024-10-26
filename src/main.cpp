@@ -73,7 +73,8 @@ std::string read_file(const char *filename) {
 }
 
 int main() {
-  std::string s = read_file("examples/tiger.svg");
-  parse_xml(s);
+  std::string svg = read_file("examples/tiger.svg");
+  BaseShape *shape = parse_xml(svg);
+
   return 0;
 }
