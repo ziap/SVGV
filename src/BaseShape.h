@@ -20,11 +20,11 @@ enum StrokeLineJoin {
 };
 
 constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
-    "arcs",
-    "bevel",
-    "miter",
-    "miter-clip",
-    "round",
+  "arcs",
+  "bevel",
+  "miter",
+  "miter-clip",
+  "round",
 };
 
 constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
@@ -37,13 +37,12 @@ enum StrokeLineCap {
 };
 
 constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
-    "butt",
-    "round",
-    "square",
+  "butt",
+  "round",
+  "square",
 };
 
 constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
-
 
 enum FillRule {
   FILL_RULE_NONZERO = 0,
@@ -52,13 +51,11 @@ enum FillRule {
 };
 
 constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
-    "nonzero",
-    "evenodd",
+  "nonzero",
+  "evenodd",
 };
 
 constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
-
-
 
 class BaseShape {
 public:
@@ -84,16 +81,10 @@ public:
 
   double transform[2][3];
 
+  std::unique_ptr<BaseShape> next;
 
   void read_xml_node(XMLNode *node);
 };
 
-/*
-class Rectangle : public BaseShape {
-  void read_xml_node(XMLNode *node) {
-    BaseShape::read_xml_node(node);
-  }
-};
-*/
 
 #endif
