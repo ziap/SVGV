@@ -3,9 +3,12 @@
 
 #include "utils.h"
 #include "XMLNode.h"
+#include "InverseIndex.h"
+#include <cstring>
 
 class Paint {
-  double r, g, b;
+  public: 
+    double r, g, b;
 };
 
 enum StrokeLineJoin {
@@ -17,6 +20,16 @@ enum StrokeLineJoin {
   LINE_JOIN_COUNT,
 };
 
+constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
+  "arcs",
+  "bevel",
+  "miter",
+  "miter-clip",
+  "round",
+};
+
+constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
+
 enum StrokeLineCap {
   LINE_CAP_BUTT = 0,
   LINE_CAP_ROUND,
@@ -24,11 +37,26 @@ enum StrokeLineCap {
   LINE_CAP_COUNT,
 };
 
+constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
+  "butt",
+  "round",
+  "square",
+};
+
+constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
+
 enum FillRule {
   FILL_RULE_NONZERO = 0,
   FILL_RULE_EVENODD,
   FILL_RULE_COUNT
 };
+
+constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
+  "nonzero",
+  "evenodd",
+};
+
+constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
 
 class BaseShape {
 public:
@@ -49,20 +77,15 @@ public:
   StrokeLineJoin stroke_line_join;
   StrokeLineCap stroke_line_cap;
 
-  double mitter_limit;
+  double miter_limit;
   FillRule fill_rule;
 
   double transform[2][3];
 
-  void read_xml_node(XMLNode *node);
+  std::unique_ptr<BaseShape> next;
+
+  void read_xml_node(XMLNode *node, BaseShape *parent);
 };
 
-/*
-class Rectangle : public BaseShape {
-  void read_xml_node(XMLNode *node) {
-    BaseShape::read_xml_node(node);
-  }
-};
-*/
 
 #endif
