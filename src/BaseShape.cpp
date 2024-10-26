@@ -162,8 +162,11 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
       std::from_chars_result res = std::from_chars(inf.data(), inf.data() + inf.size(), matrix[0][2]);
       inf = inf.substr(res.ptr - inf.data());
 
-      while (isspace(inf[0])) inf = inf.substr(1);
-      std::from_chars(inf.data(), inf.data() + inf.size(), matrix[1][2]);
+      if (inf.size() > 0) {
+        while (isspace(inf[0])) inf = inf.substr(1);
+        std::from_chars(inf.data(), inf.data() + inf.size(), matrix[1][2]);
+      }
+      else matrix[1][2] = 0;
 
     } break;
 
@@ -190,9 +193,12 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
         inf = inf.substr(res.ptr - inf.data());
   
         double y;
-        while (isspace(inf[0])) inf = inf.substr(1);
-        res = std::from_chars(inf.data(), inf.data() + inf.size(), y);
-        inf = inf.substr(res.ptr - inf.data());
+        if (inf.size() > 0) {
+          while (isspace(inf[0])) inf = inf.substr(1);
+          res = std::from_chars(inf.data(), inf.data() + inf.size(), y);
+          inf = inf.substr(res.ptr - inf.data());
+        }
+        else y = 0;
 
         //tranlate x, y
         matrix[0][2] = x;
