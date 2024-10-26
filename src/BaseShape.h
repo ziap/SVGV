@@ -5,6 +5,7 @@
 #include "XMLNode.h"
 #include "InverseIndex.h"
 #include <cstring>
+#include <iostream>
 
 class Paint {
   public: 
@@ -84,7 +85,19 @@ public:
 
   std::unique_ptr<BaseShape> next;
 
-  void read_xml_node(XMLNode *node, BaseShape *parent);
+  BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
+
+  virtual void draw() {
+    if (fill) {
+      Paint paint = *fill;
+      std::cout << "Fill: " << paint.r << ' ' << paint.g << ' ' << paint.b << '\n';
+    }
+
+    if (stroke) {
+      Paint paint = *stroke;
+      std::cout << "Stroke: " << paint.r << ' ' << paint.g << ' ' << paint.b << '\n';
+    }
+  }
 };
 
 

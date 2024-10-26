@@ -22,7 +22,7 @@ enum AttributeType {
   ATTRIBUTE_COUNT,
 };
 
-constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] {
+constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "visibility",
   "fill",
   "stroke",
@@ -48,13 +48,13 @@ static Paint read_paint(std::string_view value) {
 
   while (isspace(value[end + 1])) end += 1;
   value = value.substr(end + 1);
-  start = 0;
   end = value.find(',');
-  std::from_chars(value.data() + start, value.data() + end, paint.g);
+  std::from_chars(value.data(), value.data() + end, paint.g);
 
   while (isspace(value[end + 1])) end += 1;
   value = value.substr(end + 1);
-  std::from_chars(value.data() + start, value.data() + end, paint.b);
+  end = value.find(')');
+  std::from_chars(value.data(), value.data() + end, paint.b);
 
   paint.r /= 255;
   paint.g /= 255;
@@ -109,7 +109,7 @@ enum TransformType {
   TRANSFORM_COUNT,
 };
 
-constexpr std::string_view transform_name[TRANSFORM_COUNT] {
+constexpr std::string_view transform_name[TRANSFORM_COUNT] = {
   "matrix",
   "translate",
   "scale",
@@ -123,10 +123,10 @@ constexpr InverseIndex<TRANSFORM_COUNT> inv_transform = {&transform_name};
 
 static void create_matrix_rotate(double num, double matrix[2][3]) {
    num = num * M_PI / 180;
-   matrix[0][0] = cos(num);
-   matrix[1][0] = sin(num);
-   matrix[0][1] = -sin(num);
-   matrix[1][1] = cos(num);
+   matrix[0][0] = std::cos(num);
+   matrix[1][0] = std::sin(num);
+   matrix[0][1] = -std::sin(num);
+   matrix[1][1] = std::cos(num);
 }
 
 static void solve_transform(std::string_view inf, double matrix[2][3]) {
@@ -230,7 +230,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
       std::from_chars(inf.data(), inf.data() + inf.size(), num);
 
       num = num * M_PI / 180;
-      matrix[0][1] = tan(num);
+      matrix[0][1] = std::tan(num);
     } break;
 
     case TRANSFORM_SKEWY: {
@@ -239,7 +239,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
       std::from_chars(inf.data(), inf.data() + inf.size(), num);
 
       num = num * M_PI / 180;
-      matrix[1][0] = tan(num);
+      matrix[1][0] = std::tan(num);
     } break;
 
     case TRANSFORM_COUNT: {
@@ -269,8 +269,7 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
   }
 }
 
-
-void BaseShape::read_xml_node(XMLNode *node, BaseShape *parent) {
+BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
     this->fill = Paint{0, 0, 0};
@@ -313,9 +312,9 @@ void BaseShape::read_xml_node(XMLNode *node, BaseShape *parent) {
     this->fill_rule = parent->fill_rule;
   };
 
-  for(int i = 0; i < node->attrs_count; i++) {
-    std::string_view key = node->attrs[i].key;
-    std::string_view value = node->attrs[i].value;
+  for(int i = 0; i < attrs_count; i++) {
+    std::string_view key = attrs[i].key;
+    std::string_view value = attrs[i].value;
     
     AttributeType type = (AttributeType)inv_attribute[key];
     switch (type) {
@@ -344,7 +343,7 @@ void BaseShape::read_xml_node(XMLNode *node, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_STROKE_WIDTH: {
-        this->stroke_width = convert_opacity(value);
+        std::from_chars(value.data(), value.data() + value.size(), this->stroke_width);
       } break;
 
       case ATTRIBUTE_STROKE_DASH_OFFSET: {
