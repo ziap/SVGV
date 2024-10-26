@@ -87,17 +87,7 @@ public:
 
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
 
-  virtual void draw() {
-    if (fill) {
-      Paint paint = *fill;
-      std::cout << "Fill: " << paint.r << ' ' << paint.g << ' ' << paint.b << '\n';
-    }
-
-    if (stroke) {
-      Paint paint = *stroke;
-      std::cout << "Stroke: " << paint.r << ' ' << paint.g << ' ' << paint.b << '\n';
-    }
-  }
+  virtual void draw() {}
 };
 
 

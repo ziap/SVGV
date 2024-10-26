@@ -272,8 +272,8 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
-    this->fill = Paint{0, 0, 0};
-    this->stroke = Paint{0, 0, 0};
+    this->fill = Paint {0, 0, 0};
+    this->stroke = {};
     this->opacity = 1.0;
     this->fill_opacity = 1.0;
     this->stroke_opacity = 1.0;
@@ -371,7 +371,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
       
       case ATTRIBUTE_TRANSFORM: {
-        convert_transform(value, this->transform);   
+        convert_transform(value, this->transform);
       } break;
 
       case ATTRIBUTE_COUNT: {
