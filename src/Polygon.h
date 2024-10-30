@@ -1,11 +1,20 @@
 #ifndef POLYGON_H
 #define POLYGON_H
 
-#include "BaseShape.h"
+#include "BaseShape.h"	
+#include "ArrayList.h"
+#include "Path.h"
+#include <charconv>
+#include <memory>
 
-class Polygon : public BaseShape {
+
+class Polygon: public BaseShape{
 public:
-  Polygon(Attribute *attrs, int attrs_count, BaseShape *parent);
+	ArrayList<Point> point_list;
+
+	Polygon(Attribute *attrs, int attrs_count, BaseShape *parent);
+	void draw();			
 };
+
 
 #endif

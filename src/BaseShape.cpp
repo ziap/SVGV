@@ -382,4 +382,3 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
 }
 
 
-
