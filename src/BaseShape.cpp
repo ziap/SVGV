@@ -19,6 +19,7 @@ enum AttributeType {
   ATTRIBUTE_MITER_LIMIT,
   ATTRIBUTE_FILL_RULE,
   ATTRIBUTE_TRANSFORM,
+  ATTRIBUTE_STYLE, 
   ATTRIBUTE_COUNT,
 };
 
@@ -36,6 +37,8 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "stroke-linecap",
   "stroke-miterlimit",
   "fill-rule",
+  "transform",
+  "style",
 };
 
 constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute = {&attribute_name};
@@ -101,8 +104,8 @@ enum ColorType {
   COLOR_GREENYELLOW, 
   COLOR_HONEYDEW, 
   COLOR_HOTPINK, 
-  COLOR_INDIANRED , 
-  COLOR_INDIGO , 
+  COLOR_INDIANRED, 
+  COLOR_INDIGO, 
   COLOR_IVORY, 
   COLOR_KHAKI, 
   COLOR_LAVENDER, 
@@ -371,7 +374,7 @@ static Paint read_color_hex(std::string_view value) {
   Paint paint;
   value = value.substr(1);
 
-  uint32_t p;
+  uint32_t p = 0;
   std::from_chars(value.data(), value.data() + value.size(), p, 16);
 
   paint.b = p & 0xFF;
@@ -626,6 +629,44 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
   }
 }
 
+enum StyleType {
+  STYLE_FILL = 0,
+  STYLE_STROKE,
+  STYLE_STROKE_WIDTH,
+  STYLE_COUNT,
+};
+
+constexpr std::string_view style_name[STYLE_COUNT] = {
+  "fill",
+  "stroke",
+  "stoke-width",
+};
+
+constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
+
+void BaseShape::solve_style(std::string_view value) {
+  int end = value.find(':');
+  std::string_view key = value.substr(0, end - 1);
+
+  StyleType type = (StyleType)inv_style[key];
+
+  switch (type) {
+    case STYLE_FILL: {
+      this->fill = read_paint(value);
+    } break;
+    case STYLE_STROKE: {
+      this->stroke = read_paint(value);
+    } break;
+    case STYLE_STROKE_WIDTH: {
+      std::from_chars(value.data(), value.data() + value.size(), this->stroke_width);
+    } break;
+    case STYLE_COUNT: {
+      __builtin_unreachable();
+    } break;
+  }
+}
+
+
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
@@ -729,6 +770,16 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       
       case ATTRIBUTE_TRANSFORM: {
         convert_transform(value, this->transform);
+      } break;
+
+      case ATTRIBUTE_STYLE: {
+        while (value.size() > 0) {
+          int end = value.find(';');
+          if (end > value.size()) end = value.size(); 
+          std::string_view str = value.substr(0, end - 1);
+          solve_style(str);
+          value = value.substr(end + 1);
+        }
       } break;
 
       case ATTRIBUTE_COUNT: {
