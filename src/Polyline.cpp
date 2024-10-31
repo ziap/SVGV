@@ -4,8 +4,8 @@ void Polyline::draw(){
 	std::cout << "The Polyline attrs: " << '\n' <<
 		"POINTS:\n";
 	std::cout << this->point_list.len() << '\n';
-	for (int i = 0; this->point_list.len(); ++i){
-		std::cout << "X: " << this->point_list[i].x << '\n' <<
+	for (uint32_t i = 0; i < this->point_list.len(); ++i){
+		std::cout << "X: " << this->point_list[i].x << " | " <<
 								 "Y: " << this->point_list[i].y << '\n';
 	}
 }
@@ -29,7 +29,6 @@ static ArrayList<Point> read_point(std::string_view str){
 		str = str.substr(res.ptr - str.data());
 		point_list.push(new_point);
 	}
-	std::cout << "Read Point complete\n";
 	return point_list;
 }
 
@@ -43,11 +42,9 @@ Polyline::Polyline(Attribute *attrs, int attrs_count, BaseShape *parent)
 		std::string_view value = attrs[i].value;
 
 		if (key == "points"){
-			std::cout << "FOUNDED\n";
 			std::cout << value << '\n';
 			this->point_list = read_point(value);
-			std::cout << "Finished read point\n";
 		}
 	}
-	std::cout << "Finished read attributes\n";
+	std::cout << "Finished read Polyline attributes\n";
 }

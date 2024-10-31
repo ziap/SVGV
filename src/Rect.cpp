@@ -2,11 +2,11 @@
 
 void Rect::draw(){
 	std::cout << "The rectangle attrs: " << '\n' <<
-		"X: " << this->x << '\n' <<
-		"Y: " << this->y << '\n' << 
-		"RX: " << this->rx << '\n' << 
-		"RY: " << this->ry << '\n' <<
-		"WIDTH: " << this->width << '\n' << 
+		"X: " << this->x << " | " <<
+		"Y: " << this->y << " | " << 
+		"RX: " << this->rx << " | " << 
+		"RY: " << this->ry << " | " <<
+		"WIDTH: " << this->width << " | " << 
 		"HEIGHT: " << this->height << '\n';
 }
 
@@ -56,5 +56,5 @@ Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
 				}
 			}
 		}
-		std::cout << "Finished read attributes\n";
+		std::cout << "Finished read rect attributes\n";
 }

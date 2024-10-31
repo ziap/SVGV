@@ -2,9 +2,9 @@
 
 void Ellipse::draw(){
 	std::cout << "The ellipse attrs: " << 
-		"X: " << this->cx << '\n' <<
-		"Y: " << this->cy << '\n' << 
-		"RX: " << this->rx << '\n' << 
+		"X: " << this->cx << " | " <<
+		"Y: " << this->cy << " | " << 
+		"RX: " << this->rx << " | " << 
 		"RY: " << this->ry << '\n';
 }
 
@@ -44,5 +44,5 @@ Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent)
 				}
 			}
 	}
-	std::cout << "Finished read attributes\n";
+	std::cout << "Finished read Ellipse attributes\n";
 }

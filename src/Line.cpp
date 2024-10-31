@@ -2,9 +2,9 @@
 
 void Line::draw(){
 	std::cout << "The line attrs: " << 
-		"X1: " << this->x1 << '\n' <<
-		"Y1: " << this->y1 << '\n' << 
-		"X2: " << this->x2 << '\n' << 
+		"X1: " << this->x1 << " | " <<
+		"Y1: " << this->y1 << "\t " << 
+		"X2: " << this->x2 << " | " << 
 		"Y2: " << this->y2 << '\n';
 }
 
@@ -42,5 +42,5 @@ Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent)
 				}
 			}
 	}
-	std::cout << "Finished read attributes\n";
+	std::cout << "Finished read Line attributes\n";
 }

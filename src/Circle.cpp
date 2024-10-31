@@ -2,8 +2,8 @@
 
 void Circle::draw(){
 	std::cout << "The circle attrs: " << 
-		"X: " << this->cx << '\n' <<
-		"Y: " << this->cy << '\n' << 
+		"X: " << this->cx << " | " <<
+		"Y: " << this->cy << " | " << 
 		"R: " << this->r << '\n';
 }
 
@@ -36,5 +36,5 @@ Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
 				}
 			}
 	}
-	std::cout << "Finished read attributes\n";
+	std::cout << "Finished read attributes circle\n";
 }

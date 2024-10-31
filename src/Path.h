@@ -79,6 +79,8 @@ class Path: public BaseShape{
 public:
 	PathCommand command;
 	Path(Attribute *attrs, int attrs_countt, BaseShape *parent);
+	void draw(); 
 };
+
 
 #endif
