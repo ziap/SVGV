@@ -417,9 +417,10 @@ static Paint read_RGB(std::string_view value) {
   return paint;
 }
 
-static Paint read_paint(std::string_view value) {
+static Optional<Paint> read_paint(std::string_view value) {
   if (value[0] == '#') return read_color_hex(value);
   if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') return read_RGB(value);
+  if (value == "none") return {};
   return read_color_text(value);
 } 
 
@@ -645,10 +646,12 @@ constexpr std::string_view style_name[STYLE_COUNT] = {
 constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
 
 void BaseShape::solve_style(std::string_view value) {
-  int end = value.find(':');
-  std::string_view key = value.substr(0, end - 1);
-
+  size_t end = value.find(':');
+  std::string_view key = value.substr(0, end);
   StyleType type = (StyleType)inv_style[key];
+
+  value = value.substr(end + 1);
+  while (isspace(value[0])) value = value.substr(1);
 
   switch (type) {
     case STYLE_FILL: {
@@ -774,11 +777,13 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
 
       case ATTRIBUTE_STYLE: {
         while (value.size() > 0) {
-          int end = value.find(';');
+          while(isspace(value[0])) value = value.substr(1);
+          size_t end = value.find(';');
           if (end > value.size()) end = value.size(); 
-          std::string_view str = value.substr(0, end - 1);
+          std::string_view str = value.substr(0, end);
           solve_style(str);
-          value = value.substr(end + 1);
+          if (end != value.size()) value = value.substr(end + 1);
+          else value = value.substr(end);
         }
       } break;
 

@@ -88,7 +88,6 @@ public:
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
 
   virtual void draw() {
-    std:: cout << opacity << " " << miter_limit << " " << stroke_opacity << "\n";
   }
 
 private: 
