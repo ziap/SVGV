@@ -603,14 +603,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 
 }
 
-static void convert_tranitsform(std::string_view value, double matrix[2][3]) {
-  matrix[0][0] = 1;
-  matrix[0][1] = 0;
-  matrix[0][2] = 0;
-  matrix[1][0] = 0;
-  matrix[1][1] = 1;
-  matrix[1][2] = 0;
-
+static void convert_transform(std::string_view value, double matrix[2][3]) {
   double Ematrix[2][3];
   int start = 0, end = 0;
   while (value.size() > 0) {
