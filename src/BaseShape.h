@@ -4,12 +4,25 @@
 #include "utils.h"
 #include "XMLNode.h"
 #include "InverseIndex.h"
+#include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <memory>
 
-class Paint {
-  public: 
-    double r, g, b;
+class IColor {
+public:
+  virtual std::unique_ptr<IColor> clone() const = 0; 
+};
+
+class RGB : public IColor {
+public: 
+  double r, g, b;
+  RGB(double r, double g, double b) : r(r), g(g), b(b) {}
+
+  std::unique_ptr<IColor> clone() const override {
+    
+    return std::make_unique<RGB>(*this);
+  }
 };
 
 enum StrokeLineJoin {
@@ -63,8 +76,8 @@ class BaseShape {
 public:
   bool visible;
 
-  Optional<Paint> fill;
-  Optional<Paint> stroke;
+  std::unique_ptr<IColor> fill;
+  std::unique_ptr<IColor> stroke;
 
   double opacity;
   double fill_opacity;

@@ -3,6 +3,7 @@
 #include <charconv>
 #include <cmath>
 #include <cctype>
+#include <memory>
 
 enum AttributeType {
   ATTRIBUTE_VISIBLE = 0,
@@ -370,57 +371,56 @@ std::string_view hex_color[COLOR_COUNT] = {
 };
 
 
-static Paint read_color_hex(std::string_view value) {
-  Paint paint;
+static std::unique_ptr<IColor> read_color_hex(std::string_view value) {
+  double r, g, b; 
   value = value.substr(1);
 
   uint32_t p = 0;
   std::from_chars(value.data(), value.data() + value.size(), p, 16);
 
-  paint.b = p & 0xFF;
-  paint.g = (p >> 8) & 0xFF;
-  paint.r = (p >> 16) & 0xFF;
+  b = p & 0xFF;
+  g = (p >> 8) & 0xFF;
+  r = (p >> 16) & 0xFF;
 
-  paint.r /= 255;
-  paint.g /= 255;
-  paint.b /= 255;
+  r /= 255;
+  g /= 255;
+  b /= 255;
 
-  return paint;
+  return (std::make_unique<RGB> (r, g, b));
 }
 
-static Paint read_color_text(std::string_view value) {
+static std::unique_ptr<IColor> read_color_text(std::string_view value) {
   ColorType color = (ColorType)inv_color[value];
   std::string_view color_hex = hex_color[color]; 
   return read_color_hex(color_hex);
 }
 
-static Paint read_RGB(std::string_view value) {
-  Paint paint;
+static std::unique_ptr<IColor> read_RGB(std::string_view value) {
+  double r, g, b;
   int start = value.find('(');
   int end = value.find(',');
-  std::from_chars(value.data() + start + 1, value.data() + end, paint.r);    
+  std::from_chars(value.data() + start + 1, value.data() + end, r);    
 
   while (isspace(value[end + 1])) end += 1;
   value = value.substr(end + 1);
   end = value.find(',');
-  std::from_chars(value.data(), value.data() + end, paint.g);
+  std::from_chars(value.data(), value.data() + end, g);
 
   while (isspace(value[end + 1])) end += 1;
   value = value.substr(end + 1);
   end = value.find(')');
-  std::from_chars(value.data(), value.data() + end, paint.b);
+  std::from_chars(value.data(), value.data() + end, b);
 
-  paint.r /= 255;
-  paint.g /= 255;
-  paint.b /= 255;
-
-  return paint;
+  r/= 255;
+  g/=255;
+  b/=255;
+  return (std::make_unique<RGB> (r, g, b));
 }
 
-static Optional<Paint> read_paint(std::string_view value) {
+static std::unique_ptr<IColor> read_paint(std::string_view value) {
   if (value[0] == '#') return read_color_hex(value);
   if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') return read_RGB(value);
-  if (value == "none") return {};
+  if (value == "none") return nullptr;
   return read_color_text(value);
 } 
 
@@ -491,13 +491,6 @@ static void create_matrix_rotate(double num, double matrix[2][3]) {
 }
 
 static void solve_transform(std::string_view inf, double matrix[2][3]) {
-  matrix[0][0] = 1;
-  matrix[0][1] = 0;
-  matrix[0][2] = 0;
-  matrix[1][0] = 0;
-  matrix[1][1] = 1;
-  matrix[1][2] = 0;
-
   int start = 0;
   int end = inf.find('(');
   std::string_view str_type = inf.substr(start, end - start);
@@ -610,7 +603,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 
 }
 
-static void convert_transform(std::string_view value, double matrix[2][3]) {
+static void convert_tranitsform(std::string_view value, double matrix[2][3]) {
   matrix[0][0] = 1;
   matrix[0][1] = 0;
   matrix[0][2] = 0;
@@ -673,7 +666,7 @@ void BaseShape::solve_style(std::string_view value) {
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
-    this->fill = Paint {0, 0, 0};
+    this->fill = (RGB(0, 0, 0)).clone();
     this->stroke = {};
     this->opacity = 1.0;
     this->fill_opacity = 1.0;
@@ -693,8 +686,10 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
   } else {
     this->visible = parent->visible;
-    this->fill = parent->fill;
-    this->stroke = parent->stroke;
+    if (parent->fill != nullptr)
+      this->fill = (parent->fill)->clone();
+    if (parent->stroke != nullptr)
+      this->stroke = (parent->stroke)->clone();
     this->opacity = parent->opacity;
     this->fill_opacity = parent->fill_opacity;
     this->stroke_opacity = parent->stroke_opacity;
