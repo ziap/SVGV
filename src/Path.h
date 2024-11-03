@@ -10,10 +10,13 @@ class Point{
 public:
 	double x;
 	double y;
+	Point();
+	Point(double x, double y);
 };
 
 enum PathCommand{
 	PATH_COMMAND_MOVE = 0,
+	PATH_COMMAND_LINETO = 0,
 	PATH_COMMAND_BEZIER,
 	PATH_COMMAND_ELLIPTIC,
 	PATH_COMMAND_CLOSE_PATH,
@@ -41,9 +44,16 @@ public:
 	Point point_N;			// point end
 	Point point_CS; 		// point control start
 	Point point_CE; 		//point control end
-	CommandBezier();	
+	CommandBezier(Point point_0, Point point_n, Point point_cs, Point point_ce);	
 };
 
+
+class CommandLine: public BaseCommand{
+public:
+	Point point_0; 			// point start
+	Point point_N;			// point end
+	CommandLine(double p0_x, double p0_y, double pN_x, double pN_y);	
+};
 
 class CommandEllipse: public BaseCommand{
 public:
@@ -54,15 +64,14 @@ public:
 	int sweep_flag; 			// 1 as cockwise, 0 as counter
 	//The center of ellipse will be automatically determined
 	
-	CommandEllipse();
+	CommandEllipse(std::string_view str);
 };
 
 class CommandMove: public BaseCommand{
 public:
 	double x;
 	double y;
-
-	CommandMove();
+	CommandMove(double x, double y);
 };
 
 class CommandClosePath: public BaseCommand{

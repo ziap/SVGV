@@ -16,13 +16,13 @@ static ArrayList<Point> read_point(std::string_view str){
 	Point new_point;
   std::from_chars_result res;
 	while(!str.empty()){
-		if (str[0] == ' ' || str[0] == ','){
+		while (str[0] == ' ' || str[0] == ','){
 			str = str.substr(1);
 		}
 		res  = std::from_chars(str.data(), str.data() + str.size(), new_point.x); 
 		str = str.substr(res.ptr - str.data());
 			
-		if (str[0] == ' ' || str[0] == ','){
+		while (str[0] == ' ' || str[0] == ','){
 			str = str.substr(1);
 		}
 
@@ -43,6 +43,7 @@ Polygon::Polygon(Attribute *attrs, int attrs_count, BaseShape *parent) : BaseSha
 		if (key == "points"){
 			this->point_list = read_point(value);
 		}
+		std::cout << "value END " << value << '\n';
 	}
 	std::cout << "Finished read Polyline attributes\n";
 }
