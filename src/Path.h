@@ -11,6 +11,7 @@ public:
 	double x;
 	double y;
 	Point();
+	Point(const Point &point);
 	Point(double x, double y);
 };
 
@@ -35,6 +36,7 @@ public:
 	//Elliptic: A, a
 	//ClosePath: Z, z
 	std::unique_ptr<BaseCommand> next_command;
+	void draw();
 };
 
 
@@ -57,14 +59,14 @@ public:
 
 class CommandEllipse: public BaseCommand{
 public:
-	Point end_point;			//the end point, need to Move before draw
-	Point radi_point;
+	Point point_end;			//the end point, need to Move before draw
+	Point point_radi;
 	double angle_degree; 	//rotation of ellipse relative to x-axis
 	int large_arc_flag;   // 2 types of value: 0 & 1, use bool? 
 	int sweep_flag; 			// 1 as cockwise, 0 as counter
 	//The center of ellipse will be automatically determined
 	
-	CommandEllipse(std::string_view str);
+	CommandEllipse(Point current_point, Point point_end, Point point_radi, double angle_degree, int large_arc_flag, int sweep_flag);
 };
 
 class CommandMove: public BaseCommand{
@@ -76,12 +78,10 @@ public:
 
 class CommandClosePath: public BaseCommand{
 public:
-	double x;
-	double y;
-
-	CommandClosePath();
+	Point start_point;
+	Point current_point;
+	CommandClosePath(Point start_point, Point current_point);
 };
-
 
 
 class Path: public BaseShape{
