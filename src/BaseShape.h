@@ -9,17 +9,17 @@
 #include <iostream>
 #include <memory>
 
-class IColor {
+class IPaint {
 public:
-  virtual std::unique_ptr<IColor> clone() const = 0; 
+  virtual std::unique_ptr<IPaint> clone() const = 0; 
 };
 
-class RGB : public IColor {
+class RGB : public IPaint {
 public: 
   double r, g, b;
   RGB(double r, double g, double b) : r(r), g(g), b(b) {}
 
-  std::unique_ptr<IColor> clone() const override {
+  std::unique_ptr<IPaint> clone() const override {
     
     return std::make_unique<RGB>(*this);
   }
@@ -76,8 +76,8 @@ class BaseShape {
 public:
   bool visible;
 
-  std::unique_ptr<IColor> fill;
-  std::unique_ptr<IColor> stroke;
+  std::unique_ptr<IPaint> fill;
+  std::unique_ptr<IPaint> stroke;
 
   double opacity;
   double fill_opacity;

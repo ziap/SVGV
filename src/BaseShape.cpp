@@ -371,7 +371,7 @@ std::string_view hex_color[COLOR_COUNT] = {
 };
 
 
-static std::unique_ptr<IColor> read_color_hex(std::string_view value) {
+static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
   double r, g, b; 
   value = value.substr(1);
 
@@ -389,13 +389,13 @@ static std::unique_ptr<IColor> read_color_hex(std::string_view value) {
   return (std::make_unique<RGB> (r, g, b));
 }
 
-static std::unique_ptr<IColor> read_color_text(std::string_view value) {
+static std::unique_ptr<IPaint> read_color_text(std::string_view value) {
   ColorType color = (ColorType)inv_color[value];
   std::string_view color_hex = hex_color[color]; 
   return read_color_hex(color_hex);
 }
 
-static std::unique_ptr<IColor> read_RGB(std::string_view value) {
+static std::unique_ptr<IPaint> read_RGB(std::string_view value) {
   double r, g, b;
   int start = value.find('(');
   int end = value.find(',');
@@ -417,7 +417,7 @@ static std::unique_ptr<IColor> read_RGB(std::string_view value) {
   return (std::make_unique<RGB> (r, g, b));
 }
 
-static std::unique_ptr<IColor> read_paint(std::string_view value) {
+static std::unique_ptr<IPaint> read_paint(std::string_view value) {
   if (value[0] == '#') return read_color_hex(value);
   if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') return read_RGB(value);
   if (value == "none") return nullptr;
