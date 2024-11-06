@@ -14,15 +14,15 @@ public:
   virtual std::unique_ptr<IPaint> clone() const = 0; 
 };
 
-class RGB : public IPaint {
+class RGB final : public IPaint {
 public: 
-  double r, g, b;
   RGB(double r, double g, double b) : r(r), g(g), b(b) {}
 
   std::unique_ptr<IPaint> clone() const override {
-    
     return std::make_unique<RGB>(*this);
   }
+private:
+  double r, g, b;
 };
 
 enum StrokeLineJoin {
@@ -75,7 +75,7 @@ public:
 
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
 
-  virtual void draw() const {}
+  virtual void draw()  {}
   virtual ~BaseShape() = default;
 };
 
