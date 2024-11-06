@@ -195,6 +195,5 @@ int main() {
   for (BaseShape *t = shape.get(); t; t = t->next.get()) {
     t->draw();
   }
-
   return 0;
 }

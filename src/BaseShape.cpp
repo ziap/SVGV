@@ -3,6 +3,32 @@
 #include <charconv>
 #include <cmath>
 #include <cctype>
+#include <memory>
+
+constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
+  "nonzero",
+  "evenodd",
+};
+
+constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
+
+constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
+  "butt",
+  "round",
+  "square",
+};
+
+constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
+
+constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
+  "arcs",
+  "bevel",
+  "miter",
+  "miter-clip",
+  "round",
+};
+
+constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
 
 enum AttributeType {
   ATTRIBUTE_VISIBLE = 0,
@@ -19,6 +45,7 @@ enum AttributeType {
   ATTRIBUTE_MITER_LIMIT,
   ATTRIBUTE_FILL_RULE,
   ATTRIBUTE_TRANSFORM,
+  ATTRIBUTE_STYLE, 
   ATTRIBUTE_COUNT,
 };
 
@@ -36,32 +63,391 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "stroke-linecap",
   "stroke-miterlimit",
   "fill-rule",
+  "transform",
+  "style",
 };
 
 constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute = {&attribute_name};
 
-static Paint read_paint(std::string_view value) {
-  Paint paint;
+
+enum ColorType {
+  COLOR_ALICEBLUE = 0, 
+  COLOR_ANTIQUEWHITE, 
+  COLOR_AQUA, 
+  COLOR_AQUAMARINE, 
+  COLOR_AZURE, 
+  COLOR_BEIGE, 
+  COLOR_BISQUE, 
+  COLOR_BLACK, 
+  COLOR_BLANCHEDALMOND, 
+  COLOR_BLUE, 
+  COLOR_BLUEVIOLET, 
+  COLOR_BROWN, 
+  COLOR_BURLYWOOD, 
+  COLOR_CADETBLUE, 
+  COLOR_CHARTREUSE, 
+  COLOR_CHOCOLATE, 
+  COLOR_CORAL, 
+  COLOR_CORNFLOWERBLUE, 
+  COLOR_CORNSILK, 
+  COLOR_CRIMSON, 
+  COLOR_CYAN, 
+  COLOR_DARKBLUE, 
+  COLOR_DARKCYAN, 
+  COLOR_DARKGOLDENROD, 
+  COLOR_DARKGRAY, 
+  COLOR_DARKGREY, 
+  COLOR_DARKGREEN, 
+  COLOR_DARKKHAKI, 
+  COLOR_DARKMAGENTA, 
+  COLOR_DARKOLIVEGREEN, 
+  COLOR_DARKORANGE, 
+  COLOR_DARKORCHID, 
+  COLOR_DARKRED, 
+  COLOR_DARKSALMON, 
+  COLOR_DARKSEAGREEN, 
+  COLOR_DARKSLATEBLUE, 
+  COLOR_DARKSLATEGRAY, 
+  COLOR_DARKSLATEGREY, 
+  COLOR_DARKTURQUOISE, 
+  COLOR_DARKVIOLET, 
+  COLOR_DEEPPINK, 
+  COLOR_DEEPSKYBLUE, 
+  COLOR_DIMGRAY, 
+  COLOR_DIMGREY, 
+  COLOR_DODGERBLUE, 
+  COLOR_FIREBRICK, 
+  COLOR_FLORALWHITE, 
+  COLOR_FORESTGREEN, 
+  COLOR_FUCHSIA, 
+  COLOR_GAINSBORO, 
+  COLOR_GHOSTWHITE, 
+  COLOR_GOLD, 
+  COLOR_GOLDENROD, 
+  COLOR_GRAY, 
+  COLOR_GREY, 
+  COLOR_GREEN, 
+  COLOR_GREENYELLOW, 
+  COLOR_HONEYDEW, 
+  COLOR_HOTPINK, 
+  COLOR_INDIANRED, 
+  COLOR_INDIGO, 
+  COLOR_IVORY, 
+  COLOR_KHAKI, 
+  COLOR_LAVENDER, 
+  COLOR_LAVENDERBLUSH, 
+  COLOR_LAWNGREEN, 
+  COLOR_LEMONCHIFFON, 
+  COLOR_LIGHTBLUE, 
+  COLOR_LIGHTCORAL, 
+  COLOR_LIGHTCYAN, 
+  COLOR_LIGHTGOLDENRODYELLOW, 
+  COLOR_LIGHTGRAY, 
+  COLOR_LIGHTGREY, 
+  COLOR_LIGHTGREEN, 
+  COLOR_LIGHTPINK, 
+  COLOR_LIGHTSALMON, 
+  COLOR_LIGHTSEAGREEN, 
+  COLOR_LIGHTSKYBLUE, 
+  COLOR_LIGHTSLATEGRAY, 
+  COLOR_LIGHTSLATEGREY, 
+  COLOR_LIGHTSTEELBLUE, 
+  COLOR_LIGHTYELLOW, 
+  COLOR_LIME, 
+  COLOR_LIMEGREEN, 
+  COLOR_LINEN, 
+  COLOR_MAGENTA, 
+  COLOR_MAROON, 
+  COLOR_MEDIUMAQUAMARINE, 
+  COLOR_MEDIUMBLUE, 
+  COLOR_MEDIUMORCHID, 
+  COLOR_MEDIUMPURPLE, 
+  COLOR_MEDIUMSEAGREEN, 
+  COLOR_MEDIUMSLATEBLUE, 
+  COLOR_MEDIUMSPRINGGREEN, 
+  COLOR_MEDIUMTURQUOISE, 
+  COLOR_MEDIUMVIOLETRED, 
+  COLOR_MIDNIGHTBLUE, 
+  COLOR_MINTCREAM, 
+  COLOR_MISTYROSE, 
+  COLOR_MOCCASIN, 
+  COLOR_NAVAJOWHITE, 
+  COLOR_NAVY, 
+  COLOR_OLDLACE, 
+  COLOR_OLIVE, 
+  COLOR_OLIVEDRAB, 
+  COLOR_ORANGE, 
+  COLOR_ORANGERED, 
+  COLOR_ORCHID, 
+  COLOR_PALEGOLDENROD, 
+  COLOR_PALEGREEN, 
+  COLOR_PALETURQUOISE, 
+  COLOR_PALEVIOLETRED, 
+  COLOR_PAPAYAWHIP, 
+  COLOR_PEACHPUFF, 
+  COLOR_PERU, 
+  COLOR_PINK, 
+  COLOR_PLUM, 
+  COLOR_POWDERBLUE, 
+  COLOR_PURPLE, 
+  COLOR_REBECCAPURPLE, 
+  COLOR_RED, 
+  COLOR_ROSYBROWN, 
+  COLOR_ROYALBLUE, 
+  COLOR_SADDLEBROWN, 
+  COLOR_SALMON, 
+  COLOR_SANDYBROWN, 
+  COLOR_SEAGREEN, 
+  COLOR_SEASHELL, 
+  COLOR_SIENNA, 
+  COLOR_SILVER, 
+  COLOR_SKYBLUE, 
+  COLOR_SLATEBLUE, 
+  COLOR_SLATEGRAY, 
+  COLOR_SLATEGREY, 
+  COLOR_SNOW, 
+  COLOR_SPRINGGREEN, 
+  COLOR_STEELBLUE, 
+  COLOR_TAN, 
+  COLOR_TEAL, 
+  COLOR_THISTLE, 
+  COLOR_TOMATO, 
+  COLOR_TURQUOISE, 
+  COLOR_VIOLET, 
+  COLOR_WHEAT, 
+  COLOR_WHITE, 
+  COLOR_WHITESMOKE, 
+  COLOR_YELLOW, 
+  COLOR_YELLOWGREEN, 
+  COLOR_COUNT,
+};
+
+constexpr std::string_view color_name[COLOR_COUNT] = {
+  "aliceblue", 
+  "antiquewhite", 
+  "aqua", 
+  "aquamarine", 
+  "azure", 
+  "beige", 
+  "bisque", 
+  "black", 
+  "blanchedalmond", 
+  "blue", 
+  "blueviolet", 
+  "brown", 
+  "burlywood", 
+  "cadetblue", 
+  "chartreuse", 
+  "chocolate", 
+  "coral", 
+  "cornflowerblue", 
+  "cornsilk", 
+  "crimson", 
+  "cyan", 
+  "darkblue", 
+  "darkcyan", 
+  "darkgoldenrod", 
+  "darkgray", 
+  "darkgrey", 
+  "darkgreen", 
+  "darkkhaki", 
+  "darkmagenta", 
+  "darkolivegreen", 
+  "darkorange", 
+  "darkorchid", 
+  "darkred", 
+  "darksalmon", 
+  "darkseagreen", 
+  "darkslateblue", 
+  "darkslategray", 
+  "darkslategrey", 
+  "darkturquoise", 
+  "darkviolet", 
+  "deeppink", 
+  "deepskyblue", 
+  "dimgray", 
+  "dimgrey", 
+  "dodgerblue", 
+  "firebrick", 
+  "floralwhite", 
+  "forestgreen", 
+  "fuchsia", 
+  "gainsboro", 
+  "ghostwhite", 
+  "gold", 
+  "goldenrod", 
+  "gray", 
+  "grey", 
+  "green", 
+  "greenyellow", 
+  "honeydew", 
+  "hotpink", 
+  "indianred ", 
+  "indigo ", 
+  "ivory", 
+  "khaki", 
+  "lavender", 
+  "lavenderblush", 
+  "lawngreen", 
+  "lemonchiffon", 
+  "lightblue", 
+  "lightcoral", 
+  "lightcyan", 
+  "lightgoldenrodyellow", 
+  "lightgray", 
+  "lightgrey", 
+  "lightgreen", 
+  "lightpink", 
+  "lightsalmon", 
+  "lightseagreen", 
+  "lightskyblue", 
+  "lightslategray", 
+  "lightslategrey", 
+  "lightsteelblue", 
+  "lightyellow", 
+  "lime", 
+  "limegreen", 
+  "linen", 
+  "magenta", 
+  "maroon", 
+  "mediumaquamarine", 
+  "mediumblue", 
+  "mediumorchid", 
+  "mediumpurple", 
+  "mediumseagreen", 
+  "mediumslateblue", 
+  "mediumspringgreen", 
+  "mediumturquoise", 
+  "mediumvioletred", 
+  "midnightblue", 
+  "mintcream", 
+  "mistyrose", 
+  "moccasin", 
+  "navajowhite", 
+  "navy", 
+  "oldlace", 
+  "olive", 
+  "olivedrab", 
+  "orange", 
+  "orangered", 
+  "orchid", 
+  "palegoldenrod", 
+  "palegreen", 
+  "paleturquoise", 
+  "palevioletred", 
+  "papayawhip", 
+  "peachpuff", 
+  "peru", 
+  "pink", 
+  "plum", 
+  "powderblue", 
+  "purple", 
+  "rebeccapurple", 
+  "red", 
+  "rosybrown", 
+  "royalblue", 
+  "saddlebrown", 
+  "salmon", 
+  "sandybrown", 
+  "seagreen", 
+  "seashell", 
+  "sienna", 
+  "silver", 
+  "skyblue", 
+  "slateblue", 
+  "slategray", 
+  "slategrey", 
+  "snow", 
+  "springgreen", 
+  "steelblue", 
+  "tan", 
+  "teal", 
+  "thistle", 
+  "tomato", 
+  "turquoise", 
+  "violet", 
+  "wheat", 
+  "white", 
+  "whitesmoke", 
+  "yellow", 
+  "yellowgreen", 
+};
+
+constexpr InverseIndex<COLOR_COUNT> inv_color = {&color_name};
+
+std::string_view hex_color[COLOR_COUNT] = {
+  "#F0F8FF", "#FAEBD7", "#00FFFF", "#7FFFD4", "#F0FFFF", "#F5F5DC", "#FFE4C4", "#000000", "#FFEBCD", 
+  "#0000FF", "#8A2BE2", "#A52A2A", "#DEB887", "#5F9EA0", "#7FFF00", "#D2691E", "#FF7F50", "#6495ED", 
+  "#FFF8DC", "#DC143C", "#00FFFF", "#00008B", "#008B8B", "#B8860B", "#A9A9A9", "#A9A9A9", "#006400", 
+  "#BDB76B", "#8B008B", "#556B2F", "#FF8C00", "#9932CC", "#8B0000", "#E9967A", "#8FBC8F", "#483D8B", 
+  "#2F4F4F", "#2F4F4F", "#00CED1", "#9400D3", "#FF1493", "#00BFFF", "#696969", "#696969", "#1E90FF", 
+  "#B22222", "#FFFAF0", "#228B22", "#FF00FF", "#DCDCDC", "#F8F8FF", "#FFD700", "#DAA520", "#808080", 
+  "#808080", "#008000", "#ADFF2F", "#F0FFF0", "#FF69B4", "#CD5C5C", "#4B0082", "#FFFFF0", "#F0E68C", 
+  "#E6E6FA", "#FFF0F5", "#7CFC00", "#FFFACD", "#ADD8E6", "#F08080", "#E0FFFF", "#FAFAD2", "#D3D3D3", 
+  "#D3D3D3", "#90EE90", "#FFB6C1", "#FFA07A", "#20B2AA", "#87CEFA", "#778899", "#778899", "#B0C4DE", 
+  "#FFFFE0", "#00FF00", "#32CD32", "#32CD32", "#FF00FF", "#800000", "#66CDAA", "#0000CD", "#BA55D3", 
+  "#9370DB", "#3CB371", "#7B68EE", "#00FA9A", "#48D1CC", "#C71585", "#191970", "#F5FFFA", "#FFE4E1", 
+  "#FFE4B5", "#FFDEAD", "#000080", "#FDF5E6", "#808000", "#6B8E23", "#FFA500", "#FF4500", "#DA70D6", 
+  "#EEE8AA", "#98FB98", "#AFEEEE", "#DB7093", "#FFEFD5", "#FFDAB9", "#CD853F", "#FFC0CB", "#DDA0DD", 
+  "#B0E0E6", "#800080", "#663399", "#FF0000", "#BC8F8F", "#4169E1", "#8B4513", "#FA8072", "#F4A460", 
+  "#2E8B57", "#FFF5EE", "#A0522D", "#C0C0C0", "#87CEEB", "#6A5ACD", "#708090", "#708090", "#FFFAFA", 
+  "#00FF7F", "#4682B4", "#D2B48C", "#008080", "#D8BFD8", "#FF6347", "#40E0D0", "#EE82EE", "#F5DEB3", 
+  "#FFFFFF", "#F5F5F5", "#FFFF00", "#9ACD32", 
+};
+
+
+static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
+  double r, g, b; 
+  value = value.substr(1);
+
+  uint32_t p = 0;
+  std::from_chars(value.data(), value.data() + value.size(), p, 16);
+
+  b = p & 0xFF;
+  g = (p >> 8) & 0xFF;
+  r = (p >> 16) & 0xFF;
+
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  return (std::make_unique<RGB> (r, g, b));
+}
+
+static std::unique_ptr<IPaint> read_color_text(std::string_view value) {
+  ColorType color = (ColorType)inv_color[value];
+  std::string_view color_hex = hex_color[color]; 
+  return read_color_hex(color_hex);
+}
+
+static std::unique_ptr<IPaint> read_RGB(std::string_view value) {
+  double r, g, b;
   int start = value.find('(');
   int end = value.find(',');
-  std::from_chars(value.data() + start + 1, value.data() + end, paint.r);    
+  std::from_chars(value.data() + start + 1, value.data() + end, r);    
 
   while (isspace(value[end + 1])) end += 1;
   value = value.substr(end + 1);
   end = value.find(',');
-  std::from_chars(value.data(), value.data() + end, paint.g);
+  std::from_chars(value.data(), value.data() + end, g);
 
   while (isspace(value[end + 1])) end += 1;
   value = value.substr(end + 1);
   end = value.find(')');
-  std::from_chars(value.data(), value.data() + end, paint.b);
+  std::from_chars(value.data(), value.data() + end, b);
 
-  paint.r /= 255;
-  paint.g /= 255;
-  paint.b /= 255;
-
-  return paint;
+  r/= 255;
+  g/=255;
+  b/=255;
+  return (std::make_unique<RGB> (r, g, b));
 }
+
+static std::unique_ptr<IPaint> read_paint(std::string_view value) {
+  if (value[0] == '#') return read_color_hex(value);
+  if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') return read_RGB(value);
+  if (value == "none") return nullptr;
+  return read_color_text(value);
+} 
 
 static double convert_opacity(std::string_view value) {
   double opacity;
@@ -130,13 +516,6 @@ static void create_matrix_rotate(double num, double matrix[2][3]) {
 }
 
 static void solve_transform(std::string_view inf, double matrix[2][3]) {
-  matrix[0][0] = 1;
-  matrix[0][1] = 0;
-  matrix[0][2] = 0;
-  matrix[1][0] = 0;
-  matrix[1][1] = 1;
-  matrix[1][2] = 0;
-
   int start = 0;
   int end = inf.find('(');
   std::string_view str_type = inf.substr(start, end - start);
@@ -250,13 +629,6 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 }
 
 static void convert_transform(std::string_view value, double matrix[2][3]) {
-  matrix[0][0] = 1;
-  matrix[0][1] = 0;
-  matrix[0][2] = 0;
-  matrix[1][0] = 0;
-  matrix[1][1] = 1;
-  matrix[1][2] = 0;
-
   double Ematrix[2][3];
   int start = 0, end = 0;
   while (value.size() > 0) {
@@ -269,10 +641,50 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
   }
 }
 
+enum StyleType {
+  STYLE_FILL = 0,
+  STYLE_STROKE,
+  STYLE_STROKE_WIDTH,
+  STYLE_COUNT,
+};
+
+constexpr std::string_view style_name[STYLE_COUNT] = {
+  "fill",
+  "stroke",
+  "stoke-width",
+};
+
+constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
+
+static void solve_style(std::string_view value, BaseShape *shape) {
+  size_t end = value.find(':');
+  std::string_view key = value.substr(0, end);
+  StyleType type = (StyleType)inv_style[key];
+
+  value = value.substr(end + 1);
+  while (isspace(value[0])) value = value.substr(1);
+
+  switch (type) {
+    case STYLE_FILL: {
+      shape->fill = read_paint(value);
+    } break;
+    case STYLE_STROKE: {
+      shape->stroke = read_paint(value);
+    } break;
+    case STYLE_STROKE_WIDTH: {
+      std::from_chars(value.data(), value.data() + value.size(), shape->stroke_width);
+    } break;
+    case STYLE_COUNT: {
+      __builtin_unreachable();
+    } break;
+  }
+}
+
+
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
-    this->fill = Paint {0, 0, 0};
+    this->fill = (RGB(0, 0, 0)).clone();
     this->stroke = {};
     this->opacity = 1.0;
     this->fill_opacity = 1.0;
@@ -292,8 +704,10 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
   } else {
     this->visible = parent->visible;
-    this->fill = parent->fill;
-    this->stroke = parent->stroke;
+    if (parent->fill != nullptr)
+      this->fill = (parent->fill)->clone();
+    if (parent->stroke != nullptr)
+      this->stroke = (parent->stroke)->clone();
     this->opacity = parent->opacity;
     this->fill_opacity = parent->fill_opacity;
     this->stroke_opacity = parent->stroke_opacity;
@@ -374,11 +788,21 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
         convert_transform(value, this->transform);
       } break;
 
+      case ATTRIBUTE_STYLE: {
+        while (value.size() > 0) {
+          while(isspace(value[0])) value = value.substr(1);
+          size_t end = value.find(';');
+          if (end > value.size()) end = value.size(); 
+          std::string_view str = value.substr(0, end);
+          solve_style(str, this);
+          if (end != value.size()) value = value.substr(end + 1);
+          else value = value.substr(end);
+        }
+      } break;
+
       case ATTRIBUTE_COUNT: {
         __builtin_unreachable();
       }
     }
   }
 }
-
-

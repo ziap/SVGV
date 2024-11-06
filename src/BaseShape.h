@@ -4,12 +4,25 @@
 #include "utils.h"
 #include "XMLNode.h"
 #include "InverseIndex.h"
+#include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <memory>
 
-class Paint {
-  public: 
-    double r, g, b;
+class IPaint {
+public:
+  virtual std::unique_ptr<IPaint> clone() const = 0; 
+};
+
+class RGB final : public IPaint {
+public: 
+  RGB(double r, double g, double b) : r(r), g(g), b(b) {}
+
+  std::unique_ptr<IPaint> clone() const override {
+    return std::make_unique<RGB>(*this);
+  }
+private:
+  double r, g, b;
 };
 
 enum StrokeLineJoin {
@@ -21,16 +34,6 @@ enum StrokeLineJoin {
   LINE_JOIN_COUNT,
 };
 
-constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
-  "arcs",
-  "bevel",
-  "miter",
-  "miter-clip",
-  "round",
-};
-
-constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
-
 enum StrokeLineCap {
   LINE_CAP_BUTT = 0,
   LINE_CAP_ROUND,
@@ -38,33 +41,18 @@ enum StrokeLineCap {
   LINE_CAP_COUNT,
 };
 
-constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
-  "butt",
-  "round",
-  "square",
-};
-
-constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
-
 enum FillRule {
   FILL_RULE_NONZERO = 0,
   FILL_RULE_EVENODD,
   FILL_RULE_COUNT
 };
 
-constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
-  "nonzero",
-  "evenodd",
-};
-
-constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
-
 class BaseShape {
 public:
   bool visible;
 
-  Optional<Paint> fill;
-  Optional<Paint> stroke;
+  std::unique_ptr<IPaint> fill;
+  std::unique_ptr<IPaint> stroke;
 
   double opacity;
   double fill_opacity;
@@ -86,8 +74,8 @@ public:
   std::unique_ptr<BaseShape> next;
 
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
-
   virtual void draw() const {}
+  virtual ~BaseShape() = default;
 };
 
 
