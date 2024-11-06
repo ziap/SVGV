@@ -1,4 +1,20 @@
 #include "Circle.h"
+#include <charconv>
+
+enum CircleAttr {
+  CIRCLE_ATTR_CX = 0,
+  CIRCLE_ATTR_CY,
+  CIRCLE_ATTR_R,
+  CIRCLE_ATTR_COUNT,
+};
+
+constexpr std::string_view circle_attr_name[CIRCLE_ATTR_COUNT] {
+  "cx", 
+  "cy",
+  "r",
+};
+
+constexpr InverseIndex<CIRCLE_ATTR_COUNT> inv_circle_attribute= {&circle_attr_name};
 
 void Circle::draw() const{
   std::cout << "The circle attrs: " << 

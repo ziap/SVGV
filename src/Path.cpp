@@ -1,81 +1,93 @@
 #include "Path.h"
 
-CommandMove::CommandMove(double x, double y): x(x), y(y){
+enum PathCommand{
+  PATH_COMMAND_MOVE = 0,
+  PATH_COMMAND_LINETO = 0,
+  PATH_COMMAND_BEZIER,
+  PATH_COMMAND_ELLIPTIC,
+  PATH_COMMAND_CLOSE_PATH,
+  PATH_COMMAND_COUNT
+};
+
+
+void BaseCommand::draw() const {
 }
 
-void BaseCommand::draw() const{
-}
-
-void CommandLine::draw() const{
+void CommandLine::draw() const {
   std::cout << "Draw line from: " << this->point_0.x << '|' << this->point_0.y << " to " 
-            << this->point_N.x << '|' << this->point_N.y << '\n';
+            << this->point_1.x << '|' << this->point_1.y << '\n';
 }
 
-void CommandMove::draw() const{
+void CommandMove::draw() const {
   std::cout << "Move to: " << this-> x << '|' << this->y << '\n'; 
 }
 
-void CommandBezier::draw() const{
+void CommandBezier::draw() const {
   std::cout << "Draw Bezier from: " << this->point_0.x << '|' << this->point_0.y << " to " 
             << this->point_N.x << '|' << this->point_N.y << '\n'
             << "Control point: " << this->point_CS.x << '|' << this->point_CS.y << '\n'
             << "Control end point: " << this->point_CE.x << '|' << this->point_CE.y << '\n';
 }
 
-void CommandEllipse::draw() const{
+void CommandEllipse::draw() const {
   std::cout << "Draw Ellipse from: " << this->current_point.x << '|' << this->current_point.y << " to " 
             << this->point_end.x << '|' << this->point_end.y << '\n'
-            << "Radi point: " << this->point_radi.x << '|' << this->point_radi.y << '\n'
+            << "Radi point: " << this->rx << '|' << this->ry << '\n'
             << "Angle degree: " << this->angle_degree << '\n'
             << "Large arc flage: " << this->large_arc_flag<< '\n'
             << "Sweep flag: " << this->sweep_flag << '\n';
 }
 
-void CommandClosePath::draw() const{
+void CommandClosePath::draw() const {
   std::cout << "Close path from: " << this->start_point.x << '|' << this->start_point.y << " to " 
             << this->current_point.x << '|' << this->current_point.y << '\n';
 }
 
-CommandLine::CommandLine(double p0_x, double p0_y, double pN_x, double pN_y){
-  this->point_0.x = p0_x;
-  this->point_0.y = p0_y;
-  this->point_N.x = pN_x;
-  this->point_N.y = pN_y;
+CommandMove::CommandMove(double x, double y): x{x}, y{y} {
 }
 
-CommandBezier::CommandBezier(Point point_0, Point point_n, Point point_cs, Point point_ce): point_0(point_0), point_N(point_n), point_CS(point_cs), point_CE(point_ce){
-  this->point_0 = point_0;
-  this->point_N = point_n;
-  this->point_CS = point_cs;
-  this->point_CE = point_ce;
+CommandLine::CommandLine(Point p0, Point p1) : point_0(p0), point_1(p1){
 }
 
-CommandClosePath::CommandClosePath(Point start_point, Point current_point): start_point(start_point), current_point(current_point){
+CommandBezier::CommandBezier(Point point_0, Point point_n, Point point_cs, Point point_ce)
+  : point_0(point_0), 
+    point_N(point_n), 
+    point_CS(point_cs), 
+    point_CE(point_ce) {
 }
 
-CommandEllipse::CommandEllipse(Point current_point, Point point_end, Point point_radi, double angle_degree, int large_arc_flag, int sweep_flag): angle_degree(angle_degree), large_arc_flag(large_arc_flag), sweep_flag(sweep_flag){
-  this->current_point = current_point;
-  this->point_end = point_end;
-  this->point_radi = point_radi;
+CommandClosePath::CommandClosePath(Point start_point, Point current_point) 
+  : start_point(start_point), 
+    current_point(current_point) {
+}
+
+CommandEllipse::CommandEllipse(Point current_point, Point point_end, double rx, double ry, double angle_degree, int large_arc_flag, int sweep_flag) 
+  : current_point{current_point}, 
+    point_end{point_end},
+    rx{rx},
+    ry{ry},
+    angle_degree{angle_degree}, 
+    large_arc_flag{large_arc_flag}, 
+    sweep_flag{sweep_flag} {
 }
 
 
-static double read_double(std::string_view &str){
+static double read_double(std::string_view &str) {
   double num;
   std::from_chars_result res;
-  while(isspace(str[0]) || str[0] == ','){
+  while (isspace(str[0]) || str[0] == ',') {
     str = str.substr(1);
   }
   res  = std::from_chars(str.data(), str.data() + str.size(), num); 
   str = str.substr(res.ptr - str.data());
-  while(isspace(str[0]) || str[0] == ','){
+  while (isspace(str[0]) || str[0] == ',') {
     str = str.substr(1);
   }
   return num;
 }
 
-static bool is_next_command(const char &chr){
-  switch(chr){
+static bool is_next_command(const char &chr) {
+  switch(chr) {
     case 'M': return true;
     case 'm': return true;
     case 'L': return true;
@@ -109,16 +121,16 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
   Point start_point = {};
   bool is_start_point_exist = false;
     
-  for (int i = 0; i < attrs_count; ++i){
+  for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
-    if (key == "d"){
+    if (key == "d") {
       std::cout << "Founded path\n";
-      while(!value.empty()){
+      while (!value.empty()) {
         char command = value[0];
         value = value.substr(1);
-        switch(command){
-          case 'M':{
+        switch(command) {
+          case 'M': {
             std::cout << "INFO: start M\n";
             // read 2 points 
             double x = read_double(value);
@@ -127,13 +139,13 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point.x = x;
             current_point.y = y;
 
-            if (!is_start_point_exist){
+            if (!is_start_point_exist) {
               start_point = current_point;
               is_start_point_exist = true;
             }
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               x = read_double(value);
               y = read_double(value);
               *tail_command = std::make_unique<CommandMove>(x, y);
@@ -142,7 +154,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             std::cout << "INFO: done M\n";
           } break;
-          case 'm':{
+          case 'm': {
             std::cout << "INFO: start m\n";
             double x = current_point.x;
             double y = current_point.x;
@@ -153,7 +165,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point.y += dy;
               
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               double dx = read_double(value);
               double dy = read_double(value);
               *tail_command = std::make_unique<CommandMove>(current_point.x + dx, current_point.y + dy);
@@ -163,41 +175,41 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               std::cout << "INFO: done m\n";
             }
           } break;
-          case 'L':{
+          case 'L': {
               std::cout << "INFO: start L\n";
             // read 2 points 
             double x = read_double(value);
             double y = read_double(value);
-            *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x, y);
-            current_point.x = x;
-            current_point.y = y;
+            Point des_point = {x, y};
+            *tail_command = std::make_unique<CommandLine>(current_point, des_point);
+            current_point = {x, y};
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               x = read_double(value);
               y = read_double(value);
-              *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x, y);
-              current_point.x = x;
-              current_point.y = y;
+              des_point = {x, y};
+              *tail_command = std::make_unique<CommandLine>(current_point, des_point);
+              current_point = {x, y};
               std::cout << "INFO: done L\n";
             }
           } break;
 
-          case 'l':{
-             std::cout << "INFO: start l\n";
-            double x = current_point.x;
-            double y = current_point.x;
+          case 'l': {
+            std::cout << "INFO: start l\n";
             double dx = read_double(value);
             double dy = read_double(value);
-            *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x + dx, y + dy);
+            Point d_point = {current_point.x + dx, current_point.y + dy};
+            *tail_command = std::make_unique<CommandLine>(current_point, d_point);
             current_point.x += dx;
             current_point.y += dy;
               
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               double dx = read_double(value);
               double dy = read_double(value);
-              *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x + dx, y + dy);
+              d_point = {current_point.x + dx, current_point.y + dy};
+              *tail_command = std::make_unique<CommandLine>(current_point, d_point);
               //update current
               current_point.x += dx;
               current_point.y += dy;
@@ -205,66 +217,75 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
              std::cout << "INFO: done l\n";
           } break;
 
-          case 'H':{
+          case 'H': {
             std::cout << "INFO: start H\n";
             double x = read_double(value);
-            *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x, current_point.y);
+            Point h_point = {x, current_point.y};
+            *tail_command = std::make_unique<CommandLine>(current_point, h_point);
             current_point.x = x;
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               x = read_double(value);
-              *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x, current_point.y);
+              h_point = {x, current_point.y};
+              *tail_command = std::make_unique<CommandLine>(current_point, h_point);
               current_point.x = x;
             }
             std::cout << "INFO: done H\n";
           } break;
-          case 'h':{
+
+          case 'h': {
             std::cout << "INFO: start h\n";
             double dx = read_double(value);
-            *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x + dx, current_point.y);
+            Point h_point = {current_point.x + dx, current_point.y};
+            *tail_command = std::make_unique<CommandLine>(current_point, h_point);
             current_point.x += dx;
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               dx = read_double(value);
-              *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x + dx, current_point.y);
-              current_point.x = dx;
+              Point h_point = {current_point.x + dx, current_point.y};
+              *tail_command = std::make_unique<CommandLine>(current_point, h_point);
+              current_point.x += dx;
             }
           } break;
-          case 'V':{
+          case 'V': {
             std::cout << "INFO: start V\n";
             double y = read_double(value);
-            *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, y);
+            Point v_point = {current_point.x, y};
+            *tail_command = std::make_unique<CommandLine>(current_point, v_point);
             current_point.y = y;
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               y = read_double(value);
-              *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, y);
+              Point v_point = {current_point.x, y};
+              *tail_command = std::make_unique<CommandLine>(current_point, v_point);
               current_point.y = y;
               std::cout << "INFO: done V\n";
             }
           } break;
-          case 'v':{
+          case 'v': {
             std::cout << "INFO: start v\n";
             double dy = read_double(value);
-            *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, current_point.y + dy);
-            current_point.y += dy;
+            Point v_point = {current_point.x, current_point.y + dy};
+            *tail_command = std::make_unique<CommandLine>(current_point, v_point);
+              current_point.y = dy;
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               dy = read_double(value);
-              *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, current_point.y + dy);
+            Point v_point = {current_point.x, current_point.y + dy};
+            *tail_command = std::make_unique<CommandLine>(current_point, v_point);
               current_point.y = dy;
             std::cout << "INFO: done v\n";
             }
           } break;
-          case 'C':{
+          case 'C': {
             std::cout << "INFO: start C\n";
             double x[3];
             double y[3];
-            for (int i = 0; i < 3; ++i){
+            for (int i = 0; i < 3; ++i) {
               x[i] = read_double(value);
               y[i] = read_double(value);
             }
@@ -276,8 +297,8 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = point_n;
             
             //supsequent parameter
-            while(!is_next_command(value[0])){
-              for (int i = 0; i < 3; ++i){
+            while (!is_next_command(value[0])) {
+              for (int i = 0; i < 3; ++i) {
                 x[i] = read_double(value);
                 y[i] = read_double(value);
               }
@@ -289,11 +310,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             std::cout << "INFO: done C\n";
           } break;
-          case 'c':{
+          case 'c': {
             std::cout << "INFO: start c\n";
             double x[3];
             double y[3];
-            for (int i = 0; i < 3; ++i){
+            for (int i = 0; i < 3; ++i) {
               x[i] = read_double(value);
               y[i] = read_double(value);
             }
@@ -305,8 +326,8 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = point_n;
             
             //supsequent parameter
-            while(!is_next_command(value[0])){
-              for (int i = 0; i < 3; ++i){
+            while (!is_next_command(value[0])) {
+              for (int i = 0; i < 3; ++i) {
                 x[i] = read_double(value);
                 y[i] = read_double(value);
               }
@@ -320,11 +341,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             std::cout << "INFO: done c\n";
 
           } break;
-          case 'S':{
+          case 'S': {
             std::cout << "INFO: start S\n";
             double x[2];
             double y[2];
-            for (int i = 0; i < 2; ++i){
+            for (int i = 0; i < 2; ++i) {
               x[i] = read_double(value);
               y[i] = read_double(value);
             }
@@ -336,8 +357,8 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = point_n;
             
             //supsequent parameter
-            while(!is_next_command(value[0])){
-              for (int i = 0; i < 2; ++i){
+            while (!is_next_command(value[0])) {
+              for (int i = 0; i < 2; ++i) {
                 x[i] = read_double(value);
                 y[i] = read_double(value);
               }
@@ -350,11 +371,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             std::cout << "INFO: done S\n";
           } break;
-          case 's':{
+          case 's': {
             std::cout << "INFO: start s\n";
             double x[2];
             double y[2];
-            for (int i = 0; i < 2; ++i){
+            for (int i = 0; i < 2; ++i) {
               x[i] = read_double(value);
               y[i] = read_double(value);
             }
@@ -366,8 +387,8 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = point_n;
             
             //supsequent parameter
-            while(!is_next_command(value[0])){
-              for (int i = 0; i < 2; ++i){
+            while (!is_next_command(value[0])) {
+              for (int i = 0; i < 2; ++i) {
                 x[i] = read_double(value);
                 y[i] = read_double(value);
               }
@@ -380,7 +401,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             std::cout << "INFO: done s\n";
           } break;
-          case 'Q':{
+          case 'Q': {
             std::cout << "INFO: start Q\n";
             double x[2];
             double y[2];
@@ -395,11 +416,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = point_n;
             
             //supsequent parameter
-            while(!is_next_command(value[0])) {
+            while  (!is_next_command(value[0])) {
               //read next point
               double x[2];
               double y[2];
-              for (int i = 0; i < 2; ++i){
+              for (int i = 0; i < 2; ++i) {
                 x[i] = read_double(value);
                 y[i] = read_double(value);
               }
@@ -417,7 +438,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             std::cout << "INFO: start q\n";
             double x[2];
             double y[2];
-            for (int i = 0; i < 2; ++i){
+            for (int i = 0; i < 2; ++i) {
               x[i] = read_double(value);
               y[i] = read_double(value);
             }
@@ -428,11 +449,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = point_n;
             
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while  (!is_next_command(value[0])) {
               //read next point
               double x[2];
               double y[2];
-              for (int i = 0; i < 2; ++i){
+              for (int i = 0; i < 2; ++i) {
                 x[i] = read_double(value);
                 y[i] = read_double(value);
               }
@@ -454,7 +475,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = {x, y};
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               x = read_double(value);
               y = read_double(value);
               point_n.x = x;
@@ -464,7 +485,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             std::cout << "INFO: done T\n";
           } break;
-          case 't':{
+          case 't': {
             std::cout << "INFO: start t\n";
             double x = read_double(value);
             double y = read_double(value);
@@ -475,7 +496,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point.y += y;
 
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while (!is_next_command(value[0])) {
               x = read_double(value);
               y = read_double(value);
               Point point_n = {current_point.x + x, current_point.y + y};
@@ -485,78 +506,77 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             std::cout << "INFO: done t\n";
           } break;
-          case 'A':{
+          case 'A': {
             std::cout << "INFO: start A\n";
-            Point point_radi;
+            double rx, ry;
             double angle_degree;  
             int large_arc_flag;   
             int sweep_flag;       
             Point point_n;
 
-            point_radi.x = read_double(value);
-            point_radi.y = read_double(value);
+            rx = read_double(value);
+            ry = read_double(value);
             angle_degree = read_double(value);  
             large_arc_flag = (int)read_double(value);   
             sweep_flag = (int)read_double(value);   
             point_n.x = read_double(value);
             point_n.y = read_double(value);
 
-            *tail_command = std::make_unique<CommandEllipse>(current_point, point_n, point_radi, angle_degree, large_arc_flag, sweep_flag);
+            *tail_command = std::make_unique<CommandEllipse>(current_point, point_n, rx, ry, angle_degree, large_arc_flag, sweep_flag);
+
             current_point = point_n;
 
-            while(!is_next_command(value[0])){
-
-              point_radi.x = read_double(value);
-              point_radi.y = read_double(value);
+            while (!is_next_command(value[0])) {
+              rx = read_double(value);
+              ry = read_double(value);
               angle_degree = read_double(value);  
               large_arc_flag = (int)read_double(value);   
               sweep_flag = (int)read_double(value);   
               point_n.x = read_double(value);
               point_n.y = read_double(value);
 
-              *tail_command = std::make_unique<CommandEllipse>(current_point, point_n, point_radi, angle_degree, large_arc_flag, sweep_flag);
-              current_point = point_n;
+              *tail_command = std::make_unique<CommandEllipse>(current_point, point_n, rx, ry, angle_degree, large_arc_flag, sweep_flag);
 
+              current_point = point_n;
             }
             std::cout << "INFO: done A\n";
 
           } break;
-          case 'a':{
+          case 'a': {
             std::cout << "INFO: start a\n";
-            Point point_radi;
+            double rx, ry;
             double angle_degree;  
             int large_arc_flag;   
             int sweep_flag;       
-            Point d_point_n;
+            Point point_n;
 
-            point_radi.x = read_double(value);
-            point_radi.y = read_double(value);
+            rx = read_double(value);
+            ry = read_double(value);
             angle_degree = read_double(value);  
             large_arc_flag = (int)read_double(value);   
             sweep_flag = (int)read_double(value);   
-            d_point_n.x = current_point.x + read_double(value);
-            d_point_n.y = current_point.y + read_double(value);
+            point_n.x = current_point.x + read_double(value);
+            point_n.y = current_point.y + read_double(value);
 
-            *tail_command = std::make_unique<CommandEllipse>(current_point, d_point_n, point_radi, angle_degree, large_arc_flag, sweep_flag);
-            current_point = d_point_n;
+            *tail_command = std::make_unique<CommandEllipse>(current_point, point_n, rx, ry, angle_degree, large_arc_flag, sweep_flag);
+            current_point = point_n;
 
-            while(!is_next_command(value[0])){
-
-              point_radi.x = read_double(value);
-              point_radi.y = read_double(value);
+            while (!is_next_command(value[0])) {
+              rx = read_double(value);
+              ry = read_double(value);
               angle_degree = read_double(value);  
               large_arc_flag = (int)read_double(value);   
               sweep_flag = (int)read_double(value);   
-              d_point_n.x = current_point.x + read_double(value);
-              d_point_n.y = current_point.y + read_double(value);
+              point_n.x = current_point.x + read_double(value);
+              point_n.y = current_point.y + read_double(value);
 
-              *tail_command = std::make_unique<CommandEllipse>(current_point, d_point_n, point_radi, angle_degree, large_arc_flag, sweep_flag);
-              current_point = d_point_n;
+              *tail_command = std::make_unique<CommandEllipse>(current_point, point_n, rx, ry, angle_degree, large_arc_flag, sweep_flag);
+              current_point = point_n;
             }
             std::cout << "INFO: done a\n";
           } break;
           case 'Z': 
-          case 'z':{
+          case 'z': {
             std::cout << "INFO: start Z\n";
             *tail_command = std::make_unique<CommandClosePath>(start_point, current_point);
             std::cout << "INFO: done Z\n";
@@ -571,9 +591,8 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
   }
 }
 
-void Path::draw() const{
-  for (BaseCommand* c = this->head_command.get(); c; c = c->next_command.get()){
+void Path::draw() const {
+  for (BaseCommand* c = this->head_command.get(); c; c = c->next_command.get()) {
      c->draw(); 
 }
-      
-}
+      }

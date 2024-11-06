@@ -1,5 +1,22 @@
 #include "Line.h"
+#include <charconv>
 
+enum LineAttr {
+  LINE_ATTR_X1 = 0,
+  LINE_ATTR_Y1,
+  LINE_ATTR_X2,
+  LINE_ATTR_Y2,
+  LINE_ATTR_COUNT,
+};
+
+constexpr std::string_view line_attr_name[LINE_ATTR_COUNT] {
+  "x1", 
+  "y1",
+  "x2",
+  "y2",
+};
+
+constexpr InverseIndex<LINE_ATTR_COUNT> inv_line_attribute= {&line_attr_name};
 void Line::draw() const {
   std::cout << "The line attrs: " << 
     "X1: " << this->x1 << " | " <<

@@ -5,28 +5,7 @@
 #include "ArrayList.h"
 #include <charconv>
 #include <memory>
-
-class Point{
-public:
-  double x;
-  double y;
-  //Point();
-  //Point(const Point &point);
-  //Point(double x, double y);
-};
-
-enum PathCommand{
-  PATH_COMMAND_MOVE = 0,
-  PATH_COMMAND_LINETO = 0,
-  PATH_COMMAND_BEZIER,
-  PATH_COMMAND_ELLIPTIC,
-  PATH_COMMAND_CLOSE_PATH,
-  PATH_COMMAND_COUNT
-};
-
-constexpr std::string_view path_command_name[PATH_COMMAND_COUNT]{
-  // Don't know what to do here  
-};
+#include "Point.h"
 
 class BaseCommand{ //what will in the base command?
 public:
@@ -54,8 +33,8 @@ public:
 class CommandLine: public BaseCommand{
 public:
   Point point_0;       // point start
-  Point point_N;      // point end
-  CommandLine(double p0_x, double p0_y, double pN_x, double pN_y);  
+  Point point_1;      // point end
+  CommandLine(Point p0, Point p1);  
   void draw() const override;
 };
 
@@ -63,13 +42,14 @@ class CommandEllipse: public BaseCommand{
 public:
   Point current_point;
   Point point_end;      //the end point, need to Move before draw
-  Point point_radi;
+  double rx;
+  double ry;
   double angle_degree;   //rotation of ellipse relative to x-axis
   int large_arc_flag;   // 2 types of value: 0 & 1, use bool? 
   int sweep_flag;       // 1 as cockwise, 0 as counter
   //The center of ellipse will be automatically determined
   
-  CommandEllipse(Point current_point, Point point_end, Point point_radi, double angle_degree, int large_arc_flag, int sweep_flag);
+  CommandEllipse(Point current_point, Point point_end, double rx, double ry, double angle_degree, int large_arc_flag, int sweep_flag);
   void draw() const override;
 };
 
@@ -92,7 +72,6 @@ public:
 
 class Path: public BaseShape{
 public:
-  PathCommand command;
   std::unique_ptr<BaseCommand> head_command;
   Path(Attribute *attrs, int attrs_countt, BaseShape *parent);
   void draw() const override; 

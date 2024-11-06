@@ -3,9 +3,7 @@
 
 #include "BaseShape.h"  
 #include "ArrayList.h"
-#include "Path.h"
-#include <charconv>
-#include <memory>
+#include "Point.h"
 
 
 class Polygon: public BaseShape{
