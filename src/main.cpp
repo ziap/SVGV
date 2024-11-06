@@ -8,6 +8,7 @@
 #include "Line.h"
 #include "Polyline.h"
 #include "Polygon.h"
+#include "Text.h"
 #include "SVG.h"
 #include <iostream>
 #include <fstream>
@@ -22,6 +23,7 @@ enum SVGTags {
   TAG_LINE,
   TAG_POLYLINE,
   TAG_POLYGON,
+  TAG_TEXT,
   TAG_SVG,
   TAG_LINEAR_GRADIENT,
   TAG_RADIAL_GRADIENT,
@@ -39,6 +41,7 @@ constexpr std::string_view tags_str[TAG_COUNT] = {
   "line",
   "polyline",
   "polygon",
+  "text",
   "svg",
   "linearGradient",
   "radialGradient",
@@ -67,6 +70,9 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
   while (cursor < end) {
     if (!is_parsing_tag && content[cursor] == '<') {
       // TODO: Add text support
+      if (Text* text = dynamic_cast<Text*>(stack.get())) {
+        text->content = content.substr(mark, cursor - mark);
+      }
       ++cursor;
       mark = cursor;
       is_parsing_tag = true;
@@ -120,7 +126,7 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
 
       std::unique_ptr<BaseShape> new_shape;
 
-      switch (inv_tags[tag_name]) {
+      switch ((SVGTags)inv_tags[tag_name]) {
         case TAG_G: {
           new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
         } break;
@@ -144,6 +150,9 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
         } break;
         case TAG_POLYGON: {
           new_shape = std::make_unique<Polygon>(attrs.begin(), attrs.len(), stack.get());
+        } break;
+        case TAG_TEXT: {
+          new_shape = std::make_unique<Text>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_SVG: {
           new_shape = std::make_unique<SVG>(attrs.begin(), attrs.len(), stack.get());
@@ -189,7 +198,7 @@ std::string read_file(const char *filename) {
 }
 
 int main() {
-  std::string svg = read_file("examples/donut.svg");
+  std::string svg = read_file("examples/sample.svg");
   std::unique_ptr<BaseShape> shape = parse_xml(svg);
 	std::cout << "Parsed\n";	
   for (BaseShape *t = shape.get(); t; t = t->next.get()) {

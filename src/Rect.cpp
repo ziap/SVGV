@@ -1,7 +1,7 @@
 #include "Rect.h"
 #include <charconv>
 
-enum RectAttr{
+enum RectAttr {
   RECT_ATTR_X = 0,
   RECT_ATTR_Y,
   RECT_ATTR_RX,
@@ -11,7 +11,7 @@ enum RectAttr{
   RECT_ATTR_COUNT,
 };
 
-constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT]{
+constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] {
   "x", 
   "y",
   "rx",
@@ -23,7 +23,7 @@ constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT]{
 constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute = {&rect_attr_name};
 
 
-void Rect::draw() const{
+void Rect::draw() const {
   std::cout << "The rectangle attrs: " << '\n' <<
     "X: " << this->x << " | " <<
     "Y: " << this->y << " | " << 
@@ -44,7 +44,7 @@ Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
     this->ry = 0;
   
     //go through all of attributes readed, read the rect's attrs
-    for (int i = 0; i < attrs_count; ++i){
+    for (int i = 0; i < attrs_count; ++i) {
       std::string_view key = attrs[i].key;
       std::string_view value = attrs[i].value;
 

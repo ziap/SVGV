@@ -12,6 +12,7 @@
 class IPaint {
 public:
   virtual std::unique_ptr<IPaint> clone() const = 0; 
+  virtual ~IPaint() = default;
 };
 
 class RGB final : public IPaint {
@@ -53,6 +54,8 @@ public:
 
   std::unique_ptr<IPaint> fill;
   std::unique_ptr<IPaint> stroke;
+
+  double font_size;
 
   double opacity;
   double fill_opacity;

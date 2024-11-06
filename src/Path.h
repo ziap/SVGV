@@ -16,6 +16,7 @@ public:
   //ClosePath: Z, z
   std::unique_ptr<BaseCommand> next_command;
   virtual void draw() const = 0;
+  virtual ~BaseCommand() = default;
 };
 
 

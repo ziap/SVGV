@@ -34,6 +34,7 @@ enum AttributeType {
   ATTRIBUTE_VISIBLE = 0,
   ATTRIBUTE_FILL,
   ATTRIBUTE_STROKE,
+  ATTRIBUTE_FONT_SIZE,
   ATTRIBUTE_OPACITY,
   ATTRIBUTE_FILL_OPACITY,
   ATTRIBUTE_STROKE_OPACITY,
@@ -53,6 +54,7 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "visibility",
   "fill",
   "stroke",
+  "font-size",
   "opacity",
   "fill-opacity",
   "stroke-opacity",
@@ -685,7 +687,8 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
     this->fill = (RGB(0, 0, 0)).clone();
-    this->stroke = {};
+    this->stroke = nullptr;
+    this->font_size = 16;
     this->opacity = 1.0;
     this->fill_opacity = 1.0;
     this->stroke_opacity = 1.0;
@@ -708,6 +711,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       this->fill = (parent->fill)->clone();
     if (parent->stroke != nullptr)
       this->stroke = (parent->stroke)->clone();
+    this->font_size = parent->font_size;
     this->opacity = parent->opacity;
     this->fill_opacity = parent->fill_opacity;
     this->stroke_opacity = parent->stroke_opacity;
@@ -742,6 +746,10 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
 
       case ATTRIBUTE_STROKE: {
         this->stroke = read_paint(value);
+      } break;
+
+      case ATTRIBUTE_FONT_SIZE: {
+        std::from_chars(value.data(), value.data() + value.size(), this->font_size);
       } break;
 
       case ATTRIBUTE_OPACITY: {
