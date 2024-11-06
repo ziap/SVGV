@@ -6,7 +6,7 @@
 #include <charconv>
 #include <memory>
 
-enum LineAttr{
+enum LineAttr {
   LINE_ATTR_X1 = 0,
   LINE_ATTR_Y1,
   LINE_ATTR_X2,
@@ -14,7 +14,7 @@ enum LineAttr{
   LINE_ATTR_COUNT,
 };
 
-constexpr std::string_view line_attr_name[LINE_ATTR_COUNT]{
+constexpr std::string_view line_attr_name[LINE_ATTR_COUNT] {
   "x1", 
   "y1",
   "x2",

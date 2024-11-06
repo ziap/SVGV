@@ -119,7 +119,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
         value = value.substr(1);
         switch(command){
           case 'M':{
-            std::cout << "start M\n";
+            std::cout << "INFO: start M\n";
             // read 2 points 
             double x = read_double(value);
             double y = read_double(value);
@@ -140,10 +140,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               current_point.x = x;
               current_point.y = y;
             }
-            std::cout << "done M\n";
+            std::cout << "INFO: done M\n";
           } break;
           case 'm':{
-            std::cout << "start m\n";
+            std::cout << "INFO: start m\n";
             double x = current_point.x;
             double y = current_point.x;
             double dx = read_double(value);
@@ -160,11 +160,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               //update current
               current_point.x += dx;
               current_point.y += dy;
-              std::cout << "done m\n";
+              std::cout << "INFO: done m\n";
             }
           } break;
           case 'L':{
-              std::cout << "start L\n";
+              std::cout << "INFO: start L\n";
             // read 2 points 
             double x = read_double(value);
             double y = read_double(value);
@@ -179,12 +179,12 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x, y);
               current_point.x = x;
               current_point.y = y;
-              std::cout << "done L\n";
+              std::cout << "INFO: done L\n";
             }
           } break;
 
           case 'l':{
-             std::cout << "start l\n";
+             std::cout << "INFO: start l\n";
             double x = current_point.x;
             double y = current_point.x;
             double dx = read_double(value);
@@ -202,11 +202,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               current_point.x += dx;
               current_point.y += dy;
             }
-             std::cout << "done l\n";
+             std::cout << "INFO: done l\n";
           } break;
 
           case 'H':{
-            std::cout << "start H\n";
+            std::cout << "INFO: start H\n";
             double x = read_double(value);
             *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x, current_point.y);
             current_point.x = x;
@@ -217,10 +217,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, x, current_point.y);
               current_point.x = x;
             }
-            std::cout << "done H\n";
+            std::cout << "INFO: done H\n";
           } break;
           case 'h':{
-            std::cout << "start h\n";
+            std::cout << "INFO: start h\n";
             double dx = read_double(value);
             *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x + dx, current_point.y);
             current_point.x += dx;
@@ -233,7 +233,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
           } break;
           case 'V':{
-            std::cout << "start V\n";
+            std::cout << "INFO: start V\n";
             double y = read_double(value);
             *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, y);
             current_point.y = y;
@@ -243,11 +243,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               y = read_double(value);
               *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, y);
               current_point.y = y;
-              std::cout << "done V\n";
+              std::cout << "INFO: done V\n";
             }
           } break;
           case 'v':{
-            std::cout << "start v\n";
+            std::cout << "INFO: start v\n";
             double dy = read_double(value);
             *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, current_point.y + dy);
             current_point.y += dy;
@@ -257,11 +257,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               dy = read_double(value);
               *tail_command = std::make_unique<CommandLine>(current_point.x, current_point.y, current_point.x, current_point.y + dy);
               current_point.y = dy;
-            std::cout << "done v\n";
+            std::cout << "INFO: done v\n";
             }
           } break;
           case 'C':{
-            std::cout << "start C\n";
+            std::cout << "INFO: start C\n";
             double x[3];
             double y[3];
             for (int i = 0; i < 3; ++i){
@@ -287,10 +287,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandBezier>(current_point, point_n, point_cs, point_ce);
               current_point = point_n;
             }
-            std::cout << "done C\n";
+            std::cout << "INFO: done C\n";
           } break;
           case 'c':{
-            std::cout << "start c\n";
+            std::cout << "INFO: start c\n";
             double x[3];
             double y[3];
             for (int i = 0; i < 3; ++i){
@@ -317,10 +317,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandBezier>(current_point, point_n, point_cs, point_ce);
               current_point = point_n;
             }
-            std::cout << "start c\n";
+            std::cout << "INFO: done c\n";
 
           } break;
           case 'S':{
+            std::cout << "INFO: start S\n";
             double x[2];
             double y[2];
             for (int i = 0; i < 2; ++i){
@@ -347,8 +348,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandBezier>(current_point, point_n, point_cs, point_ce);
               current_point = point_n;
             }
+            std::cout << "INFO: done S\n";
           } break;
           case 's':{
+            std::cout << "INFO: start s\n";
             double x[2];
             double y[2];
             for (int i = 0; i < 2; ++i){
@@ -375,11 +378,13 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandBezier>(current_point, point_n, point_cs, point_ce);
               current_point = point_n;
             }
+            std::cout << "INFO: done s\n";
           } break;
           case 'Q':{
+            std::cout << "INFO: start Q\n";
             double x[2];
             double y[2];
-            for (int i = 0; i < 2; ++i){
+            for (int i = 0; i < 2; ++i) {
               x[i] = read_double(value);
               y[i] = read_double(value);
             }
@@ -390,7 +395,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             current_point = point_n;
             
             //supsequent parameter
-            while(!is_next_command(value[0])){
+            while(!is_next_command(value[0])) {
               //read next point
               double x[2];
               double y[2];
@@ -405,9 +410,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandBezier>(current_point, point_n, point_c, point_cn);
               current_point = point_n;
             }
+            std::cout << "INFO: done Q\n";
           } break;
 
-          case 'q':{ //d_point_n, d_point_c (from current point)
+          case 'q': { //d_point_n, d_point_c (from current point)
+            std::cout << "INFO: start q\n";
             double x[2];
             double y[2];
             for (int i = 0; i < 2; ++i){
@@ -435,8 +442,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandBezier>(current_point, point_n, point_c, point_cn);
               current_point = point_n;
             }
+            std::cout << "INFO: done q\n";
           } break;
-          case 'T':{//quadratic abnormal, Input the end of previous bezier curve 
+          case 'T': {//quadratic abnormal, Input the end of previous bezier curve 
+            std::cout << "INFO: start T\n";
             double x = read_double(value);
             double y = read_double(value);
             Point point_n = {x, y};
@@ -453,8 +462,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               *tail_command = std::make_unique<CommandBezier>(current_point, point_n, current_point, current_point);
               current_point = {x, y};
             }
+            std::cout << "INFO: done T\n";
           } break;
           case 't':{
+            std::cout << "INFO: start t\n";
             double x = read_double(value);
             double y = read_double(value);
             Point point_n = {current_point.x + x, current_point.y + y};
@@ -472,8 +483,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               current_point.x += x;
               current_point.y += y;
             }
+            std::cout << "INFO: done t\n";
           } break;
           case 'A':{
+            std::cout << "INFO: start A\n";
             Point point_radi;
             double angle_degree;  
             int large_arc_flag;   
@@ -505,9 +518,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               current_point = point_n;
 
             }
+            std::cout << "INFO: done A\n";
 
           } break;
           case 'a':{
+            std::cout << "INFO: start a\n";
             Point point_radi;
             double angle_degree;  
             int large_arc_flag;   
@@ -537,14 +552,14 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
 
               *tail_command = std::make_unique<CommandEllipse>(current_point, d_point_n, point_radi, angle_degree, large_arc_flag, sweep_flag);
               current_point = d_point_n;
-
             }
+            std::cout << "INFO: done a\n";
           } break;
-          case 'Z':{
-            *tail_command = std::make_unique<CommandClosePath>(start_point, current_point);
-          } break;
+          case 'Z': 
           case 'z':{
+            std::cout << "INFO: start Z\n";
             *tail_command = std::make_unique<CommandClosePath>(start_point, current_point);
+            std::cout << "INFO: done Z\n";
           } break;
           default: {
           __builtin_unreachable();

@@ -9,7 +9,7 @@ void Circle::draw() const{
 
 Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
-  std::cout << "Creating Circle\n";
+  std::cout << "INFO: Creating Circle\n";
   this->cx = 0;
   this->cy = 0;
   this->r = 0;
@@ -36,5 +36,5 @@ Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
         }
       }
   }
-  std::cout << "Finished read attributes circle\n";
+  std::cout << "INFO: Finished read attributes circle\n";
 }
