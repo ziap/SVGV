@@ -6,12 +6,12 @@
 #include "Point.h"
 
 
-class Polygon: public BaseShape{
+class Polygon final : public BaseShape{
 public:
   ArrayList<Point> point_list;
 
   Polygon(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const;      
+  void draw() const override;      
 };
 
 

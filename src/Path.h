@@ -15,11 +15,11 @@ public:
   //Elliptic: A, a
   //ClosePath: Z, z
   std::unique_ptr<BaseCommand> next_command;
-  virtual void draw() const;
+  virtual void draw() const = 0;
 };
 
 
-class CommandBezier: public BaseCommand{
+class CommandBezier final : public BaseCommand{
 public:
   Point point_0;       // point start
   Point point_N;      // point end
@@ -30,7 +30,7 @@ public:
 };
 
 
-class CommandLine: public BaseCommand{
+class CommandLine final : public BaseCommand{
 public:
   Point point_0;       // point start
   Point point_1;      // point end
@@ -38,7 +38,7 @@ public:
   void draw() const override;
 };
 
-class CommandEllipse: public BaseCommand{
+class CommandEllipse final: public BaseCommand{
 public:
   Point current_point;
   Point point_end;      //the end point, need to Move before draw
@@ -53,7 +53,7 @@ public:
   void draw() const override;
 };
 
-class CommandMove: public BaseCommand{
+class CommandMove final : public BaseCommand{
 public:
   double x;
   double y;
@@ -61,7 +61,7 @@ public:
   void draw() const override;
 };
 
-class CommandClosePath: public BaseCommand{
+class CommandClosePath final : public BaseCommand{
 public:
   Point start_point;
   Point current_point;
