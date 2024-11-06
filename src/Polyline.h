@@ -6,12 +6,12 @@
 #include "Point.h"
 #include <memory>
 
-class Polyline : public BaseShape {
+class Polyline final : public BaseShape {
 public:
   ArrayList<Point> point_list;
 
   Polyline(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const;
+  void draw() const override;
 };
 
 #endif

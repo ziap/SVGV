@@ -5,7 +5,7 @@
 #include "ArrayList.h"
 #include <memory>
 
-class Rect: public BaseShape{
+class Rect final : public BaseShape{
 public:
   double x;
   double y;
@@ -15,7 +15,7 @@ public:
   double height;
   
   Rect(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const;
+  void draw() const override;
 };
 
 #endif
