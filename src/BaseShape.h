@@ -75,7 +75,7 @@ public:
 
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
 
-  virtual void draw()  {}
+  virtual void draw() {}
   virtual ~BaseShape() = default;
 };
 
