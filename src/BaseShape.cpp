@@ -647,6 +647,7 @@ enum StyleType {
   STYLE_FILL = 0,
   STYLE_STROKE,
   STYLE_STROKE_WIDTH,
+  STYLE_FONT_SIZE,
   STYLE_COUNT,
 };
 
@@ -672,6 +673,9 @@ static void solve_style(std::string_view value, BaseShape *shape) {
     } break;
     case STYLE_STROKE: {
       shape->stroke = read_paint(value);
+    } break;
+    case STYLE_FONT_SIZE: {
+      std::from_chars(value.data(), value.data() + value.size(), shape->font_size);
     } break;
     case STYLE_STROKE_WIDTH: {
       std::from_chars(value.data(), value.data() + value.size(), shape->stroke_width);
