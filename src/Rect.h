@@ -37,7 +37,7 @@ public:
 	double height;
 	
 	Rect(Attribute *attrs, int attrs_count, BaseShape *parent);
-	void draw();
+	void draw() const;
 };
 
 #endif

@@ -189,7 +189,7 @@ std::string read_file(const char *filename) {
 }
 
 int main() {
-  std::string svg = read_file("examples/sample.svg");
+  std::string svg = read_file("examples/donut.svg");
   std::unique_ptr<BaseShape> shape = parse_xml(svg);
 	std::cout << "Parsed\n";	
   for (BaseShape *t = shape.get(); t; t = t->next.get()) {

@@ -1,6 +1,6 @@
 #include "Rect.h"
 
-void Rect::draw(){
+void Rect::draw() const{
 	std::cout << "The rectangle attrs: " << '\n' <<
 		"X: " << this->x << " | " <<
 		"Y: " << this->y << " | " << 

@@ -1,6 +1,6 @@
 #include "Ellipse.h"
 
-void Ellipse::draw(){
+void Ellipse::draw() const{
 	std::cout << "The ellipse attrs: " << 
 		"X: " << this->cx << " | " <<
 		"Y: " << this->cy << " | " << 

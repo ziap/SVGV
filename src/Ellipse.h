@@ -30,7 +30,7 @@ public:
 	double rx;
 	double ry;
   Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent);
-	void draw();
+	void draw() const;
 };
 
 #endif

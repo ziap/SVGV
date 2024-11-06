@@ -1,6 +1,6 @@
 #include "Polyline.h"
 
-void Polyline::draw(){
+void Polyline::draw() const{
 	std::cout << "The Polyline attrs: " << '\n' <<
 		"POINTS:\n";
 	std::cout << this->point_list.len() << '\n';
