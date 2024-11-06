@@ -34,16 +34,6 @@ enum StrokeLineJoin {
   LINE_JOIN_COUNT,
 };
 
-constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
-  "arcs",
-  "bevel",
-  "miter",
-  "miter-clip",
-  "round",
-};
-
-constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
-
 enum StrokeLineCap {
   LINE_CAP_BUTT = 0,
   LINE_CAP_ROUND,
@@ -51,26 +41,11 @@ enum StrokeLineCap {
   LINE_CAP_COUNT,
 };
 
-constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
-  "butt",
-  "round",
-  "square",
-};
-
-constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
-
 enum FillRule {
   FILL_RULE_NONZERO = 0,
   FILL_RULE_EVENODD,
   FILL_RULE_COUNT
 };
-
-constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
-  "nonzero",
-  "evenodd",
-};
-
-constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
 
 class BaseShape {
 public:
@@ -100,11 +75,8 @@ public:
 
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
 
-  virtual void draw() {
-  }
-
-private: 
-  void solve_style(std::string_view value);
+  virtual void draw() const {}
+  virtual ~BaseShape() = default;
 };
 
 

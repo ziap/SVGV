@@ -5,6 +5,31 @@
 #include <cctype>
 #include <memory>
 
+constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
+  "nonzero",
+  "evenodd",
+};
+
+constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
+
+constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
+  "butt",
+  "round",
+  "square",
+};
+
+constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
+
+constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
+  "arcs",
+  "bevel",
+  "miter",
+  "miter-clip",
+  "round",
+};
+
+constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
+
 enum AttributeType {
   ATTRIBUTE_VISIBLE = 0,
   ATTRIBUTE_FILL,
@@ -631,7 +656,7 @@ constexpr std::string_view style_name[STYLE_COUNT] = {
 
 constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
 
-void BaseShape::solve_style(std::string_view value) {
+static void solve_style(std::string_view value, BaseShape *shape) {
   size_t end = value.find(':');
   std::string_view key = value.substr(0, end);
   StyleType type = (StyleType)inv_style[key];
@@ -641,13 +666,13 @@ void BaseShape::solve_style(std::string_view value) {
 
   switch (type) {
     case STYLE_FILL: {
-      this->fill = read_paint(value);
+      shape->fill = read_paint(value);
     } break;
     case STYLE_STROKE: {
-      this->stroke = read_paint(value);
+      shape->stroke = read_paint(value);
     } break;
     case STYLE_STROKE_WIDTH: {
-      std::from_chars(value.data(), value.data() + value.size(), this->stroke_width);
+      std::from_chars(value.data(), value.data() + value.size(), shape->stroke_width);
     } break;
     case STYLE_COUNT: {
       __builtin_unreachable();
@@ -769,7 +794,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
           size_t end = value.find(';');
           if (end > value.size()) end = value.size(); 
           std::string_view str = value.substr(0, end);
-          solve_style(str);
+          solve_style(str, this);
           if (end != value.size()) value = value.substr(end + 1);
           else value = value.substr(end);
         }
