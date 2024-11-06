@@ -78,7 +78,7 @@ public:
   }
 
   // Returns the number of elements in the list
-  uint32_t len() { return this->size; }
+  uint32_t len() const { return this->size; }
 
   T &operator[](uint32_t idx) { return this->data[idx]; }
   const T &operator[](uint32_t idx) const { return this->data[idx]; }
