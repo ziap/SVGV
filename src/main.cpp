@@ -206,10 +206,10 @@ std::string read_file(const char *filename) {
 }
 
 int main() {
-  // std::string svg = read_file("examples/test.svg");
-  // std::cout << "cp \n";
-  // std::unique_ptr<BaseShape> shape = parse_xml(svg);
-	// std::cout << "Parsed\n";	
+  std::string svg = read_file("examples/test.svg");
+  std::cout << "cp \n";
+  std::unique_ptr<BaseShape> shape = parse_xml(svg);
+	std::cout << "Parsed\n";	
   
   // InitWindow(1000, 800, "Draw Example");
   // SetTargetFPS(120);
