@@ -127,7 +127,7 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
       }
 
       std::unique_ptr<BaseShape> new_shape;
-      for (int i = 0; i < attrs.len(); ++i) {
+      for (uint32_t i = 0; i < attrs.len(); ++i) {
         std::cout << attrs[i].key << ' ' << attrs[i].value << '\n';
       }
 
@@ -207,7 +207,6 @@ std::string read_file(const char *filename) {
 
 int main() {
   std::string svg = read_file("examples/test.svg");
-  std::cout << "cp \n";
   std::unique_ptr<BaseShape> shape = parse_xml(svg);
 	std::cout << "Parsed\n";	
   

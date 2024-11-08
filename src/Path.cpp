@@ -520,6 +520,12 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               current_point = point_n;
               pre_control_point = current_point;
             }
+
+            (void)rx;
+            (void)ry;
+            (void)angle_degree;
+            (void)large_arc_flag;
+            (void)sweep_flag;
             std::cout << "INFO: done A\n";
 
           } break;
@@ -558,6 +564,12 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               current_point = point_n;
               pre_control_point = current_point;
             }
+
+            (void)rx;
+            (void)ry;
+            (void)angle_degree;
+            (void)large_arc_flag;
+            (void)sweep_flag;
             std::cout << "INFO: done a\n";
           } break;
           case 'Z': 
