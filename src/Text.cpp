@@ -26,10 +26,10 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
     TextAttr attr = (TextAttr)inv_text_attribute[key];
     switch (attr) {
       case TEXT_ATTR_X: {
-        std::from_chars(value.data(), value.data() + value.size(), this->pos.x);
+        this->pos.x = strtod(value.data(), nullptr);
       } break;
       case TEXT_ATTR_Y: {
-        std::from_chars(value.data(), value.data() + value.size(), this->pos.y);
+        this->pos.y = strtod(value.data(), nullptr);
       } break;
       case TEXT_ATTR_COUNT: {
         __builtin_unreachable();

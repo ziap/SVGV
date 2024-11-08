@@ -14,7 +14,6 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
-// #include "raylib.h"
 
 enum SVGTags {
   TAG_G = 0,
@@ -209,19 +208,6 @@ int main() {
   std::string svg = read_file("examples/test.svg");
   std::unique_ptr<BaseShape> shape = parse_xml(svg);
   std::cout << "Parsed\n";
-  
-  // InitWindow(1000, 800, "Draw Example");
-  // SetTargetFPS(120);
-  // while(!WindowShouldClose()){
-  //   BeginDrawing();
-  //   ClearBackground(RAYWHITE);
-  //   for (BaseShape *t = shape.get(); t; t = t->next.get()) {
-  //     t->draw();
-  //   }
-  //   EndDrawing();
-  // }
-  // CloseWindow();
-
 
   return 0;
 }

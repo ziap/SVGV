@@ -29,23 +29,28 @@ void Polygon::draw() const{
 
 }
 
-static ArrayList<Point> read_point(std::string_view str){
+static std::string_view trim_start(std::string_view str) {
+  while (str.size() && (isspace(str[0]) || str[0] == ',')) {
+    str = str.substr(1);
+  }
+  return str;
+}
+
+static ArrayList<Point> read_point(std::string_view str) {
   ArrayList<Point> point_list;
   Point new_point;
-  std::from_chars_result res;
-  while(!str.empty()){
-    while (str[0] == ' ' || str[0] == ','){
-      str = str.substr(1);
-    }
-    res  = std::from_chars(str.data(), str.data() + str.size(), new_point.x); 
-    str = str.substr(res.ptr - str.data());
+  while (str.size()) {
+    str = trim_start(str);
+    char **out;
+    new_point.x = strtod(str.data(), out);
+    if (*out == str.data()) break;
+    str = str.substr(*out - str.data());
       
-    while (str[0] == ' ' || str[0] == ','){
-      str = str.substr(1);
-    }
+    str = trim_start(str);
+    new_point.y = strtod(str.data(), out);
+    if (*out == str.data()) break;
+    str = str.substr(*out - str.data());
 
-    res  = std::from_chars(str.data(), str.data() + str.size(), new_point.y); 
-    str = str.substr(res.ptr - str.data());
     point_list.push(new_point);
   }
   return point_list;

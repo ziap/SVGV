@@ -46,19 +46,19 @@ Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent)
     LineAttr attr = (LineAttr)inv_line_attribute[key];
       switch(attr){
         case LINE_ATTR_X1: {
-          std::from_chars(value.data(), value.data() + value.size(), this->x1);
+          this->x1 = strtod(value.data(), nullptr);
         } break;
 
         case LINE_ATTR_Y1: {
-          std::from_chars(value.data(), value.data() + value.size(), this->y1);
+          this->y1 = strtod(value.data(), nullptr);
         } break;
 
         case LINE_ATTR_X2: {
-          std::from_chars(value.data(), value.data() + value.size(), this->x2);
+          this->x2 = strtod(value.data(), nullptr);
         } break;
 
         case LINE_ATTR_Y2: {
-          std::from_chars(value.data(), value.data() + value.size(), this->y2);
+          this->y2 = strtod(value.data(), nullptr);
         } break;
 
         case LINE_ATTR_COUNT: {

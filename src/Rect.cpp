@@ -82,27 +82,27 @@ Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
       RectAttr attr = (RectAttr)inv_rect_attribute[key];
       switch(attr){
         case RECT_ATTR_X: {
-          std::from_chars(value.data(), value.data() + value.size(), this->x);
+          this->x = strtod(value.data(), nullptr);
         } break;
 
         case RECT_ATTR_Y: {
-          std::from_chars(value.data(), value.data() + value.size(), this->y);
+          this->y = strtod(value.data(), nullptr);
         } break;
 
         case RECT_ATTR_RX: {
-          std::from_chars(value.data(), value.data() + value.size(), this->rx);
+          this->rx = strtod(value.data(), nullptr);
         } break;
 
         case RECT_ATTR_RY: {
-          std::from_chars(value.data(), value.data() + value.size(), this->ry);
+          this->ry = strtod(value.data(), nullptr);
         } break;
                             
         case RECT_ATTR_WIDTH: {
-          std::from_chars(value.data(), value.data() + value.size(), this->width);
+          this->width = strtod(value.data(), nullptr);
         } break;
 
         case RECT_ATTR_HEIGHT: {
-          std::from_chars(value.data(), value.data() + value.size(), this->height);
+          this->height = strtod(value.data(), nullptr);
         } break;
 
         case RECT_ATTR_COUNT: {

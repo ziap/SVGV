@@ -69,19 +69,19 @@ Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent)
       EllipseAttr attr = (EllipseAttr)inv_ellipse_attribute[key];
       switch(attr){
         case ELLIPSE_ATTR_CX: {
-          std::from_chars(value.data(), value.data() + value.size(), this->cx);
+          this->cx = strtod(value.data(), nullptr);
         } break;
 
         case ELLIPSE_ATTR_CY: {
-          std::from_chars(value.data(), value.data() + value.size(), this->cy);
+          this->cy = strtod(value.data(), nullptr);
         } break;
 
         case ELLIPSE_ATTR_RX: {
-          std::from_chars(value.data(), value.data() + value.size(), this->rx);
+          this->rx = strtod(value.data(), nullptr);
         } break;
 
         case ELLIPSE_ATTR_RY: {
-          std::from_chars(value.data(), value.data() + value.size(), this->ry);
+          this->ry = strtod(value.data(), nullptr);
         } break;
 
         case ELLIPSE_ATTR_COUNT: {

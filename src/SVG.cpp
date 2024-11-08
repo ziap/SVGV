@@ -54,36 +54,40 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
     AttributeType type = (AttributeType)inv_attribute[key];
     switch (type) {
       case ATTRIBUTE_WIDTH: {
-        std::from_chars(value.data(), value.data() + value.size(), this->width);
+        this->width = strtod(value.data(), nullptr);
       } break;
       case ATTRIBUTE_HEIGHT: {
-        std::from_chars(value.data(), value.data() + value.size(), this->height);
+        this->height = strtod(value.data(), nullptr);
       } break;
       case ATTRIBUTE_VIEWBOX: {
         {
-          std::from_chars_result res = std::from_chars(value.data(), value.data() + value.size(), this->view_min_x);
-          value = value.substr(res.ptr - value.data());
+          char ** out;
+          this->view_min_x = strtod(value.data(), out);
+          value = value.substr(*out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {
           value = value.substr(1);
         }
         {
-          std::from_chars_result res = std::from_chars(value.data(), value.data() + value.size(), this->view_min_y);
-          value = value.substr(res.ptr - value.data());
+          char ** out;
+          this->view_min_y = strtod(value.data(), out);
+          value = value.substr(*out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {
           value = value.substr(1);
         }
         {
-          std::from_chars_result res = std::from_chars(value.data(), value.data() + value.size(), this->view_width);
-          value = value.substr(res.ptr - value.data());
+          char ** out;
+          this->view_width = strtod(value.data(), out);
+          value = value.substr(*out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {
           value = value.substr(1);
         }
         {
-          std::from_chars_result res = std::from_chars(value.data(), value.data() + value.size(), this->view_height);
-          value = value.substr(res.ptr - value.data());
+          char ** out;
+          this->view_height = strtod(value.data(), out);
+          value = value.substr(*out - value.data());
         }
       } break;
       case ATTRIBUTE_PRESERVE_ASPECT_RATIO: {

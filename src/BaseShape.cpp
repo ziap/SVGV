@@ -397,13 +397,17 @@ std::string_view hex_color[COLOR_COUNT] = {
   "#FFFFFF", "#F5F5F5", "#FFFF00", "#9ACD32", 
 };
 
+static std::string_view trim_start(std::string_view sv) {
+  while (sv.size() && isspace(sv[0])) sv = sv.substr(1);
+  return sv;
+}
 
 static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
   double r, g, b; 
   value = value.substr(1);
 
   uint32_t p = 0;
-  std::from_chars(value.data(), value.data() + value.size(), p, 16);
+  p = strtoul(value.data(), nullptr, 16);
 
   b = p & 0xFF;
   g = (p >> 8) & 0xFF;
@@ -418,7 +422,7 @@ static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
 
 static std::unique_ptr<IPaint> read_color_text(std::string_view value) {
   ColorType color = (ColorType)inv_color[value];
-  if (color == -1u) return nullptr;
+  if (color == (ColorType)-1) return nullptr;
   std::string_view color_hex = hex_color[color]; 
   return read_color_hex(color_hex);
 }
@@ -427,17 +431,16 @@ static std::unique_ptr<IPaint> read_RGB(std::string_view value) {
   double r, g, b;
   int start = value.find('(');
   int end = value.find(',');
-  std::from_chars(value.data() + start + 1, value.data() + end, r);    
+  r = strtod(value.data() + start + 1, nullptr);
 
-  while (isspace(value[end + 1])) end += 1;
-  value = value.substr(end + 1);
+  value = trim_start(value.substr(end + 1));
+
   end = value.find(',');
-  std::from_chars(value.data(), value.data() + end, g);
+  g = strtod(value.data(), nullptr);
 
-  while (isspace(value[end + 1])) end += 1;
-  value = value.substr(end + 1);
-  end = value.find(')');
-  std::from_chars(value.data(), value.data() + end, b);
+  value = trim_start(value.substr(end + 1));
+
+  b = strtod(value.data(), nullptr);
 
   r/= 255;
   g/=255;
@@ -453,22 +456,21 @@ static std::unique_ptr<IPaint> read_paint(std::string_view value) {
 } 
 
 static double convert_opacity(std::string_view value) {
-  double opacity;
+  double opacity = strtod(value.data(), nullptr);;
   if (value[value.size() - 1] == '%') {
-    std::from_chars(value.data(), value.data() + value.size() - 1, opacity);
     opacity /= 100;
-  } else std::from_chars(value.data(), value.data() + value.size(), opacity);
+  }
 
   return opacity;
 }
 
 static void convert_array(std::string_view value, float *a, int *count) {
-
   while (value.size() > 0 && (*count) < 8) {
-    while (value.size() > 0 && isspace(value[0])) value = value.substr(1);
-    std::from_chars_result res = std::from_chars(value.data(), value.data() + value.size(), a[(*count)]);
-    if (res.ptr != value.data()) (*count) = (*count) + 1;
-    value = value.substr(res.ptr - value.data());
+    value = trim_start(value);
+    char **end;
+    a[*count] = strtod(value.data(), end);
+    if (*end != value.data()) ++*count;
+    value = value.substr(*end - value.data());
   }
 }
 
@@ -509,9 +511,8 @@ constexpr std::string_view transform_name[TRANSFORM_COUNT] = {
 
 constexpr InverseIndex<TRANSFORM_COUNT> inv_transform = {&transform_name};
 
-
 static void create_matrix_rotate(double num, double matrix[2][3]) {
-   num = num * M_PI / 180;
+   num = num * PI / 180;
    matrix[0][0] = std::cos(num);
    matrix[1][0] = std::sin(num);
    matrix[0][1] = -std::sin(num);
@@ -524,60 +525,63 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
   std::string_view str_type = inf.substr(start, end - start);
 
   TransformType type = (TransformType)inv_transform[str_type];
-  if (type == -1u) return;
+  if (type == (TransformType)-1) return;
   inf = inf.substr(end + 1);
 
   switch (type){
     case TRANSFORM_MATRIX: {
       for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
-          while (isspace(inf[0])) inf = inf.substr(1);
+          inf = trim_start(inf);
 
-          std::from_chars_result res = std::from_chars(inf.data(), inf.data() + inf.size(), matrix[i][j]);
-          inf = inf.substr(res.ptr - inf.data());
+          char **out;
+          matrix[i][j] = strtod(inf.data(), out);
+          inf = inf.substr(*out - inf.data());
         }
       }
     } break;
 
     case TRANSFORM_TRANSLATE:{
-      while (isspace(inf[0])) inf = inf.substr(1);
-      std::from_chars_result res = std::from_chars(inf.data(), inf.data() + inf.size(), matrix[0][2]);
-      inf = inf.substr(res.ptr - inf.data());
+      inf = trim_start(inf);
+      char **out;
+      matrix[0][2] = strtod(inf.data(), out);
+      inf = inf.substr(*out - inf.data());
 
+      inf = trim_start(inf);
       if (inf.size() > 0) {
-        while (isspace(inf[0])) inf = inf.substr(1);
-        std::from_chars(inf.data(), inf.data() + inf.size(), matrix[1][2]);
+        matrix[1][2] = strtod(inf.data(), nullptr);
       } else matrix[1][2] = 0;
 
     } break;
 
     case TRANSFORM_SCALE: {
-      while (isspace(inf[0])) inf = inf.substr(1);
-      std::from_chars_result res = std::from_chars(inf.data(), inf.data() + inf.size(), matrix[0][0]);
-      inf = inf.substr(res.ptr - inf.data());
+      inf = trim_start(inf);
+      char **out;
+      matrix[0][0] = strtod(inf.data(), out);
+      inf = inf.substr(*out - inf.data());
 
-      while (isspace(inf[0])) inf = inf.substr(1);
-      std::from_chars(inf.data(), inf.data() + inf.size(), matrix[1][1]);
-
+      inf = trim_start(inf);
+      matrix[1][1] = strtod(inf.data(), nullptr);
     } break;
 
     case TRANSFORM_ROTATE: {
-      double num;
-      while (isspace(inf[0])) inf = inf.substr(1);
-      std::from_chars_result res = std::from_chars(inf.data(), inf.data() + inf.size(), num);
-      inf = inf.substr(res.ptr - inf.data());
+      inf = trim_start(inf);
+      char **out;
+      double num = strtod(inf.data(), out);
+      inf = inf.substr(*out - inf.data());
 
+      inf = trim_start(inf);
       if (inf.size() > 0) {
-        double x;
-        while (isspace(inf[0])) inf = inf.substr(1);
-        std::from_chars_result res = std::from_chars(inf.data(), inf.data() + inf.size(), x);
-        inf = inf.substr(res.ptr - inf.data());
+        char **out;
+        double x = strtod(inf.data(), out);
+        inf = inf.substr(*out - inf.data());
   
+        inf = trim_start(inf);
         double y;
         if (inf.size() > 0) {
-          while (isspace(inf[0])) inf = inf.substr(1);
-          res = std::from_chars(inf.data(), inf.data() + inf.size(), y);
-          inf = inf.substr(res.ptr - inf.data());
+          inf = trim_start(inf);
+          y = strtod(inf.data(), out);
+          inf = inf.substr(*out - inf.data());
         } else y = 0;
 
         //tranlate x, y
@@ -608,20 +612,18 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
     } break;
 
     case TRANSFORM_SKEWX: {
-      double num;
-      while (isspace(inf[0])) inf = inf.substr(1);
-      std::from_chars(inf.data(), inf.data() + inf.size(), num);
+      inf = trim_start(inf);
+      double num = strtod(inf.data(), nullptr);
 
-      num = num * M_PI / 180;
+      num = num * PI / 180;
       matrix[0][1] = std::tan(num);
     } break;
 
     case TRANSFORM_SKEWY: {
-      double num;
-      while (isspace(inf[0])) inf = inf.substr(1);
-      std::from_chars(inf.data(), inf.data() + inf.size(), num);
+      inf = trim_start(inf);
+      double num = strtod(inf.data(), nullptr);
 
-      num = num * M_PI / 180;
+      num = num * PI / 180;
       matrix[1][0] = std::tan(num);
     } break;
 
@@ -636,7 +638,7 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
   double Ematrix[2][3];
   int start = 0, end = 0;
   while (value.size() > 0) {
-    while (isspace(value[0]) || value[0] == '\n') value = value.substr(1);
+    value = trim_start(value);
     end = value.find(")");
     std::string_view type = value.substr(start, end - start);
     solve_transform(type, Ematrix);
@@ -666,10 +668,9 @@ static void solve_style(std::string_view value, BaseShape *shape) {
   std::string_view key = value.substr(0, end);
   StyleType type = (StyleType)inv_style[key];
   
-  if(type == -1u) return;
+  if(type == (StyleType)-1) return;
 
-  value = value.substr(end + 1);
-  while (isspace(value[0])) value = value.substr(1);
+  value = trim_start(value.substr(end + 1));
 
   switch (type) {
     case STYLE_FILL: {
@@ -679,10 +680,10 @@ static void solve_style(std::string_view value, BaseShape *shape) {
       shape->stroke = read_paint(value);
     } break;
     case STYLE_FONT_SIZE: {
-      std::from_chars(value.data(), value.data() + value.size(), shape->font_size);
+      shape->font_size = strtod(value.data(), nullptr);
     } break;
     case STYLE_STROKE_WIDTH: {
-      std::from_chars(value.data(), value.data() + value.size(), shape->stroke_width);
+      shape->stroke_width = strtod(value.data(), nullptr);
     } break;
     case STYLE_COUNT: {
       __builtin_unreachable();
@@ -694,7 +695,7 @@ static void solve_style(std::string_view value, BaseShape *shape) {
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
-    this->fill = (RGB(0, 0, 0)).clone();
+    this->fill = std::make_unique<RGB>(0, 0, 0);
     this->stroke = nullptr;
     this->font_size = 16;
     this->opacity = 1.0;
@@ -744,7 +745,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     
     AttributeType type = (AttributeType)inv_attribute[key];
     
-    if (type == -1u) return;
+    if (type == (AttributeType)-1) return;
     switch (type) {
       case ATTRIBUTE_VISIBLE: {
         if (value != "visible") this->visible = false;
@@ -759,7 +760,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_FONT_SIZE: {
-        std::from_chars(value.data(), value.data() + value.size(), this->font_size);
+        this->font_size = strtod(value.data(), nullptr);
       } break;
 
       case ATTRIBUTE_OPACITY: {
@@ -775,11 +776,11 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_STROKE_WIDTH: {
-        std::from_chars(value.data(), value.data() + value.size(), this->stroke_width);
+        this->stroke_width = strtod(value.data(), nullptr);
       } break;
 
       case ATTRIBUTE_STROKE_DASH_OFFSET: {
-        std::from_chars(value.data(), value.data() + value.size(), this->stroke_dash_offset);
+        this->stroke_dash_offset = strtod(value.data(), nullptr);
       } break;
 
       case ATTRIBUTE_STROKE_DASH_ARRAY: {
@@ -795,7 +796,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_MITER_LIMIT: {
-        std::from_chars(value.data(), value.data() + value.size(), this->miter_limit);
+        this->miter_limit = strtod(value.data(), nullptr);
       } break;
 
       case ATTRIBUTE_FILL_RULE: {
@@ -808,7 +809,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
 
       case ATTRIBUTE_STYLE: {
         while (value.size() > 0) {
-          while(isspace(value[0])) value = value.substr(1);
+          value = trim_start(value);
           size_t end = value.find(';');
           if (end > value.size()) end = value.size(); 
           std::string_view str = value.substr(0, end);

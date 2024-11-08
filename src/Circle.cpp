@@ -70,15 +70,15 @@ Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
       CircleAttr attr = (CircleAttr)inv_circle_attribute[key];
       switch(attr){
         case CIRCLE_ATTR_CX: {
-          std::from_chars(value.data(), value.data() + value.size(), this->cx);
+          this->cx = strtod(value.data(), nullptr);
         } break;
 
         case CIRCLE_ATTR_CY: {
-          std::from_chars(value.data(), value.data() + value.size(), this->cy);
+          this->cy = strtod(value.data(), nullptr);
         } break;
 
         case CIRCLE_ATTR_R: {
-          std::from_chars(value.data(), value.data() + value.size(), this->r);
+          this->r = strtod(value.data(), nullptr);
         } break;
 
         case CIRCLE_ATTR_COUNT: {

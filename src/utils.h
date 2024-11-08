@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+constexpr double PI = 3.141592653589793;
+
 template<typename T>
 class Optional {
 public:
