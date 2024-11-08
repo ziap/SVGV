@@ -13,6 +13,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cassert>
+// #include "raylib.h"
 
 enum SVGTags {
   TAG_G = 0,
@@ -125,13 +127,19 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
       }
 
       std::unique_ptr<BaseShape> new_shape;
+      for (uint32_t i = 0; i < attrs.len(); ++i) {
+        std::cout << attrs[i].key << ' ' << attrs[i].value << '\n';
+      }
 
       switch ((SVGTags)inv_tags[tag_name]) {
         case TAG_G: {
           new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_PATH: {
+          std::cout << "voo\n";
+          std::cout <<"attrs: " << attrs.len() << "\n";
           new_shape = std::make_unique<Path>(attrs.begin(), attrs.len(), stack.get());
+          std::cout <<"ra\n";
         } break;
         case TAG_RECT: {
           new_shape = std::make_unique<Rect>(attrs.begin(), attrs.len(), stack.get());
@@ -198,11 +206,22 @@ std::string read_file(const char *filename) {
 }
 
 int main() {
-  std::string svg = read_file("examples/sample.svg");
+  std::string svg = read_file("examples/test.svg");
   std::unique_ptr<BaseShape> shape = parse_xml(svg);
-	std::cout << "Parsed\n";	
-  for (BaseShape *t = shape.get(); t; t = t->next.get()) {
-    t->draw();
-  }
+  std::cout << "Parsed\n";
+  
+  // InitWindow(1000, 800, "Draw Example");
+  // SetTargetFPS(120);
+  // while(!WindowShouldClose()){
+  //   BeginDrawing();
+  //   ClearBackground(RAYWHITE);
+  //   for (BaseShape *t = shape.get(); t; t = t->next.get()) {
+  //     t->draw();
+  //   }
+  //   EndDrawing();
+  // }
+  // CloseWindow();
+
+
   return 0;
 }

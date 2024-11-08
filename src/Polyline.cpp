@@ -2,13 +2,13 @@
 #include <charconv>
 
 void Polyline::draw() const{
-  std::cout << "The Polyline attrs: " << '\n' <<
-    "POINTS:\n";
-  std::cout << this->point_list.len() << '\n';
-  for (uint32_t i = 0; i < this->point_list.len(); ++i){
-    std::cout << "X: " << this->point_list[i].x << " | " <<
-                 "Y: " << this->point_list[i].y << '\n';
-  }
+  // std::cout << "The Polyline attrs: " << '\n' <<
+  //   "POINTS:\n";
+  // std::cout << this->point_list.len() << '\n';
+  // for (uint32_t i = 0; i < this->point_list.len(); ++i){
+  //   std::cout << "X: " << this->point_list[i].x << " | " <<
+  //                "Y: " << this->point_list[i].y << '\n';
+  // }
 }
 
 static ArrayList<Point> read_point(std::string_view str){

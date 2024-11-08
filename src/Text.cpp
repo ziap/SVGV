@@ -1,6 +1,7 @@
 #include "Text.h"
 #include <charconv>
-
+// #include "raylib.h"
+#include <string>
 enum TextAttr {
   TEXT_ATTR_X = 0,
   TEXT_ATTR_Y,
@@ -38,6 +39,17 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
 }
 
 void Text::draw() const {
-  std::cout << this->content << ' ' << this->font_size << '\n';
+  
+  //   if (this->fill != nullptr) {
+  //   RGB* colorFill = static_cast<RGB*>(fill.get());
+  //   Color color = {
+  //     static_cast<unsigned char>(colorFill->r * 255),
+  //     static_cast<unsigned char>(colorFill->g * 255),
+  //     static_cast<unsigned char>(colorFill->b * 255),
+  //     static_cast<unsigned char>(this->fill_opacity * 255),
+  //   };
 
+  // std::string str = {this->content.begin(), this->content.end()}; 
+  // DrawText(str.c_str(), this->pos.x, this->pos.y, this->font_size, color);
+  // }
 }

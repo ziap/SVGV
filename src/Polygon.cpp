@@ -1,16 +1,33 @@
 #include "Polygon.h"
 #include <charconv>
+#include <vector>
+// #include "raylib.h"
+
+
 
 void Polygon::draw() const{
-  std::cout << "The Polygon attrs: " << '\n' <<
-    "POINTS:\n";
-  std::cout << this->point_list.len() << '\n';
-  for (uint32_t i = 0; i < this->point_list.len(); ++i){
-    std::cout << "X: " << this->point_list[i].x << " | " <<
-                 "Y: " << this->point_list[i].y << '\n';
-  }
-}
+//  if (this->fill != nullptr) {
+//    RGB* colorFill = static_cast<RGB*>(fill.get());
+//    Color color = {
+//      static_cast<unsigned char>(colorFill->r * 255),
+//      static_cast<unsigned char>(colorFill->g * 255),
+//      static_cast<unsigned char>(colorFill->b * 255),
+//      static_cast<unsigned char>(this->fill_opacity * 255),
+//    };
+//   //std::cerr << "INFO: Polygon: " << (int)color.r << ' ' << (int)color.g << ' ' << (int)color.b << ' ' << (int)color.a << '\n';
 
+//   std::vector<Vector2> vertices;
+//   for (int i = 0; i < this->point_list.len(); ++i){
+//     vertices.push_back({(float)point_list[i].x, (float)point_list[i].y});
+//   }
+
+//   if (!vertices.empty()){
+//     DrawPoly({20, 20}, vertices.size(), 1.0f, 1.0f, color);
+//   }
+
+  // }
+
+}
 
 static ArrayList<Point> read_point(std::string_view str){
   ArrayList<Point> point_list;

@@ -418,6 +418,7 @@ static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
 
 static std::unique_ptr<IPaint> read_color_text(std::string_view value) {
   ColorType color = (ColorType)inv_color[value];
+  if (color == -1u) return nullptr;
   std::string_view color_hex = hex_color[color]; 
   return read_color_hex(color_hex);
 }
@@ -523,6 +524,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
   std::string_view str_type = inf.substr(start, end - start);
 
   TransformType type = (TransformType)inv_transform[str_type];
+  if (type == -1u) return;
   inf = inf.substr(end + 1);
 
   switch (type){
@@ -663,6 +665,8 @@ static void solve_style(std::string_view value, BaseShape *shape) {
   size_t end = value.find(':');
   std::string_view key = value.substr(0, end);
   StyleType type = (StyleType)inv_style[key];
+  
+  if(type == -1u) return;
 
   value = value.substr(end + 1);
   while (isspace(value[0])) value = value.substr(1);
@@ -739,6 +743,8 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     std::string_view value = attrs[i].value;
     
     AttributeType type = (AttributeType)inv_attribute[key];
+    
+    if (type == -1u) return;
     switch (type) {
       case ATTRIBUTE_VISIBLE: {
         if (value != "visible") this->visible = false;

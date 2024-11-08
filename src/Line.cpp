@@ -1,5 +1,6 @@
 #include "Line.h"
 #include <charconv>
+// #include "raylib.h"
 
 enum LineAttr {
   LINE_ATTR_X1 = 0,
@@ -18,11 +19,17 @@ constexpr std::string_view line_attr_name[LINE_ATTR_COUNT] {
 
 constexpr InverseIndex<LINE_ATTR_COUNT> inv_line_attribute= {&line_attr_name};
 void Line::draw() const {
-  std::cout << "The line attrs: " << 
-    "X1: " << this->x1 << " | " <<
-    "Y1: " << this->y1 << "\t " << 
-    "X2: " << this->x2 << " | " << 
-    "Y2: " << this->y2 << '\n';
+  // if (this->fill != nullptr) {
+  //   RGB* colorFill = static_cast<RGB*>(fill.get());
+  //   Color color = {
+  //    static_cast<unsigned char>(colorFill->r * 255),
+  //    static_cast<unsigned char>(colorFill->g * 255),
+  //    static_cast<unsigned char>(colorFill->b * 255),
+  //    static_cast<unsigned char>(this->fill_opacity * 255),
+  //   };
+  
+  //  DrawLine(this->x1, this->y1, this->x1, this->y2, color); 
+  // }
 }
 
 Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent)
