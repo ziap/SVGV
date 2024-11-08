@@ -22,7 +22,7 @@ public:
   std::unique_ptr<IPaint> clone() const override {
     return std::make_unique<RGB>(*this);
   }
-private:
+
   double r, g, b;
 };
 

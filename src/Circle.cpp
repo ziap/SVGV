@@ -67,8 +67,8 @@ Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
   for(int i = 0; i < attrs_count; ++i){
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
-      CircleAttr attr = (CircleAttr)inv_circle_attribute[key];
-      switch(attr){
+      
+      switch ((CircleAttr)inv_circle_attribute[key]) {
         case CIRCLE_ATTR_CX: {
           this->cx = strtod(value.data(), nullptr);
         } break;

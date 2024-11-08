@@ -31,7 +31,7 @@ public:
     }
   }
 
-  constexpr uint32_t operator[](std::string_view sv) const {
+  constexpr int operator[](std::string_view sv) const {
     uint32_t h = hash32(sv.data(), sv.size(), 0x811c9dc5) >> ht_shift;
     while (keys[h] && idx_map[keys[h] - 1] != sv) {
       h = (h + 1) & (ht_size - 1);
@@ -43,19 +43,19 @@ private:
   static constexpr uint32_t ht_size = 1 << (32 - ht_shift);
 
   const std::string_view *idx_map;
-  uint32_t keys[ht_size];
+  int keys[ht_size];
 };
 
 template<>
 struct InverseIndex<0> {
 public:
   InverseIndex(const std::string_view *map, uint32_t count);
-  uint32_t operator[](std::string_view sv) const;
+  int operator[](std::string_view sv) const;
 private:
   const std::string_view *idx_map;
   const uint32_t ht_shift;
   const uint32_t ht_size;
-  const std::unique_ptr<uint32_t[]> keys;
+  const std::unique_ptr<int[]> keys;
 };
 
 #endif

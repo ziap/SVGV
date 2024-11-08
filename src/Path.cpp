@@ -11,9 +11,9 @@ static std::string_view trim_start(std::string_view str) {
 static double read_double(std::string_view *str) {
   *str = trim_start(*str);
 
-  char **out = nullptr;
-  double num = strtod(str->data(), out);
-  *str = str->substr(*out - str->data());
+  char *out;
+  double num = strtod(str->data(), &out);
+  *str = str->substr(out - str->data());
 
   *str = trim_start(*str);
   return num;
@@ -72,7 +72,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             double y = read_double(&value);
             current_point = {x, y};
             pre_control_point = current_point; 
-            std::cout << current_point.x << " | " << current_point.y << "\n";
+           
 
             start_point = current_point;
 

@@ -22,9 +22,8 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
   for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
-
-    TextAttr attr = (TextAttr)inv_text_attribute[key];
-    switch (attr) {
+    
+    switch ((TextAttr)inv_text_attribute[key]) {
       case TEXT_ATTR_X: {
         this->pos.x = strtod(value.data(), nullptr);
       } break;

@@ -66,8 +66,7 @@ Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent)
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
 
-      EllipseAttr attr = (EllipseAttr)inv_ellipse_attribute[key];
-      switch(attr){
+      switch ((EllipseAttr)inv_ellipse_attribute[key]){
         case ELLIPSE_ATTR_CX: {
           this->cx = strtod(value.data(), nullptr);
         } break;
