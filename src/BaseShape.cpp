@@ -411,7 +411,7 @@ std::string_view hex_color[COLOR_COUNT] = {
 };
 
 static std::string_view trim_start(std::string_view sv) {
-  while (sv.size() && isspace(sv[0])) sv = sv.substr(1);
+  while (sv.size() && (isspace(sv[0]) || sv[0] == ',')) sv = sv.substr(1);
   return sv;
 }
 
@@ -540,8 +540,8 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 
   switch ((TransformType)inv_transform[str_type]){
     case TRANSFORM_MATRIX: {
-      for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) {
+      for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < 2; i++) {
           inf = trim_start(inf);
 
           char *out;
@@ -585,14 +585,14 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
       if (inf.size() > 0) {
         char *out ;
         double x = strtod(inf.data(), &out);
-        inf = inf.substr(out - inf.data());
+        inf = inf.substr(out  - inf.data());
   
         inf = trim_start(inf);
         double y;
         if (inf.size() > 0) {
           inf = trim_start(inf);
           y = strtod(inf.data(), &out);
-          inf = inf.substr(out - inf.data());
+          inf = inf.substr(out  - inf.data());
         } else y = 0;
 
         //tranlate x, y
@@ -646,7 +646,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 }
 
 static void convert_transform(std::string_view value, double matrix[2][3]) {
-  double Ematrix[2][3];
+  double Ematrix[2][3] = {{1, 0, 0}, {0, 1, 0}};
   int start = 0, end = 0;
   while (value.size() > 0) {
     value = trim_start(value);

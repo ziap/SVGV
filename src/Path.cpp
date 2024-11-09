@@ -51,7 +51,6 @@ static bool is_next_command(const char &chr) {
 Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
 
-  std::cout << "trong\n";
   Point current_point = {};
   Point start_point = {};
   Point pre_control_point = {};
@@ -82,7 +81,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               x = read_double(&value);
               y = read_double(&value);
               Point des_point = {x, y};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
               current_point = {x, y};
               pre_control_point = current_point; 
@@ -103,7 +102,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               dx = read_double(&value);
               dy = read_double(&value);
               Point des_point = {current_point.x + dx, current_point.y + dy};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
               //update current
               current_point.x += dx;
               current_point.y += dy;
@@ -117,7 +116,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             double x = read_double(&value);
             double y = read_double(&value);
             Point des_point = {x, y};
-            this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+            this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
               //update current
 
             current_point = des_point;
@@ -128,7 +127,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               x = read_double(&value);
               y = read_double(&value);
               des_point = {x, y};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
               current_point = des_point;
               pre_control_point = current_point; 
@@ -141,7 +140,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             double dx = read_double(&value);
             double dy = read_double(&value);
             Point des_point = {current_point.x + dx, current_point.y + dy};
-            this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+            this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
             current_point = des_point;
             pre_control_point = current_point; 
@@ -151,7 +150,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               double dx = read_double(&value);
               double dy = read_double(&value);
               Point des_point = {current_point.x + dx, current_point.y + dy};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
               //update current_point
               current_point = des_point;
               pre_control_point = current_point; 
@@ -163,7 +162,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             // std::cout << "INFO: start H\n";
             double x = read_double(&value);
             Point des_point = {x, current_point.y};
-            this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+            this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
             current_point = des_point;
             pre_control_point = current_point; 
@@ -172,7 +171,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             while (!value.empty() && !is_next_command(value[0]) )  {
               x = read_double(&value);
               Point des_point = {x, current_point.y};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
               current_point = des_point;
               pre_control_point = current_point; 
@@ -181,10 +180,9 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
           } break;
 
           case 'h': {
-            std::cout << "INFO: start h\n";
             double dx = read_double(&value);
             Point des_point = {current_point.x + dx, current_point.y};
-            this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+            this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
             current_point = des_point;
             pre_control_point = current_point; 
@@ -193,17 +191,16 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             while (!value.empty() && !is_next_command(value[0]) )  {
               dx = read_double(&value);
               Point des_point = {current_point.x + dx, current_point.y};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
               current_point = des_point;
               pre_control_point = current_point; 
             }
           } break;
           case 'V': {
-            std::cout << "INFO: start V\n";
             double y = read_double(&value);
             Point des_point = {current_point.x, y};
-            this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+            this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
             current_point = des_point;
             pre_control_point = current_point; 
@@ -212,7 +209,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             while (!value.empty() && !is_next_command(value[0]) )  {
               y = read_double(&value);
               Point des_point = {current_point.x, y};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
               current_point = des_point;
               pre_control_point = current_point; 
@@ -220,10 +217,9 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
           } break;
           case 'v': {
-            std::cout << "INFO: start v\n";
             double dy = read_double(&value);
             Point des_point = {current_point.x, current_point.y + dy};
-            this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+            this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
             current_point = des_point;
             pre_control_point = current_point; 
 
@@ -231,7 +227,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             while (!value.empty() && !is_next_command(value[0]) )  {
               dy = read_double(&value);
               Point des_point = {current_point.x, current_point.y + dy};
-              this->bezier_list.push(CommandBezier{current_point, des_point, current_point, des_point});
+              this->bezier_list.push(BezierCurve{current_point, des_point, current_point, des_point});
 
               current_point = des_point;
               pre_control_point = current_point; 
@@ -239,7 +235,6 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
           } break;
           case 'C': {
-            std::cout << "INFO: start C\n";
             double x[3];
             double y[3];
             for (int i = 0; i < 3; ++i) {
@@ -250,7 +245,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             Point point_ce = {x[1], y[1]};
             Point point_n = {x[2], y[2]};
             pre_control_point = point_ce;
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
             current_point = point_n;
             pre_control_point = point_ce; 
 
@@ -265,13 +260,12 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               Point point_ce = {x[1], y[1]};
               Point point_n = {x[2], y[2]};
 
-              this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+              this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
               current_point = point_n;
               pre_control_point = point_ce;
             }
           } break;
           case 'c': {
-            std::cout << "INFO: start c\n";
             double x[3];
             double y[3];
             for (int i = 0; i < 3; ++i) {
@@ -282,7 +276,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             Point point_ce = {x[1] + current_point.x, y[1] + current_point.y};
             Point point_n = {x[2] + current_point.x, y[2] + current_point.y};
 
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
             current_point = point_n;
             pre_control_point = point_ce;
             
@@ -296,7 +290,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               Point point_ce = {x[1] + current_point.x, y[1] + current_point.y};
               Point point_n = {x[2] + current_point.x, y[2] + current_point.y};
 
-              this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+              this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
               current_point = point_n;
               pre_control_point = point_ce;
             }
@@ -315,7 +309,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             Point point_cs = {current_point.x - pre_control_point.x + current_point.x,
                               current_point.y - pre_control_point.y + current_point.y};
 
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
             current_point = point_n;
             pre_control_point = point_ce;
             
@@ -330,7 +324,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               Point point_cs = {current_point.x - pre_control_point.x + current_point.x,
                               current_point.y - pre_control_point.y + current_point.y};
 
-              this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+              this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
               current_point = point_n;
               pre_control_point = point_ce;
             }
@@ -349,7 +343,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             Point point_cs = {current_point.x - pre_control_point.x + current_point.x,
                               current_point.y - pre_control_point.y + current_point.y};
 
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
             current_point = point_n;
             pre_control_point = point_ce;
             
@@ -364,7 +358,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               Point point_cs = {current_point.x - pre_control_point.x + current_point.x,
                               current_point.y - pre_control_point.y + current_point.y};
 
-              this->bezier_list.push(CommandBezier{current_point, point_n, point_cs, point_ce});
+              this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
               current_point = point_n;
               pre_control_point = point_ce;
             }
@@ -381,7 +375,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             Point point_c = {x[0], y[0]};
             Point point_n = {x[1], y[1]};
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_c, point_c});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_c, point_c});
             current_point = point_n;
             pre_control_point = point_c;
             
@@ -397,7 +391,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               Point point_c = {x[0], y[0]};
               Point point_n = {x[1], y[1]};
 
-              this->bezier_list.push(CommandBezier{current_point, point_n, point_c, point_c});
+              this->bezier_list.push(BezierCurve{current_point, point_n, point_c, point_c});
               current_point = point_n;
               pre_control_point = point_c;
             }
@@ -414,7 +408,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             Point point_c = {x[0] + current_point.x, y[0] + current_point.y};
             Point point_n = {x[1] + current_point.x, y[1] + current_point.y};
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_c, point_c});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_c, point_c});
             current_point = point_n;
             pre_control_point = point_c;
             
@@ -429,7 +423,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               }
               Point point_c = {x[0] + current_point.x, y[0] + current_point.y};
               Point point_n = {x[1] + current_point.x, y[1] + current_point.y};
-              this->bezier_list.push(CommandBezier{current_point, point_n, point_c, point_c});
+              this->bezier_list.push(BezierCurve{current_point, point_n, point_c, point_c});
               current_point = point_n;
               pre_control_point = point_c;
             }
@@ -443,7 +437,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             Point point_c = {current_point.x - pre_control_point.x + current_point.x,
                              current_point.y - pre_control_point.y + current_point.y};
             //control point will be the previous control point
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_c, current_point});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_c, current_point});
             current_point = {x, y};
             pre_control_point = point_c;
 
@@ -455,7 +449,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               point_n.y = y;
               Point point_c = {current_point.x - pre_control_point.x + current_point.x,
                              current_point.y - pre_control_point.y + current_point.y};
-              this->bezier_list.push(CommandBezier{current_point, point_n, current_point, current_point});
+              this->bezier_list.push(BezierCurve{current_point, point_n, current_point, current_point});
               current_point = {x, y};
               pre_control_point = point_c;
             }
@@ -469,7 +463,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             Point point_c = {current_point.x - pre_control_point.x + current_point.x,
                              current_point.y - pre_control_point.y + current_point.y};
             //control point will be the previous control point
-            this->bezier_list.push(CommandBezier{current_point, point_n, point_c, point_c});
+            this->bezier_list.push(BezierCurve{current_point, point_n, point_c, point_c});
             current_point.x += x;
             current_point.y += y;
             pre_control_point = point_c;
@@ -482,7 +476,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               Point point_c = {current_point.x - pre_control_point.x + current_point.x,
                                current_point.y - pre_control_point.y + current_point.y};
               //control point will be the previous control point
-              this->bezier_list.push(CommandBezier{current_point, point_n, point_c, point_c});
+              this->bezier_list.push(BezierCurve{current_point, point_n, point_c, point_c});
               current_point.x += x;
               current_point.y += y;
               pre_control_point = point_c;
@@ -490,8 +484,6 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             // std::cout << "INFO: done t\n";
           } break;
           case 'A': {
-            std::cout << "Arc ellipse not supported!\n";
-            std::cout << "INFO: start A\n";
             double rx, ry;
             double angle_degree;  
             int large_arc_flag;   
@@ -505,7 +497,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             sweep_flag = (int)read_double(&value);   
             point_n.x = read_double(&value);
             point_n.y = read_double(&value);
-            this->bezier_list.push(CommandBezier{current_point, point_n, current_point, point_n});
+            this->bezier_list.push(BezierCurve{current_point, point_n, current_point, point_n});
 
             current_point = point_n;
             pre_control_point = current_point;
@@ -519,7 +511,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               point_n.x = read_double(&value);
               point_n.y = read_double(&value);
 
-              this->bezier_list.push(CommandBezier{current_point, point_n, current_point, point_n});
+              this->bezier_list.push(BezierCurve{current_point, point_n, current_point, point_n});
 
               current_point = point_n;
               pre_control_point = current_point;
@@ -530,12 +522,9 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             (void)angle_degree;
             (void)large_arc_flag;
             (void)sweep_flag;
-            std::cout << "INFO: done A\n";
 
           } break;
           case 'a': {
-            std::cout << "Arc ellipse not supported!\n";
-            std::cout << "INFO: start a\n";
             double rx, ry;
             double angle_degree;  
             int large_arc_flag;   
@@ -550,7 +539,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             point_n.x = current_point.x + read_double(&value);
             point_n.y = current_point.y + read_double(&value);
 
-            this->bezier_list.push(CommandBezier{current_point, point_n, current_point, point_n});
+            this->bezier_list.push(BezierCurve{current_point, point_n, current_point, point_n});
 
             current_point = point_n;
             pre_control_point = current_point;
@@ -563,7 +552,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               sweep_flag = (int)read_double(&value);   
               point_n.x = current_point.x + read_double(&value);
               point_n.y = current_point.y + read_double(&value);
-              this->bezier_list.push(CommandBezier{current_point, point_n, current_point, point_n});
+              this->bezier_list.push(BezierCurve{current_point, point_n, current_point, point_n});
 
               current_point = point_n;
               pre_control_point = current_point;
@@ -574,13 +563,11 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             (void)angle_degree;
             (void)large_arc_flag;
             (void)sweep_flag;
-            std::cout << "INFO: done a\n";
           } break;
           case 'Z': 
           case 'z': {
-            std::cout << "INFO: start Z\n";
 
-            this->bezier_list.push(CommandBezier{current_point, start_point, current_point, start_point});
+            this->bezier_list.push(BezierCurve{current_point, start_point, current_point, start_point});
 
             while (!value.empty() && (isspace(value[0]) || value[0] == ',')) {
               value = value.substr(1);
@@ -596,5 +583,50 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
   }
 }
 
-void Path::render(Gdiplus::Graphics *) const {
+void Path::render(Gdiplus::Graphics *graphics) const {
+  Gdiplus::FillMode fillmode; 
+  switch (this->fill_rule) {
+    case FILL_RULE_NONZERO: 
+      fillmode = Gdiplus::FillModeWinding;
+      break;
+    case FILL_RULE_EVENODD: 
+      fillmode = Gdiplus::FillModeAlternate;
+      break;
+    case FILL_RULE_COUNT:
+       __builtin_unreachable();
+  }
+
+  Gdiplus::GraphicsPath path_list = {fillmode};
+  for (const BezierCurve &curve : this->bezier_list) {
+    path_list.AddBezier((Gdiplus::REAL)curve.point_0.x, (Gdiplus::REAL)curve.point_0.y, 
+                        (Gdiplus::REAL)curve.point_CS.x, (Gdiplus::REAL)curve.point_CS.y,
+                        (Gdiplus::REAL)curve.point_CE.x, (Gdiplus::REAL)curve.point_CE.y,
+                        (Gdiplus::REAL)curve.point_N.x, (Gdiplus::REAL)curve.point_N.y);
+  }
+
+  Gdiplus::Matrix matrix = {
+    (Gdiplus::REAL)this->transform[0][0],
+    (Gdiplus::REAL)this->transform[0][1],
+    (Gdiplus::REAL)this->transform[1][0],
+    (Gdiplus::REAL)this->transform[1][1],
+    (Gdiplus::REAL)this->transform[0][2],
+    (Gdiplus::REAL)this->transform[1][2]
+  };
+  
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      std::cout << this->transform[i][j] << ' ';
+    }
+    std::cout << '\n';
+  }
+  path_list.Transform(&matrix);
+
+  if (this->fill_brush) {
+    graphics->FillPath(this->fill_brush.get(), &path_list);
+  }
+
+  if (this->stroke_brush) {
+    Gdiplus::Pen pen = {this->stroke_brush.get(), (float)this->stroke_width};
+    graphics->DrawPath(&pen, &path_list);
+  }
 }

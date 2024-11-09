@@ -107,6 +107,7 @@ private:
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
         Gdiplus::Graphics graphics = {hdc};
+        graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
         SVGRenderer *renderer = (SVGRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
         renderer->render(&graphics);
         EndPaint(hWnd, &ps);
