@@ -1,15 +1,26 @@
-<svg
-  viewBox="-40 0 150 100"
-  xmlns="http://www.w3.org/2000/svg"
-  xmlns:xlink="http://www.w3.org/1999/xlink">
-  <g
-    fill="grey"
-    transform="matrix(0.670616 -0.610862 1.28934 -0.100336 -42.3992 163.379)">q
-    <path
-      d="M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z" />
-  </g>
+<svg viewBox="-10 -10 320 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Effect of nonzero fill rule on crossing path segments -->
+
+  <!--
+  Effect of nonzero fill rule on a shape inside a shape
+  with the path segment moving in the same direction
+  (both squares drawn clockwise, to the "right")
+  -->
   <path
-      fill="none" stroke="red"
-      d="M 10,30 A 20,20 0,0,1 50,30 A 20,20 0,0,1 90,30 Q 90,60 50,90 Q 10,60 10,30 z" />
+    fill-rule="nonzero"
+    stroke="red"
+    d="M110,0  h90 v90 h-90 z
+           M130,20 h50 v50 h-50 z" />
+
+  <!--
+  Effect of nonzero fill rule on a shape inside a shape
+  with the path segment moving in the opposite direction
+  (one square drawn clockwise, the other anti-clockwise)
+  -->
+  <path
+    fill-rule="nonzero"
+    stroke="red"
+    d="M210,0  h90 v90 h-90 z
+           M230,20 v50 h50 v-50 z" />
 </svg>
 

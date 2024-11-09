@@ -523,15 +523,24 @@ constexpr std::string_view transform_name[TRANSFORM_COUNT] = {
 
 constexpr InverseIndex<TRANSFORM_COUNT> inv_transform = {&transform_name};
 
-static void create_matrix_rotate(double num, double matrix[2][3]) {
-   num = num * PI / 180;
-   matrix[0][0] = std::cos(num);
-   matrix[1][0] = std::sin(num);
-   matrix[0][1] = -std::sin(num);
-   matrix[1][1] = std::cos(num);
+
+void cout_matrix(double matrix[2][3]) {
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 3; j++)
+      std::cout << matrix[i][j] << " ";
+    std::cout << "\n";
+  }
+  std::cout << "\n";
 }
 
 static void solve_transform(std::string_view inf, double matrix[2][3]) {
+  matrix[0][0] = 1;
+  matrix[0][1] = 0;
+  matrix[0][2] = 0;
+  matrix[1][0] = 0;
+  matrix[1][1] = 1;
+  matrix[1][2] = 0;
+
   int start = 0;
   int end = inf.find('(');
   std::string_view str_type = inf.substr(start, end - start);
@@ -588,6 +597,7 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
         inf = inf.substr(out  - inf.data());
   
         inf = trim_start(inf);
+
         double y;
         if (inf.size() > 0) {
           inf = trim_start(inf);
@@ -596,28 +606,40 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
         } else y = 0;
 
         //tranlate x, y
+        matrix[0][0] = 1;
+        matrix[0][1] = 0;
         matrix[0][2] = x;
+        matrix[1][0] = 0;
+        matrix[1][1] = 1;
         matrix[1][2] = y;
 
         //rotate
-        double I_matrix[2][3];
-        I_matrix[0][2] = 0;
-        I_matrix[1][2] = 0;
+        num = num * PI / 180;
 
-        create_matrix_rotate(num, I_matrix);
-        multiply_matrix(matrix, I_matrix);
+        double new_matrix[2][3] = {
+          {std::cos(num), -std::sin(num), 0 },
+          {std::sin(num), std::cos(num), 0 }
+        };
+      
+        multiply_matrix(matrix, new_matrix);
 
-        //tranlate -x, -y
-        I_matrix[0][0] = 1;
-        I_matrix[0][1] = 0;
-        I_matrix[0][2] = -x;
-        I_matrix[1][0] = 0;
-        I_matrix[1][1] = 1;
-        I_matrix[1][2] = -y;  
+        //translate x, y
+        new_matrix[0][0] = 1;
+        new_matrix[0][1] = 0;
+        new_matrix[0][2] = -x;
+        new_matrix[1][0] = 0;
+        new_matrix[1][1] = 1;
+        new_matrix[1][2] = -y;
 
-        multiply_matrix(matrix, I_matrix);
+        multiply_matrix(matrix, new_matrix);
+
       } else {
-        create_matrix_rotate(num, matrix);
+        matrix[0][0] = std::cos(num);
+        matrix[0][1] = -std::sin(num);
+        matrix[0][2] = 0;
+        matrix[1][0] = std::sin(num);
+        matrix[1][1] = std::cos(num);
+        matrix[1][2] = 0;
       }
       
     } break;
@@ -646,14 +668,18 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 }
 
 static void convert_transform(std::string_view value, double matrix[2][3]) {
-  double Ematrix[2][3] = {{1, 0, 0}, {0, 1, 0}};
+  double I_matrix[2][3] = {};
   int start = 0, end = 0;
   while (value.size() > 0) {
     value = trim_start(value);
     end = value.find(")");
     std::string_view type = value.substr(start, end - start);
-    solve_transform(type, Ematrix);
-    multiply_matrix(matrix, Ematrix);
+    solve_transform(type, I_matrix);
+
+    std::cout << " NEW MATRIXXXX : " << type << "\n";
+    cout_matrix(I_matrix);
+    
+    multiply_matrix(matrix, I_matrix);
     value = value.substr(end + 1);
   }
 }

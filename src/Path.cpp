@@ -606,19 +606,12 @@ void Path::render(Gdiplus::Graphics *graphics) const {
 
   Gdiplus::Matrix matrix = {
     (Gdiplus::REAL)this->transform[0][0],
-    (Gdiplus::REAL)this->transform[0][1],
     (Gdiplus::REAL)this->transform[1][0],
+    (Gdiplus::REAL)this->transform[0][1],
     (Gdiplus::REAL)this->transform[1][1],
     (Gdiplus::REAL)this->transform[0][2],
     (Gdiplus::REAL)this->transform[1][2]
   };
-  
-  for (int i = 0; i < 2; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      std::cout << this->transform[i][j] << ' ';
-    }
-    std::cout << '\n';
-  }
   path_list.Transform(&matrix);
 
   if (this->fill_brush) {
