@@ -3,6 +3,12 @@
 #include <cmath>
 #include <cctype>
 
+RGBPaint::RGBPaint(double r, double g, double b) : r{r}, g{g}, b{b} {}
+
+std::unique_ptr<IPaint> RGBPaint::clone() const {
+  return std::make_unique<RGBPaint>(r, g, b);
+}
+
 constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
   "nonzero",
   "evenodd",
@@ -415,7 +421,7 @@ static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
   g /= 255;
   b /= 255;
 
-  return (std::make_unique<RGB> (r, g, b));
+  return (std::make_unique<RGBPaint> (r, g, b));
 }
 
 static std::unique_ptr<IPaint> read_color_text(std::string_view value) {
@@ -442,7 +448,7 @@ static std::unique_ptr<IPaint> read_RGB(std::string_view value) {
   r/= 255;
   g/=255;
   b/=255;
-  return (std::make_unique<RGB> (r, g, b));
+  return (std::make_unique<RGBPaint> (r, g, b));
 }
 
 static std::unique_ptr<IPaint> read_paint(std::string_view value) {
@@ -688,7 +694,7 @@ static void solve_style(std::string_view value, BaseShape *shape) {
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
-    this->fill = std::make_unique<RGB>(0, 0, 0);
+    this->fill = std::make_unique<RGBPaint>(0, 0, 0);
     this->stroke = nullptr;
     this->font_size = 16;
     this->opacity = 1.0;

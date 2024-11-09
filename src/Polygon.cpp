@@ -1,6 +1,10 @@
 #include "Polygon.h"
 
-void Polygon::draw() const{
+using namespace SVGShapes;
+
+void Polygon::render(Gdiplus::Graphics *) const {
+
+}
 //  if (this->fill != nullptr) {
 //    RGB* colorFill = static_cast<RGB*>(fill.get());
 //    Color color = {
@@ -21,8 +25,6 @@ void Polygon::draw() const{
 //   }
 
   // }
-
-}
 
 static std::string_view trim_start(std::string_view str) {
   while (str.size() && (isspace(str[0]) || str[0] == ',')) {

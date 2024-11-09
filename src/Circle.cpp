@@ -1,5 +1,7 @@
 #include "Circle.h"
 
+using namespace SVGShapes;
+
 enum CircleAttr {
   CIRCLE_ATTR_CX = 0,
   CIRCLE_ATTR_CY,
@@ -15,7 +17,9 @@ constexpr std::string_view circle_attr_name[CIRCLE_ATTR_COUNT] {
 
 constexpr InverseIndex<CIRCLE_ATTR_COUNT> inv_circle_attribute= {&circle_attr_name};
 
-void Circle::draw() const{
+void Circle::render(Gdiplus::Graphics *) const {
+
+}
   //draw stroke
 
 //   if (this->fill != nullptr) {
@@ -52,8 +56,6 @@ void Circle::draw() const{
 //     i = i + (float) 0.1;
 //   }
 // }
-
-}
 
 Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {

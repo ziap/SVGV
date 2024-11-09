@@ -1,5 +1,7 @@
 #include "Text.h"
 
+using namespace SVGShapes;
+
 enum TextAttr {
   TEXT_ATTR_X = 0,
   TEXT_ATTR_Y,
@@ -35,7 +37,7 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
   }
 }
 
-void Text::draw() const {
+void Text::render(Gdiplus::Graphics *) const {
   
   //   if (this->fill != nullptr) {
   //   RGB* colorFill = static_cast<RGB*>(fill.get());

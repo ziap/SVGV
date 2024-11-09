@@ -5,12 +5,16 @@
 #include "ArrayList.h"
 #include "Point.h"
 
+namespace SVGShapes {
+
 class Polyline final : public BaseShape {
 public:
   ArrayList<Point> point_list;
 
   Polyline(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const override;
+  void render(Gdiplus::Graphics *graphics) const override;
+};
+
 };
 
 #endif

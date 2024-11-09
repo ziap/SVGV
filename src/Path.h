@@ -17,6 +17,8 @@
 //  //virtual ~BaseCommand() = default;
 //};
 
+namespace SVGShapes {
+
 
 class CommandBezier {
 public:
@@ -72,8 +74,9 @@ class Path: public BaseShape{
 public:
   ArrayList<CommandBezier> bezier_list;
   Path(Attribute *attrs, int attrs_countt, BaseShape *parent);
-  void draw() const override; 
+  void render(Gdiplus::Graphics *graphics) const override;
 };
 
+};
 
 #endif

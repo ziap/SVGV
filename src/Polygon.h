@@ -5,14 +5,16 @@
 #include "ArrayList.h"
 #include "Point.h"
 
+namespace SVGShapes {
 
 class Polygon final : public BaseShape{
 public:
   ArrayList<Point> point_list;
 
   Polygon(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const override;      
+  void render(Gdiplus::Graphics *graphics) const override;
 };
 
+};
 
 #endif

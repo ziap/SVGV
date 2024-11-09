@@ -1,5 +1,7 @@
 #include "Line.h"
 
+using namespace SVGShapes;
+
 enum LineAttr {
   LINE_ATTR_X1 = 0,
   LINE_ATTR_Y1,
@@ -16,18 +18,9 @@ constexpr std::string_view line_attr_name[LINE_ATTR_COUNT] {
 };
 
 constexpr InverseIndex<LINE_ATTR_COUNT> inv_line_attribute= {&line_attr_name};
-void Line::draw() const {
-  // if (this->fill != nullptr) {
-  //   RGB* colorFill = static_cast<RGB*>(fill.get());
-  //   Color color = {
-  //    static_cast<unsigned char>(colorFill->r * 255),
-  //    static_cast<unsigned char>(colorFill->g * 255),
-  //    static_cast<unsigned char>(colorFill->b * 255),
-  //    static_cast<unsigned char>(this->fill_opacity * 255),
-  //   };
-  
-  //  DrawLine(this->x1, this->y1, this->x1, this->y2, color); 
-  // }
+
+void Line::render(Gdiplus::Graphics *) const {
+
 }
 
 Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent)

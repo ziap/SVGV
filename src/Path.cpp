@@ -1,5 +1,7 @@
 #include "Path.h"
 
+using namespace SVGShapes;
+
 static std::string_view trim_start(std::string_view str) {
   while (str.size() && (isspace(str[0]) || str[0] == ',')) {
     str = str.substr(1);
@@ -594,7 +596,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
   }
 }
 
-void Path::draw() const {
+void Path::render(Gdiplus::Graphics *) const {
   // for (uint32_t i = 0; i < this->bezier_list.len(); ++i){
   //     //drawing here
   //   Vector2 point[4] = {

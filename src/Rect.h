@@ -2,8 +2,8 @@
 #define RECT_H
 
 #include "BaseShape.h"  
-#include "ArrayList.h"
-#include <memory>
+
+namespace SVGShapes {
 
 class Rect final : public BaseShape{
 public:
@@ -15,7 +15,9 @@ public:
   double height;
   
   Rect(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const override;
+  void render(Gdiplus::Graphics *graphics) const override;
+};
+
 };
 
 #endif

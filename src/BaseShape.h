@@ -1,6 +1,9 @@
 #ifndef BASE_SHAPE_H
 #define BASE_SHAPE_H
 
+#include <objidl.h>
+#include <gdiplus.h>
+
 #include "utils.h"
 #include "XMLNode.h"
 #include "InverseIndex.h"
@@ -15,14 +18,13 @@ public:
   virtual ~IPaint() = default;
 };
 
-class RGB final : public IPaint {
+class RGBPaint final : public IPaint {
 public: 
-  RGB(double r, double g, double b) : r(r), g(g), b(b) {}
+  RGBPaint(double r, double g, double b);
 
-  std::unique_ptr<IPaint> clone() const override {
-    return std::make_unique<RGB>(*this);
-  }
+  std::unique_ptr<IPaint> clone() const override;
 
+private:
   double r, g, b;
 };
 
@@ -77,7 +79,7 @@ public:
   std::unique_ptr<BaseShape> next;
 
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
-  virtual void draw() const {}
+  virtual void render(Gdiplus::Graphics *graphics) const = 0;
   virtual ~BaseShape() = default;
 };
 

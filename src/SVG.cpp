@@ -1,6 +1,8 @@
 #include "SVG.h"
 #include <cctype>
 
+using namespace SVGShapes;
+
 enum AttributeType {
   ATTRIBUTE_WIDTH = 0,
   ATTRIBUTE_HEIGHT,
@@ -106,4 +108,7 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
       }
     }
   }
+}
+
+void SVG::render(Gdiplus::Graphics *) const {
 }

@@ -1,5 +1,7 @@
 #include "Rect.h"
 
+using namespace SVGShapes;
+
 enum RectAttr {
   RECT_ATTR_X = 0,
   RECT_ATTR_Y,
@@ -22,7 +24,9 @@ constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] {
 constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute = {&rect_attr_name};
 
 
-void Rect::draw() const {
+void Rect::render(Gdiplus::Graphics *) const {
+
+}
     // if (this->fill != nullptr) {
     //     RGB* colorFill = static_cast<RGB*>(fill.get());
     //     Color color = {
@@ -60,7 +64,6 @@ void Rect::draw() const {
 
     //     DrawRectangleLinesEx(rect, static_cast<int>(this->stroke_width), color);
     // }
-}
 
 Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {

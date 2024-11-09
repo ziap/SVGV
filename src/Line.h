@@ -3,6 +3,7 @@
 
 #include "BaseShape.h"
 
+namespace SVGShapes {
 
 class Line final : public BaseShape {
 public:
@@ -12,7 +13,9 @@ public:
   double y2;
 
   Line(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const override;
+  void render(Gdiplus::Graphics *graphics) const override;
+};
+
 };
 
 #endif

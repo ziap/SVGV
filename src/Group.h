@@ -3,8 +3,15 @@
 
 #include "BaseShape.h"
 
-class Group : public BaseShape {
+namespace SVGShapes {
+
+class Group final : public BaseShape {
 public:
+  Group(Attribute *attrs, int attrs_count, BaseShape *parent);
+
+  void render(Gdiplus::Graphics *graphics) const override;
+};
+
 };
 
 #endif

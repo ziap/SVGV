@@ -1,5 +1,7 @@
 #include "Ellipse.h"
 
+using namespace SVGShapes;
+
 enum EllipseAttr {
   ELLIPSE_ATTR_CX = 0,
   ELLIPSE_ATTR_CY,
@@ -17,22 +19,24 @@ constexpr std::string_view ellipse_attr_name[ELLIPSE_ATTR_COUNT] {
 
 constexpr InverseIndex<ELLIPSE_ATTR_COUNT> inv_ellipse_attribute= {&ellipse_attr_name};
 
-void Ellipse::draw() const {
-  //std::cout << "The ellipse attrs: " << 
-  //  "X: " << this->cx << " | " <<
-  //  "Y: " << this->cy << " | " << 
-  //  "RX: " << this->rx << " | " << 
-  //  "RY: " << this->ry << '\n';
-  //   if (this->fill != nullptr) {
-  //   RGB* colorFill = static_cast<RGB*>(fill.get());
-  //   Color color = {
-  //     static_cast<unsigned char>(colorFill->r * 255),
-  //     static_cast<unsigned char>(colorFill->g * 255),
-  //     static_cast<unsigned char>(colorFill->b * 255),
-  //     static_cast<unsigned char>((float)this->fill_opacity * 255),
-  //   };
-  
-  // DrawEllipse(this->cx, this->cy, this->rx, this->ry, color);
+void Ellipse::render(Gdiplus::Graphics *) const {
+
+}
+// std::cout << "The ellipse attrs: " <<
+//   "X: " << this->cx << " | " <<
+//   "Y: " << this->cy << " | " <<
+//   "RX: " << this->rx << " | " <<
+//   "RY: " << this->ry << '\n';
+//    if (this->fill != nullptr) {
+//    RGB* colorFill = static_cast<RGB*>(fill.get());
+//    Color color = {
+//      static_cast<unsigned char>(colorFill->r * 255),
+//      static_cast<unsigned char>(colorFill->g * 255),
+//      static_cast<unsigned char>(colorFill->b * 255),
+//      static_cast<unsigned char>((float)this->fill_opacity * 255),
+//    };
+
+// DrawEllipse(this->cx, this->cy, this->rx, this->ry, color);
 //   }
     
 //   //draw stroke
@@ -49,7 +53,6 @@ void Ellipse::draw() const {
 //     DrawEllipseLines(this->cx, this->cy, this->rx + i, this->ry + i, color);
 //   }
 // }
-}
 
 Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {

@@ -15,6 +15,7 @@ pub fn build(b: *std.Build) !void {
         .name = "main",
         .target = target,
         .optimize = optimize,
+        .strip = b.release_mode != .off,
     });
 
     // Get all source files

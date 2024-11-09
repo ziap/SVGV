@@ -3,6 +3,8 @@
 
 #include "BaseShape.h"
 
+namespace SVGShapes {
+
 class Circle final : public BaseShape {
 public:
   double cx;
@@ -10,7 +12,9 @@ public:
   double r;
 
   Circle(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void draw() const override;
+  void render(Gdiplus::Graphics *graphics) const override;
 };
+
+}
 
 #endif

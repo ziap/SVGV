@@ -9,6 +9,7 @@
 #include "Polygon.h"
 #include "Text.h"
 #include "SVG.h"
+#include "Group.h"
 
 enum SVGTags {
   TAG_G = 0,
@@ -66,7 +67,7 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
   while (cursor < end) {
     if (!is_parsing_tag && content[cursor] == '<') {
       // TODO: Add text support
-      if (Text* text = dynamic_cast<Text*>(stack.get())) {
+      if (SVGShapes::Text* text = dynamic_cast<SVGShapes::Text*>(stack.get())) {
         text->content = content.substr(mark, cursor - mark);
       }
       ++cursor;
@@ -125,34 +126,34 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
 
       switch ((SVGTags)inv_tags[tag_name]) {
         case TAG_G: {
-          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Group>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_PATH: {
-          new_shape = std::make_unique<Path>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Path>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_RECT: {
-          new_shape = std::make_unique<Rect>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Rect>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_CIRCLE: {
-          new_shape = std::make_unique<Circle>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Circle>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_ELLIPSE: {
-          new_shape = std::make_unique<Ellipse>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Ellipse>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_LINE: {
-          new_shape = std::make_unique<Line>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Line>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_POLYLINE: {
-          new_shape = std::make_unique<Polyline>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Polyline>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_POLYGON: {
-          new_shape = std::make_unique<Polygon>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Polygon>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_TEXT: {
-          new_shape = std::make_unique<Text>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Text>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_SVG: {
-          new_shape = std::make_unique<SVG>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::SVG>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_LINEAR_GRADIENT: {
           std::cout << "ERROR: Gradient not supported\n";

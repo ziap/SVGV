@@ -1,5 +1,7 @@
 #include "BaseShape.h"
 
+namespace SVGShapes {
+
 enum AlignType {
   ALIGN_NONE = 0,
   ALIGN_MEET,
@@ -14,7 +16,7 @@ enum AxisAlignType {
   AXIS_ALIGN_COUNT
 };
 
-class SVG : public BaseShape {
+class SVG final : public BaseShape {
 public:
   double width;
   double height;
@@ -30,4 +32,7 @@ public:
   AxisAlignType align_y;
 
   SVG(Attribute *attrs, int attrs_count, BaseShape *parent);
+  void render(Gdiplus::Graphics *graphics) const override;
+};
+
 };

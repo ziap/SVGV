@@ -1,6 +1,10 @@
 #include "Polyline.h"
 
-void Polyline::draw() const{
+using namespace SVGShapes;
+
+void Polyline::render(Gdiplus::Graphics *) const {
+
+}
   // std::cout << "The Polyline attrs: " << '\n' <<
   //   "POINTS:\n";
   // std::cout << this->point_list.len() << '\n';
@@ -8,7 +12,6 @@ void Polyline::draw() const{
   //   std::cout << "X: " << this->point_list[i].x << " | " <<
   //                "Y: " << this->point_list[i].y << '\n';
   // }
-}
 
 static std::string_view trim_start(std::string_view str) {
   while (str.size() && (isspace(str[0]) || str[0] == ',')) {
