@@ -49,7 +49,9 @@ pub fn build(b: *std.Build) !void {
     exe.linkSystemLibrary("gdiplus");
     exe.linkLibCpp();
 
-    exe.subsystem = .Windows;
+    if (b.release_mode != .off) {
+        exe.subsystem = .Windows;
+    }
 
     // Build the program
     b.installArtifact(exe);
