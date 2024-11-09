@@ -1,6 +1,5 @@
 #include "SVG.h"
 #include <cctype>
-#include <charconv>
 
 enum AttributeType {
   ATTRIBUTE_WIDTH = 0,

@@ -1,13 +1,7 @@
 #include "BaseShape.h"
 #include "InverseIndex.h"
-#include <charconv>
 #include <cmath>
 #include <cctype>
-#include <memory>
-#include <cassert>
-#include <string_view>
-#include <string>
-#include <cstdlib>
 
 constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
   "nonzero",
@@ -479,7 +473,7 @@ static void convert_array(std::string_view value, float *a, int *count) {
 
 
 static void multiply_matrix(double matrix1[2][3], double matrix2[2][3]) {
-  double matrix[2][3] = {0};
+  double matrix[2][3] = {};
   matrix[0][0] = matrix1[0][0] * matrix2[0][0] + matrix1[0][1] * matrix2[1][0];
   matrix[0][1] = matrix1[0][0] * matrix2[0][1] + matrix1[0][1] * matrix2[1][1];
   matrix[0][2] = matrix1[0][0] * matrix2[0][2] + matrix1[0][1] * matrix2[1][2] + matrix1[0][2];

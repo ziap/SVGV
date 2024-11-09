@@ -1,9 +1,4 @@
 #include "Polygon.h"
-#include <charconv>
-#include <vector>
-// #include "raylib.h"
-
-
 
 void Polygon::draw() const{
 //  if (this->fill != nullptr) {

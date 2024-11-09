@@ -1,7 +1,5 @@
 #include "Text.h"
-#include <charconv>
-// #include "raylib.h"
-#include <string>
+
 enum TextAttr {
   TEXT_ATTR_X = 0,
   TEXT_ATTR_Y,

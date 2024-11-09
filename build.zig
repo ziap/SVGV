@@ -40,7 +40,7 @@ pub fn build(b: *std.Build) !void {
 
     exe.addCSourceFiles(.{
         .files = source_files.items,
-        .flags = &.{ "-Wall", "-Wextra", "-std=c++20", "-pedantic", "-Wl,--subsystem,windows" },
+        .flags = &.{ "-Werror", "-Wall", "-Wextra", "-std=c++20", "-pedantic" },
     });
 
     // Link with system libraries
@@ -48,6 +48,8 @@ pub fn build(b: *std.Build) !void {
     exe.linkSystemLibrary("gdi32");
     exe.linkSystemLibrary("gdiplus");
     exe.linkLibCpp();
+
+    exe.subsystem = .Windows;
 
     // Build the program
     b.installArtifact(exe);

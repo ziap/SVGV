@@ -1,5 +1,4 @@
 #include "ArrayList.h"
-#include "XMLNode.h"
 #include "BaseShape.h"
 #include "Path.h"
 #include "Rect.h"
@@ -203,6 +202,5 @@ int main() {
   std::string svg = read_file("examples/test.svg");
   std::unique_ptr<BaseShape> shape = parse_xml(svg);
   std::cout << "Parsed\n";
-
   return 0;
 }

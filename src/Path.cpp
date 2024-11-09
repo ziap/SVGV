@@ -1,5 +1,4 @@
 #include "Path.h"
-// #include "raylib.h"
 
 static std::string_view trim_start(std::string_view str) {
   while (str.size() && (isspace(str[0]) || str[0] == ',')) {
@@ -587,7 +586,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             // std::cout << "INFO: done Z\n";
           } break;
           default: {
-          __builtin_unreachable();
+            __builtin_unreachable();
           }
         }
       }

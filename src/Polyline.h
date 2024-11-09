@@ -4,7 +4,6 @@
 #include "BaseShape.h"
 #include "ArrayList.h"
 #include "Point.h"
-#include <memory>
 
 class Polyline final : public BaseShape {
 public:

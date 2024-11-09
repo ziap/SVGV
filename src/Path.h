@@ -3,8 +3,6 @@
 
 #include "BaseShape.h"  
 #include "ArrayList.h"
-#include <charconv>
-#include <memory>
 #include "Point.h"
 
 //class BaseCommand{ //what will in the base command?
