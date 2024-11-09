@@ -2,7 +2,6 @@
 #include <windows.h>
 #include <objidl.h>
 #include <shellapi.h>
-#include <gdiplus.h>
 
 #include <fstream>
 #include <sstream>
@@ -101,6 +100,8 @@ private:
         SVGRenderer *renderer = (SVGRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
         renderer->set_shapes(parse_xml(svg));
         DragFinish(hDrop);
+
+        InvalidateRect(hWnd, NULL, TRUE);
       } break;
       case WM_PAINT: {
         PAINTSTRUCT ps;

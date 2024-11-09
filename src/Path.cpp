@@ -597,28 +597,4 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
 }
 
 void Path::render(Gdiplus::Graphics *) const {
-  // for (uint32_t i = 0; i < this->bezier_list.len(); ++i){
-  //     //drawing here
-  //   Vector2 point[4] = {
-  //     {(float) (this->bezier_list[i].point_0.x ), (float) (this->bezier_list[i].point_0.y)},
-  //     {(float) (this->bezier_list[i].point_CS.x ), (float) (this->bezier_list[i].point_CS.y)},
-  //     {(float) (this->bezier_list[i].point_CE.x ), (float) (this->bezier_list[i].point_CE.y)}, 
-  //     {(float) (this->bezier_list[i].point_N.x ), (float) (this->bezier_list[i].point_N.y)},
-  //   };
-
-  //   Color color = {0, 0, 0, 255};
-
-  //   if (this->stroke != nullptr) {
-  //     RGB* colorStroke= static_cast<RGB*>(this->stroke.get());
-  //     color = {
-  //       static_cast<unsigned char>(colorStroke->r * 255),
-  //       static_cast<unsigned char>(colorStroke->g * 255),
-  //       static_cast<unsigned char>(colorStroke->b * 255),
-  //       static_cast<unsigned char>(this->stroke_opacity * 255),
-  //     };
-  //   }  
-
-  //   DrawSplineBezierCubic(point, 4, this->stroke_width, color);
-
-  // }
 }

@@ -9,6 +9,15 @@ std::unique_ptr<IPaint> RGBPaint::clone() const {
   return std::make_unique<RGBPaint>(r, g, b);
 }
 
+std::unique_ptr<const Gdiplus::Brush> RGBPaint::get_brush(double opacity){
+  return std::make_unique<const Gdiplus::SolidBrush>(Gdiplus::Color{
+    (BYTE)(opacity * 255), 
+    (BYTE)(this->r * 255), 
+    (BYTE)(this->g * 255), 
+    (BYTE)(this->b * 255)
+  });
+}
+
 constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
   "nonzero",
   "evenodd",
@@ -819,5 +828,13 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
         __builtin_unreachable();
       }
     }
+  }
+
+  if (this->fill) {
+    this->fill_brush = this->fill->get_brush(this->fill_opacity);
+  }
+
+  if (this->stroke) {
+    this->stroke_brush = this->stroke->get_brush(this->stroke_opacity);
   }
 }

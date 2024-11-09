@@ -24,46 +24,16 @@ constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] {
 constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute = {&rect_attr_name};
 
 
-void Rect::render(Gdiplus::Graphics *) const {
+void Rect::render(Gdiplus::Graphics *graphic) const {
+  if (this->fill_brush) {
+    graphic->FillRectangle(this->fill_brush.get(), (float)this->x, (float)this->y, (float)this->width, (float)this->height);
+  }
 
+  if (this->stroke_brush) {
+    Gdiplus::Pen pen = {this->stroke_brush.get(), (float)this->stroke_width};
+    graphic->DrawRectangle(&pen, (float)this->x, (float)this->y, (float)this->width, (float)this->height);
+  }
 }
-    // if (this->fill != nullptr) {
-    //     RGB* colorFill = static_cast<RGB*>(fill.get());
-    //     Color color = {
-    //         static_cast<unsigned char>(colorFill->r * 255),
-    //         static_cast<unsigned char>(colorFill->g * 255),
-    //         static_cast<unsigned char>(colorFill->b * 255),
-    //         static_cast<unsigned char>(this->fill_opacity * 255)
-    //     };
-
-    //     DrawRectangle(
-    //         static_cast<int>(this->x),
-    //         static_cast<int>(this->y),
-    //         static_cast<int>(this->width),
-    //         static_cast<int>(this->height),
-    //         color
-    //     );
-    // }
-
-    // // Draw stroke
-    // if (this->stroke != nullptr) {
-    //     RGB* colorStroke = static_cast<RGB*>(stroke.get());
-    //     Color color = {
-    //         static_cast<unsigned char>(colorStroke->r * 255),
-    //         static_cast<unsigned char>(colorStroke->g * 255),
-    //         static_cast<unsigned char>(colorStroke->b * 255),
-    //         255 // or use static_cast<unsigned char>(this->stroke_opacity * 255) if opacity is desired
-    //     };
-
-    //     Rectangle rect = {
-    //         static_cast<float>(this->x),
-    //         static_cast<float>(this->y),
-    //         static_cast<float>(this->width),
-    //         static_cast<float>(this->height)
-    //     };
-
-    //     DrawRectangleLinesEx(rect, static_cast<int>(this->stroke_width), color);
-    // }
 
 Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
