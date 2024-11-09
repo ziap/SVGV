@@ -16,6 +16,7 @@ class IPaint {
 public:
   virtual std::unique_ptr<IPaint> clone() const = 0; 
   virtual ~IPaint() = default;
+  virtual std::unique_ptr<const Gdiplus::Brush> get_brush(double opacity) = 0;
 };
 
 class RGBPaint final : public IPaint {
@@ -23,6 +24,7 @@ public:
   RGBPaint(double r, double g, double b);
 
   std::unique_ptr<IPaint> clone() const override;
+  std::unique_ptr<const Gdiplus::Brush> get_brush(double opacity) override;
 
 private:
   double r, g, b;
@@ -75,7 +77,8 @@ public:
   FillRule fill_rule;
 
   double transform[2][3];
-
+  std::unique_ptr<const Gdiplus::Brush> fill_brush;
+  std::unique_ptr<const Gdiplus::Brush> stroke_brush;
   std::unique_ptr<BaseShape> next;
 
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
