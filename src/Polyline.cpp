@@ -24,15 +24,15 @@ static ArrayList<Point> read_point(std::string_view str) {
   Point new_point;
   while (str.size()) {
     str = trim_start(str);
-    char **out;
-    new_point.x = strtod(str.data(), out);
-    if (*out == str.data()) break;
-    str = str.substr(*out - str.data());
+    char *out;
+    new_point.x = strtod(str.data(), &out);
+    if (out == str.data()) break;
+    str = str.substr(out - str.data());
       
     str = trim_start(str);
-    new_point.y = strtod(str.data(), out);
-    if (*out == str.data()) break;
-    str = str.substr(*out - str.data());
+    new_point.y = strtod(str.data(), &out);
+    if (out == str.data()) break;
+    str = str.substr(out - str.data());
 
     point_list.push(new_point);
   }
@@ -42,16 +42,14 @@ static ArrayList<Point> read_point(std::string_view str) {
 
 Polyline::Polyline(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
-  std::cout << "Creating Polyline\n";
+  std::cout << "INFO: Creating Polyline\n";
   for (int i = 0; i < attrs_count; ++i){
     std::string_view key = attrs[i].key;
-    std::cout << key << '\n';
     std::string_view value = attrs[i].value;
 
-    if (key == "points"){
-      std::cout << value << '\n';
+    if (key == "points") {
       this->point_list = read_point(value);
     }
   }
-  std::cout << "Finished read Polyline attributes\n";
+  std::cout << "INFO: Finished read Polyline attributes\n";
 }

@@ -126,19 +126,14 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
       }
 
       std::unique_ptr<BaseShape> new_shape;
-      for (uint32_t i = 0; i < attrs.len(); ++i) {
-        std::cout << attrs[i].key << ' ' << attrs[i].value << '\n';
-      }
+ 
 
       switch ((SVGTags)inv_tags[tag_name]) {
         case TAG_G: {
           new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_PATH: {
-          std::cout << "voo\n";
-          std::cout <<"attrs: " << attrs.len() << "\n";
           new_shape = std::make_unique<Path>(attrs.begin(), attrs.len(), stack.get());
-          std::cout <<"ra\n";
         } break;
         case TAG_RECT: {
           new_shape = std::make_unique<Rect>(attrs.begin(), attrs.len(), stack.get());

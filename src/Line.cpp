@@ -43,8 +43,7 @@ Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent)
   for(int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
-    LineAttr attr = (LineAttr)inv_line_attribute[key];
-      switch(attr){
+      switch((LineAttr)inv_line_attribute[key]){
         case LINE_ATTR_X1: {
           this->x1 = strtod(value.data(), nullptr);
         } break;

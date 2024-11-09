@@ -66,7 +66,7 @@ void Rect::draw() const {
 
 Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
-    std::cout << "Creating Rect\n";
+    std::cout << "INFO: Creating Rect\n";
     this->x = 0;
     this->y = 0;
     this->width = 0;
@@ -79,8 +79,7 @@ Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
       std::string_view key = attrs[i].key;
       std::string_view value = attrs[i].value;
 
-      RectAttr attr = (RectAttr)inv_rect_attribute[key];
-      switch(attr){
+      switch((RectAttr)inv_rect_attribute[key]){
         case RECT_ATTR_X: {
           this->x = strtod(value.data(), nullptr);
         } break;
@@ -110,5 +109,5 @@ Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
         }
       }
     }
-    std::cout << "Finished read rect attributes\n";
+    std::cout << "INFO: Finished read rect attributes\n";
 }

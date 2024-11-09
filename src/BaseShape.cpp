@@ -4,6 +4,10 @@
 #include <cmath>
 #include <cctype>
 #include <memory>
+#include <cassert>
+#include <string_view>
+#include <string>
+#include <cstdlib>
 
 constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
   "nonzero",
@@ -421,9 +425,8 @@ static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
 }
 
 static std::unique_ptr<IPaint> read_color_text(std::string_view value) {
-  ColorType color = (ColorType)inv_color[value];
-  if (color == (ColorType)-1) return nullptr;
-  std::string_view color_hex = hex_color[color]; 
+  if (inv_color[value] == -1) return nullptr;
+  std::string_view color_hex = hex_color[inv_color[value]]; 
   return read_color_hex(color_hex);
 }
 
@@ -467,10 +470,10 @@ static double convert_opacity(std::string_view value) {
 static void convert_array(std::string_view value, float *a, int *count) {
   while (value.size() > 0 && (*count) < 8) {
     value = trim_start(value);
-    char **end;
-    a[*count] = strtod(value.data(), end);
-    if (*end != value.data()) ++*count;
-    value = value.substr(*end - value.data());
+    char *end;
+    a[*count] = strtod(value.data(), &end);
+    if (end != value.data()) ++*count;
+    value = value.substr(end - value.data());
   }
 }
 
@@ -524,28 +527,27 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
   int end = inf.find('(');
   std::string_view str_type = inf.substr(start, end - start);
 
-  TransformType type = (TransformType)inv_transform[str_type];
-  if (type == (TransformType)-1) return;
   inf = inf.substr(end + 1);
 
-  switch (type){
+  switch ((TransformType)inv_transform[str_type]){
     case TRANSFORM_MATRIX: {
       for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
           inf = trim_start(inf);
 
-          char **out;
-          matrix[i][j] = strtod(inf.data(), out);
-          inf = inf.substr(*out - inf.data());
+          char *out;
+          matrix[i][j] = strtod(inf.data(), &out);
+          inf = inf.substr(out - inf.data());
         }
       }
     } break;
 
     case TRANSFORM_TRANSLATE:{
       inf = trim_start(inf);
-      char **out;
-      matrix[0][2] = strtod(inf.data(), out);
-      inf = inf.substr(*out - inf.data());
+
+      char *out;
+      matrix[0][2] = strtod(inf.data(), &out);
+      inf = inf.substr(out - inf.data());
 
       inf = trim_start(inf);
       if (inf.size() > 0) {
@@ -556,9 +558,9 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 
     case TRANSFORM_SCALE: {
       inf = trim_start(inf);
-      char **out;
-      matrix[0][0] = strtod(inf.data(), out);
-      inf = inf.substr(*out - inf.data());
+      char *out;
+      matrix[0][0] = strtod(inf.data(), &out);
+      inf = inf.substr(out - inf.data());
 
       inf = trim_start(inf);
       matrix[1][1] = strtod(inf.data(), nullptr);
@@ -566,22 +568,22 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
 
     case TRANSFORM_ROTATE: {
       inf = trim_start(inf);
-      char **out;
-      double num = strtod(inf.data(), out);
-      inf = inf.substr(*out - inf.data());
+      char *out;
+      double num = strtod(inf.data(), &out);
+      inf = inf.substr(out - inf.data());
 
       inf = trim_start(inf);
       if (inf.size() > 0) {
-        char **out;
-        double x = strtod(inf.data(), out);
-        inf = inf.substr(*out - inf.data());
+        char *out ;
+        double x = strtod(inf.data(), &out);
+        inf = inf.substr(out - inf.data());
   
         inf = trim_start(inf);
         double y;
         if (inf.size() > 0) {
           inf = trim_start(inf);
-          y = strtod(inf.data(), out);
-          inf = inf.substr(*out - inf.data());
+          y = strtod(inf.data(), &out);
+          inf = inf.substr(out - inf.data());
         } else y = 0;
 
         //tranlate x, y
@@ -666,13 +668,10 @@ constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
 static void solve_style(std::string_view value, BaseShape *shape) {
   size_t end = value.find(':');
   std::string_view key = value.substr(0, end);
-  StyleType type = (StyleType)inv_style[key];
-  
-  if(type == (StyleType)-1) return;
 
   value = trim_start(value.substr(end + 1));
 
-  switch (type) {
+  switch ((StyleType)inv_style[key]) {
     case STYLE_FILL: {
       shape->fill = read_paint(value);
     } break;
@@ -743,10 +742,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
     
-    AttributeType type = (AttributeType)inv_attribute[key];
-    
-    if (type == (AttributeType)-1) return;
-    switch (type) {
+    switch ((AttributeType)inv_attribute[key]) {
       case ATTRIBUTE_VISIBLE: {
         if (value != "visible") this->visible = false;
       } break;

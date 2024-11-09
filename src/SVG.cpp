@@ -51,8 +51,7 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
 
-    AttributeType type = (AttributeType)inv_attribute[key];
-    switch (type) {
+    switch ((AttributeType)inv_attribute[key]) {
       case ATTRIBUTE_WIDTH: {
         this->width = strtod(value.data(), nullptr);
       } break;
@@ -61,33 +60,33 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
       } break;
       case ATTRIBUTE_VIEWBOX: {
         {
-          char ** out;
-          this->view_min_x = strtod(value.data(), out);
-          value = value.substr(*out - value.data());
+          char *out;
+          this->view_min_x = strtod(value.data(), &out);
+          value = value.substr(out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {
           value = value.substr(1);
         }
         {
-          char ** out;
-          this->view_min_y = strtod(value.data(), out);
-          value = value.substr(*out - value.data());
+          char *out ;
+          this->view_min_y = strtod(value.data(), &out);
+          value = value.substr(out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {
           value = value.substr(1);
         }
         {
-          char ** out;
-          this->view_width = strtod(value.data(), out);
-          value = value.substr(*out - value.data());
+          char *out;
+          this->view_width = strtod(value.data(), &out);
+          value = value.substr(out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {
           value = value.substr(1);
         }
         {
-          char ** out;
-          this->view_height = strtod(value.data(), out);
-          value = value.substr(*out - value.data());
+          char *out;
+          this->view_height = strtod(value.data(), &out);
+          value = value.substr(out - value.data());
         }
       } break;
       case ATTRIBUTE_PRESERVE_ASPECT_RATIO: {
@@ -105,7 +104,7 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
       } break;
       case ATTRIBUTE_COUNT: {
         __builtin_unreachable();
-      } break;
+      }
     }
   }
 }
