@@ -37,10 +37,46 @@ struct Matrix {
     return result;
   }
 
+  constexpr Matrix operator-() const {
+    Matrix result;
+    for (size_t i = 0; i < M * N; ++i) {
+      result.data[i] = -this->data[i];
+    }
+    return result;
+  }
+
   constexpr Matrix operator+(Matrix other) const {
     Matrix result;
     for (size_t i = 0; i < M * N; ++i) {
       result.data[i] = this->data[i] + other.data[i];
+    }
+    return result;
+  }
+
+  constexpr Matrix operator-(Matrix other) const {
+    Matrix result;
+    for (size_t i = 0; i < M * N; ++i) {
+      result.data[i] = this->data[i] - other.data[i];
+    }
+    return result;
+  }
+
+  constexpr Matrix operator*(T other) const {
+    Matrix result;
+    for (size_t i = 0; i < M * N; ++i) {
+      result.data[i] = this->data[i] * other;
+    }
+    return result;
+  }
+
+  constexpr friend Matrix operator*(T a, Matrix b) {
+    return b * a;
+  }
+  
+  constexpr Matrix operator/(T other) const {
+    Matrix result;
+    for (size_t i = 0; i < M * N; ++i) {
+      result.data[i] = this->data[i] / other;
     }
     return result;
   }
