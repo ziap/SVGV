@@ -1,7 +1,8 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include <stddef.h>
+#include <cstddef>
+#include <type_traits>
 
 template<typename T, size_t M, size_t N>
 struct Matrix {
@@ -9,12 +10,20 @@ struct Matrix {
   static constexpr size_t NCOLS = N;
   T data[NROWS * NCOLS];
 
-  constexpr const T *operator[](size_t idx) const {
-    return data + NCOLS * idx;
+  constexpr std::conditional_t<NCOLS != 1, const T *, T> operator[](size_t idx) const {
+    if constexpr (N != 1) {
+      return data + NCOLS * idx;
+    } else {
+      return data[idx];
+    }
   }
 
-  T *operator[](size_t idx) {
-    return data + NCOLS * idx;
+  constexpr std::conditional_t<NCOLS != 1, T *, T&> operator[](size_t idx) {
+    if constexpr (N != 1) {
+      return data + NCOLS * idx;
+    } else {
+      return data[idx];
+    }
   }
 
   template<size_t P>
@@ -53,20 +62,9 @@ struct Matrix {
 };
 
 template<typename T, size_t N>
-struct Vector : public Matrix<T, N, 1> {
-  constexpr T operator[](size_t idx) const {
-    return this->data[idx];
-  }
-
-  T &operator[](size_t idx) {
-    return this->data[idx];
-  }
-};
-
-template<typename T, size_t N>
 struct AffineMatrix {
   Matrix<T, N, N> m;
-  Vector<T, N> d;
+  Matrix<T, N, 1> d;
 
   constexpr static AffineMatrix identity() {
     return AffineMatrix {
@@ -112,6 +110,6 @@ struct AffineMatrix {
 };
 
 using Transform = AffineMatrix<double, 2>;
-using Point = Vector<double, 2>;
+using Point = Matrix<double, 2, 1>;
 
 #endif
