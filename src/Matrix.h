@@ -10,16 +10,16 @@ struct Matrix {
   static constexpr size_t NCOLS = N;
   T data[NROWS * NCOLS];
 
-  constexpr std::conditional_t<NCOLS != 1, const T *, T> operator[](size_t idx) const {
-    if constexpr (N != 1) {
+  constexpr std::conditional_t<N != 1 && M != 1, const T *, T> operator[](size_t idx) const {
+    if constexpr (N != 1 && M != 1) {
       return data + NCOLS * idx;
     } else {
       return data[idx];
     }
   }
 
-  constexpr std::conditional_t<NCOLS != 1, T *, T&> operator[](size_t idx) {
-    if constexpr (N != 1) {
+  constexpr std::conditional_t<N != 1 && M != 1, T *, T&> operator[](size_t idx) {
+    if constexpr (N != 1 && M != 1) {
       return data + NCOLS * idx;
     } else {
       return data[idx];
