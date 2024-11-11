@@ -584,12 +584,12 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
 }
 
 void Path::render(Gdiplus::Graphics *graphics) const {
-  Gdiplus::FillMode fillmode; 
+  Gdiplus::FillMode fillmode;
   switch (this->fill_rule) {
-    case FILL_RULE_NONZERO: 
+    case FILL_RULE_NONZERO:
       fillmode = Gdiplus::FillModeWinding;
       break;
-    case FILL_RULE_EVENODD: 
+    case FILL_RULE_EVENODD:
       fillmode = Gdiplus::FillModeAlternate;
       break;
     case FILL_RULE_COUNT:
@@ -597,21 +597,47 @@ void Path::render(Gdiplus::Graphics *graphics) const {
   }
 
   Gdiplus::GraphicsPath path_list = {fillmode};
-  for (const BezierCurve &curve : this->bezier_list) {
-    path_list.AddBezier((Gdiplus::REAL)curve.point_0.x, (Gdiplus::REAL)curve.point_0.y, 
-                        (Gdiplus::REAL)curve.point_CS.x, (Gdiplus::REAL)curve.point_CS.y,
-                        (Gdiplus::REAL)curve.point_CE.x, (Gdiplus::REAL)curve.point_CE.y,
-                        (Gdiplus::REAL)curve.point_N.x, (Gdiplus::REAL)curve.point_N.y);
-  }
+
+  path_list.AddBezier((Gdiplus::REAL)this->bezier_list[0].point_0.x,
+                      (Gdiplus::REAL)this->bezier_list[0].point_0.y,
+                      (Gdiplus::REAL)this->bezier_list[0].point_CS.x,
+                      (Gdiplus::REAL)this->bezier_list[0].point_CS.y,
+                      (Gdiplus::REAL)this->bezier_list[0].point_CE.x,
+                      (Gdiplus::REAL)this->bezier_list[0].point_CE.y,
+                      (Gdiplus::REAL)this->bezier_list[0].point_N.x,
+                      (Gdiplus::REAL)this->bezier_list[0].point_N.y);
+
+  Point last_point = this->bezier_list[0].point_N;
 
   Gdiplus::Matrix matrix = {
     (Gdiplus::REAL)this->transform[0][0],
-    (Gdiplus::REAL)this->transform[1][0],
     (Gdiplus::REAL)this->transform[0][1],
+    (Gdiplus::REAL)this->transform[1][0],
     (Gdiplus::REAL)this->transform[1][1],
     (Gdiplus::REAL)this->transform[0][2],
     (Gdiplus::REAL)this->transform[1][2]
   };
+
+  for (uint32_t i = 1; i < this->bezier_list.len(); ++i){
+    BezierCurve curve = this->bezier_list[i];
+
+    if (last_point.x != curve.point_0.x || last_point.y != curve.point_0.y){
+      path_list.StartFigure();
+    }
+
+    path_list.AddBezier((Gdiplus::REAL)curve.point_0.x, (Gdiplus::REAL)curve.point_0.y,
+                        (Gdiplus::REAL)curve.point_CS.x, (Gdiplus::REAL)curve.point_CS.y,
+                        (Gdiplus::REAL)curve.point_CE.x, (Gdiplus::REAL)curve.point_CE.y,
+                        (Gdiplus::REAL)curve.point_N.x, (Gdiplus::REAL)curve.point_N.y);
+    last_point = curve.point_N;
+  }
+
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      std::cout << this->transform[i][j] << ' ';
+    }
+    std::cout << '\n';
+  }
   path_list.Transform(&matrix);
 
   if (this->fill_brush) {
