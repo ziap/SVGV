@@ -1,30 +1,59 @@
 #include "Polygon.h"
+#include "Path.h"
 
 using namespace SVGShapes;
 
-void Polygon::render(Gdiplus::Graphics *) const {
+void Polygon::render(Gdiplus::Graphics *graphics) const {
+  Gdiplus::FillMode fillmode;
+  switch (this->fill_rule) {
+    case FILL_RULE_NONZERO:
+      fillmode = Gdiplus::FillModeWinding;
+      break;
+    case FILL_RULE_EVENODD:
+      fillmode = Gdiplus::FillModeAlternate;
+      break;
+    case FILL_RULE_COUNT:
+       __builtin_unreachable();
+  }
 
+  Gdiplus::GraphicsPath path_list = {fillmode};
+
+  Gdiplus::Matrix matrix = {
+    (Gdiplus::REAL)this->transform[0][0],
+    (Gdiplus::REAL)this->transform[0][1],
+    (Gdiplus::REAL)this->transform[1][0],
+    (Gdiplus::REAL)this->transform[1][1],
+    (Gdiplus::REAL)this->transform[0][2],
+    (Gdiplus::REAL)this->transform[1][2]
+  };
+
+  path_list.StartFigure();
+  
+  uint32_t length = this->point_list.len();
+  for (uint32_t i = 0; i < length - 1; ++i){
+    path_list.AddBezier((Gdiplus::REAL)this->point_list[i].x,
+                        (Gdiplus::REAL)this->point_list[i].y,
+                        (Gdiplus::REAL)this->point_list[i].x,
+                        (Gdiplus::REAL)this->point_list[i].y,
+                        (Gdiplus::REAL)this->point_list[i + 1].x,
+                        (Gdiplus::REAL)this->point_list[i + 1].y,
+                        (Gdiplus::REAL)this->point_list[i + 1].x,
+                        (Gdiplus::REAL)this->point_list[i + 1].y);
+  }
+  
+  path_list.CloseFigure();
+
+  path_list.Transform(&matrix);
+
+  if (this->fill_brush) {
+    graphics->FillPath(this->fill_brush.get(), &path_list);
+  }
+
+  if (this->stroke_brush) {
+    Gdiplus::Pen pen = {this->stroke_brush.get(), (float)this->stroke_width};
+    graphics->DrawPath(&pen, &path_list);
+  }
 }
-//  if (this->fill != nullptr) {
-//    RGB* colorFill = static_cast<RGB*>(fill.get());
-//    Color color = {
-//      static_cast<unsigned char>(colorFill->r * 255),
-//      static_cast<unsigned char>(colorFill->g * 255),
-//      static_cast<unsigned char>(colorFill->b * 255),
-//      static_cast<unsigned char>(this->fill_opacity * 255),
-//    };
-//   //std::cerr << "INFO: Polygon: " << (int)color.r << ' ' << (int)color.g << ' ' << (int)color.b << ' ' << (int)color.a << '\n';
-
-//   std::vector<Vector2> vertices;
-//   for (int i = 0; i < this->point_list.len(); ++i){
-//     vertices.push_back({(float)point_list[i].x, (float)point_list[i].y});
-//   }
-
-//   if (!vertices.empty()){
-//     DrawPoly({20, 20}, vertices.size(), 1.0f, 1.0f, color);
-//   }
-
-  // }
 
 static std::string_view trim_start(std::string_view str) {
   while (str.size() && (isspace(str[0]) || str[0] == ',')) {
