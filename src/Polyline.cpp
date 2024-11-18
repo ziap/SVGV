@@ -29,14 +29,14 @@ void Polyline::render(Gdiplus::Graphics *graphics) const {
   path_list.StartFigure();
   uint32_t length = this->point_list.len();
   for (uint32_t i = 0; i < length - 1; ++i){
-    path_list.AddBezier((Gdiplus::REAL)this->point_list[i].x,
-                        (Gdiplus::REAL)this->point_list[i].y,
-                        (Gdiplus::REAL)this->point_list[i].x,
-                        (Gdiplus::REAL)this->point_list[i].y,
-                        (Gdiplus::REAL)this->point_list[i + 1].x,
-                        (Gdiplus::REAL)this->point_list[i + 1].y,
-                        (Gdiplus::REAL)this->point_list[i + 1].x,
-                        (Gdiplus::REAL)this->point_list[i + 1].y);
+    path_list.AddBezier((Gdiplus::REAL)this->point_list[i][0],
+                        (Gdiplus::REAL)this->point_list[i][1],
+                        (Gdiplus::REAL)this->point_list[i][0],
+                        (Gdiplus::REAL)this->point_list[i][1],
+                        (Gdiplus::REAL)this->point_list[i + 1][0],
+                        (Gdiplus::REAL)this->point_list[i + 1][1],
+                        (Gdiplus::REAL)this->point_list[i + 1][0],
+                        (Gdiplus::REAL)this->point_list[i + 1][1]);
   }
 
 
@@ -65,12 +65,12 @@ static ArrayList<Point> read_point(std::string_view str) {
   while (str.size()) {
     str = trim_start(str);
     char *out;
-    new_point.x = strtod(str.data(), &out);
+    new_point[0] = strtod(str.data(), &out);
     if (out == str.data()) break;
     str = str.substr(out - str.data());
       
     str = trim_start(str);
-    new_point.y = strtod(str.data(), &out);
+    new_point[1] = strtod(str.data(), &out);
     if (out == str.data()) break;
     str = str.substr(out - str.data());
 
