@@ -676,8 +676,6 @@ static void convert_transform(std::string_view value, double matrix[2][3]) {
     std::string_view type = value.substr(start, end - start);
     solve_transform(type, I_matrix);
 
-    std::cout << " NEW MATRIXXXX : " << type << "\n";
-    cout_matrix(I_matrix);
     
     multiply_matrix(matrix, I_matrix);
     value = value.substr(end + 1);

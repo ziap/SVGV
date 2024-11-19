@@ -28,7 +28,7 @@ static double get_vector_angle(Point u, Point v){
   if (tb >= ta){
     return tb - ta;
   }
-  return (PI * PI) - (ta - tb);
+  return (2 * PI) - (ta - tb);
 }
 
 
@@ -57,7 +57,7 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
   double radius_y = ry;
 
   if (numerator < 0.0){
-    double s = (float)std::sqrt(1.0 - numerator / (rx * rx * ry * ry));
+    double s = std::sqrt(1.0 - numerator / (rx * rx * ry * ry));
     radius_x *= s;
     radius_y *= s;
     root = 0.0;
@@ -117,6 +117,8 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
                                Point{startX + dx1, startY + dy1},
                                Point{end_point_X + dxe, end_point_Y + dye}
                               ));
+
+
     theta1 = theta2;
     startX = (float)end_point_X;
     startY = (float)end_point_Y;
@@ -725,7 +727,9 @@ void Path::render(Gdiplus::Graphics *graphics) const {
   for (uint32_t i = 1; i < this->bezier_list.len(); ++i){
     BezierCurve curve = this->bezier_list[i];
 
-    if (last_point[0] != curve.point_0[0] || last_point[1] != curve.point_0[1]){
+    //if (last_point[0] != curve.point_0[0] || last_point[1] != curve.point_0[1]){
+
+    if (std::abs(last_point[0] - curve.point_0[0]) > 0.01 || std::abs(last_point[1] - curve.point_0[1]) > 0.01){
       path_list.StartFigure();
     }
 
@@ -733,6 +737,9 @@ void Path::render(Gdiplus::Graphics *graphics) const {
                         (Gdiplus::REAL)curve.point_CS[0], (Gdiplus::REAL)curve.point_CS[1],
                         (Gdiplus::REAL)curve.point_CE[0], (Gdiplus::REAL)curve.point_CE[1],
                         (Gdiplus::REAL)curve.point_N[0], (Gdiplus::REAL)curve.point_N[1]);
+
+
+
     last_point = curve.point_N;
   }
 
