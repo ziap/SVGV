@@ -27,14 +27,13 @@ void Line::render(Gdiplus::Graphics *graphics) const {
                  (Gdiplus::REAL)this->p2[0], (Gdiplus::REAL)this->p2[1]); 
 
   Gdiplus::Matrix matrix = {
-    (Gdiplus::REAL)this->transform[0][0],
-    (Gdiplus::REAL)this->transform[0][1],
-    (Gdiplus::REAL)this->transform[1][0],
-    (Gdiplus::REAL)this->transform[1][1],
-    (Gdiplus::REAL)this->transform[0][2],
-    (Gdiplus::REAL)this->transform[1][2]
+    (Gdiplus::REAL)this->transform.m[0][0],
+    (Gdiplus::REAL)this->transform.m[1][0],
+    (Gdiplus::REAL)this->transform.m[0][1],
+    (Gdiplus::REAL)this->transform.m[1][1],
+    (Gdiplus::REAL)this->transform.d[0],
+    (Gdiplus::REAL)this->transform.d[1]
   };
-
   path.Transform(&matrix);
 
   if (this->stroke_brush) {

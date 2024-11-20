@@ -11,6 +11,7 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
+#include "Matrix.h"
 
 class IPaint {
 public:
@@ -76,7 +77,7 @@ public:
   double miter_limit;
   FillRule fill_rule;
 
-  double transform[2][3];
+  Transform transform;
   std::unique_ptr<const Gdiplus::Brush> fill_brush;
   std::unique_ptr<const Gdiplus::Brush> stroke_brush;
   std::unique_ptr<BaseShape> next;

@@ -3,6 +3,41 @@
 #include <cmath>
 #include <cctype>
 
+static void cout_transform(Transform transform) {
+  for (int i = 0; i < 2; i++)
+  for (int j = 0; j < 2; j++)
+    std::cout << transform.m[i][j] << " ";
+  std::cout << transform.d[0] << " " << transform.d[1] << "\n";
+}
+
+double sin64(double x) {
+  x *= 2;
+  int64_t ix = (int64_t)(x + 0.5) - (x < -0.5);
+  x -= ix;
+  double xx = x * x;
+  double p = -0.000000022283712160696968838090341141 * xx + 0.00000079485390373723208435107953106;
+  p = (p * xx + -0.000021915250301851374268722226604) * xx + 0.00046630278745932727290779370896;
+  p = (p * xx + -0.0073704309437021358482175409607) * xx + 0.082145886610993557443649772972;
+  p = (p * xx + -0.59926452932078689913965712261) * xx + 2.5501640398773453427519535834;
+  p = (p * xx + -5.1677127800499700284802062762) * xx + 3.1415926535897932384616860989;
+  if (ix & 1) p = -p;
+  return p * x;
+}
+
+double cos64(double x) {
+  x *= 2;
+  int64_t ix = (int64_t)(x + 0.5) - (x < -0.5);
+  x -= ix;
+  double xx = x * x;
+  double p = -0.00000013435212950953200670689916681 * xx + 0.0000043007241727348469251130229989;
+  p = (p * xx + -0.00010463741681752138304555983558) * xx + 0.0019295741872812348340250127913;
+  p = (p * xx + -0.025806891376592964031915358604) * xx + 0.23533063035799501990661634763;
+  p = (p * xx + -1.335262768854554964340264952) * xx + 4.0587121264167675439139412146;
+  p = (p * xx + -4.9348022005446793043098245253) * xx + 0.999999999999999999993615895;
+  if (ix & 1) p = -p;
+  return p;
+}
+
 RGBPaint::RGBPaint(double r, double g, double b) : r{r}, g{g}, b{b} {}
 
 std::unique_ptr<IPaint> RGBPaint::clone() const {
@@ -410,6 +445,7 @@ std::string_view hex_color[COLOR_COUNT] = {
   "#FFFFFF", "#F5F5F5", "#FFFF00", "#9ACD32", 
 };
 
+
 static std::string_view trim_start(std::string_view sv) {
   while (sv.size() && (isspace(sv[0]) || sv[0] == ',')) sv = sv.substr(1);
   return sv;
@@ -486,22 +522,6 @@ static void convert_array(std::string_view value, float *a, int *count) {
   }
 }
 
-
-static void multiply_matrix(double matrix1[2][3], double matrix2[2][3]) {
-  double matrix[2][3] = {};
-  matrix[0][0] = matrix1[0][0] * matrix2[0][0] + matrix1[0][1] * matrix2[1][0];
-  matrix[0][1] = matrix1[0][0] * matrix2[0][1] + matrix1[0][1] * matrix2[1][1];
-  matrix[0][2] = matrix1[0][0] * matrix2[0][2] + matrix1[0][1] * matrix2[1][2] + matrix1[0][2];
-
-  matrix[1][0] = matrix1[1][0] * matrix2[0][0] + matrix1[1][1] * matrix2[1][0];
-  matrix[1][1] = matrix1[1][0] * matrix2[0][1] + matrix1[1][1] * matrix2[1][1];
-  matrix[1][2] = matrix1[1][0] * matrix2[0][2] + matrix1[1][1] * matrix2[1][2] + matrix1[1][2];
-
-  for (int i = 0; i < 2; i++)
-    for (int j = 0; j < 3; j++)
-      matrix1[i][j] = matrix[i][j];
-}
-
 enum TransformType {
   TRANSFORM_MATRIX = 0,
   TRANSFORM_TRANSLATE,
@@ -523,141 +543,148 @@ constexpr std::string_view transform_name[TRANSFORM_COUNT] = {
 
 constexpr InverseIndex<TRANSFORM_COUNT> inv_transform = {&transform_name};
 
+struct Array {
+  double a[6];
+  int n;
+};
 
-void cout_matrix(double matrix[2][3]) {
-  for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < 3; j++)
-      std::cout << matrix[i][j] << " ";
-    std::cout << "\n";
+static Array split_number(std::string_view inf) {
+  Array arr;
+  arr.n = 0;
+  while (inf.size() > 0) {
+    inf = trim_start(inf);
+    while(isspace(inf[0]) != (inf[0] == ',')) inf = inf.substr(1);
+    char *out;
+    arr.a[arr.n] = strtod(inf.data(), &out);
+    inf = inf.substr(out - inf.data());
+    arr.n++;
   }
-  std::cout << "\n";
+
+  return arr;
+} 
+
+static Transform translate(Array arr) {
+  Transform transform = Transform::identity();
+  if (arr.n == 2) {
+    transform.d[0] = arr.a[0];
+    transform.d[1] = arr.a[1];
+  } else {
+    transform.d[0] = arr.a[0];
+  }
+
+  return transform;
 }
 
-static void solve_transform(std::string_view inf, double matrix[2][3]) {
-  matrix[0][0] = 1;
-  matrix[0][1] = 0;
-  matrix[0][2] = 0;
-  matrix[1][0] = 0;
-  matrix[1][1] = 1;
-  matrix[1][2] = 0;
+static Transform matrix(Array arr) {
+  Transform transform = Transform::identity();
+  transform.m[0][0] = arr.a[0]; 
+  transform.m[1][0] = arr.a[1]; 
+  transform.m[0][1] = arr.a[2]; 
+  transform.m[1][1] = arr.a[3];
+  transform.d[0] = arr.a[4], 
+  transform.d[1] = arr.a[5];
 
-  int start = 0;
+  return transform;
+}
+
+static Transform scale(Array arr) {
+  Transform transform = Transform::identity();
+  std::cout << arr.n << " - \n";
+  if (arr.n == 2) {
+    transform.m[0][0] = arr.a[0];
+    transform.m[1][1] = arr.a[1];
+  } else {
+    transform.m[0][0] = arr.a[0];
+    transform.m[1][1] = arr.a[0];
+  }
+
+  return transform;
+}
+
+static Transform rotate(Array arr) {
+  Transform transform = Transform::identity();
+  // double angle = arr.a[0] * PI / 180;
+  double angle = arr.a[0] / 360;
+  std::cout << "ANGLE: " << angle << "\n";
+  transform.m[0][0] = cos64(angle); 
+  transform.m[0][1] = -sin64(angle);
+  transform.m[1][0] = sin64(angle);
+  transform.m[1][1] = cos64(angle);
+  std::cout << "COS: " << cos64(angle)<< "\n";
+
+  std::cout << "so luong rotate : " << arr.n << "\n";
+ 
+  if (arr.n > 1) {
+    Array translate_arr;
+    translate_arr.a[0] = arr.a[1]; translate_arr.a[1] = arr.a[2]; translate_arr.n = arr.n - 1;
+    Transform translate1 = Transform::identity();
+    translate1 = translate(translate_arr);
+    transform = translate1 * transform;
+
+    translate1 = Transform::identity();
+    translate_arr.a[0] = -arr.a[1]; translate_arr.a[1] = -arr.a[2];
+    translate1 = translate(translate_arr);
+    transform = transform * translate1;
+  }
+
+  return transform;
+}
+
+static Transform skewX(Array arr) {
+   Transform transform = Transform::identity();
+  transform.m[0][1] = std::tan(arr.a[0] * PI / 180);
+
+  return transform;  
+}
+
+static Transform skewY(Array arr) {
+  Transform transform = Transform::identity();
+  transform.m[1][0] = std::tan(arr.a[0] * PI / 180);
+
+  return transform;
+}
+
+
+
+static Transform solve_transform(std::string_view inf) {
   int end = inf.find('(');
-  std::string_view str_type = inf.substr(start, end - start);
+  std::string_view str_type = inf.substr(0, end);
 
   inf = inf.substr(end + 1);
 
+  Array arr = split_number(inf);
+  
+  Transform transform = Transform::identity();
+
   switch ((TransformType)inv_transform[str_type]){
     case TRANSFORM_MATRIX: {
-      for (int j = 0; j < 3; j++) {
-        for (int i = 0; i < 2; i++) {
-          inf = trim_start(inf);
-
-          char *out;
-          matrix[i][j] = strtod(inf.data(), &out);
-          inf = inf.substr(out - inf.data());
-        }
-      }
+      std::cout <<"MATRIX\n";
+      transform = matrix(arr);
     } break;
 
     case TRANSFORM_TRANSLATE:{
-      inf = trim_start(inf);
-
-      char *out;
-      matrix[0][2] = strtod(inf.data(), &out);
-      inf = inf.substr(out - inf.data());
-
-      inf = trim_start(inf);
-      if (inf.size() > 0) {
-        matrix[1][2] = strtod(inf.data(), nullptr);
-      } else matrix[1][2] = 0;
-
+      std::cout <<"TRANSLATE\n";
+      transform = translate(arr);
     } break;
 
     case TRANSFORM_SCALE: {
-      inf = trim_start(inf);
-      char *out;
-      matrix[0][0] = strtod(inf.data(), &out);
-      inf = inf.substr(out - inf.data());
-
-      inf = trim_start(inf);
-      matrix[1][1] = strtod(inf.data(), nullptr);
+      std::cout <<"SCALE\n";
+      transform = scale(arr);
     } break;
 
     case TRANSFORM_ROTATE: {
-      inf = trim_start(inf);
-      char *out;
-      double num = strtod(inf.data(), &out);
-      inf = inf.substr(out - inf.data());
-
-      inf = trim_start(inf);
-      if (inf.size() > 0) {
-        char *out ;
-        double x = strtod(inf.data(), &out);
-        inf = inf.substr(out  - inf.data());
-  
-        inf = trim_start(inf);
-
-        double y;
-        if (inf.size() > 0) {
-          inf = trim_start(inf);
-          y = strtod(inf.data(), &out);
-          inf = inf.substr(out  - inf.data());
-        } else y = 0;
-
-        //tranlate x, y
-        matrix[0][0] = 1;
-        matrix[0][1] = 0;
-        matrix[0][2] = x;
-        matrix[1][0] = 0;
-        matrix[1][1] = 1;
-        matrix[1][2] = y;
-
-        //rotate
-        num = num * PI / 180;
-
-        double new_matrix[2][3] = {
-          {std::cos(num), -std::sin(num), 0 },
-          {std::sin(num), std::cos(num), 0 }
-        };
-      
-        multiply_matrix(matrix, new_matrix);
-
-        //translate x, y
-        new_matrix[0][0] = 1;
-        new_matrix[0][1] = 0;
-        new_matrix[0][2] = -x;
-        new_matrix[1][0] = 0;
-        new_matrix[1][1] = 1;
-        new_matrix[1][2] = -y;
-
-        multiply_matrix(matrix, new_matrix);
-
-      } else {
-        matrix[0][0] = std::cos(num);
-        matrix[0][1] = -std::sin(num);
-        matrix[0][2] = 0;
-        matrix[1][0] = std::sin(num);
-        matrix[1][1] = std::cos(num);
-        matrix[1][2] = 0;
-      }
-      
+      std::cout <<"ROTATE\n";
+      transform = rotate(arr);
     } break;
 
     case TRANSFORM_SKEWX: {
-      inf = trim_start(inf);
-      double num = strtod(inf.data(), nullptr);
-
-      num = num * PI / 180;
-      matrix[0][1] = std::tan(num);
+      std::cout <<"SKEWX\n";
+      transform = skewX(arr);
     } break;
 
     case TRANSFORM_SKEWY: {
-      inf = trim_start(inf);
-      double num = strtod(inf.data(), nullptr);
-
-      num = num * PI / 180;
-      matrix[1][0] = std::tan(num);
+      std::cout <<"SKEWY\n";
+      transform = skewY(arr);
     } break;
 
     case TRANSFORM_COUNT: {
@@ -665,21 +692,24 @@ static void solve_transform(std::string_view inf, double matrix[2][3]) {
     }
   }
 
+  return transform;
 }
 
-static void convert_transform(std::string_view value, double matrix[2][3]) {
-  double I_matrix[2][3] = {};
+static Transform convert_transform(std::string_view value) {
+  Transform tmp = Transform::identity();
+  Transform transform = Transform::identity();
+  
   int start = 0, end = 0;
   while (value.size() > 0) {
     value = trim_start(value);
     end = value.find(")");
     std::string_view type = value.substr(start, end - start);
-    solve_transform(type, I_matrix);
+    tmp = solve_transform(type);
+    transform = transform * tmp;
 
-    
-    multiply_matrix(matrix, I_matrix);
     value = value.substr(end + 1);
   }
+  return transform;
 }
 
 enum StyleType {
@@ -739,12 +769,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->stroke_line_join = StrokeLineJoin::LINE_JOIN_MITER;
     this->stroke_line_cap = StrokeLineCap::LINE_CAP_BUTT;
     this->miter_limit = 4;
-    this->transform[0][0] = 1;
-    this->transform[0][1] = 0;
-    this->transform[0][2] = 0;
-    this->transform[1][0] = 0;
-    this->transform[1][1] = 1;
-    this->transform[1][2] = 0;
+    this->transform = Transform::identity();
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
   } else {
     this->visible = parent->visible;
@@ -762,14 +787,9 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->stroke_line_join = parent->stroke_line_join;
     this->stroke_line_cap = parent->stroke_line_cap;
     this->miter_limit = parent->miter_limit;
-    this->transform[0][0] = parent->transform[0][0];
-    this->transform[0][1] = parent->transform[0][1];
-    this->transform[0][2] = parent->transform[0][2];
-    this->transform[1][0] = parent->transform[1][0];
-    this->transform[1][1] = parent->transform[1][1];
-    this->transform[1][2] = parent->transform[1][2];
+    this->transform = parent->transform;
     this->fill_rule = parent->fill_rule;
-  };
+  }
 
   for(int i = 0; i < attrs_count; i++) {
     std::string_view key = attrs[i].key;
@@ -833,7 +853,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
       
       case ATTRIBUTE_TRANSFORM: {
-        convert_transform(value, this->transform);
+        this->transform = this->transform * convert_transform(value);
       } break;
 
       case ATTRIBUTE_STYLE: {
@@ -861,4 +881,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (this->stroke) {
     this->stroke_brush = this->stroke->get_brush(this->stroke_opacity);
   }
+
+  cout_transform(this->transform);
+  
 }

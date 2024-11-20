@@ -111,7 +111,14 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
                  * cos_theta2);
     double dye = t * (sin_phi * radius_x * sin_theta2 - cos_phi * radius_y
                  * cos_theta2);
-
+    if (i == 0) {
+      startX = point_start[0];
+      startY = point_start[1];
+    }
+    else if (i == segments - 1){
+      end_point_X = point_end[0];
+      end_point_Y = point_end[1]; 
+    }
     arcs_list.push(BezierCurve(Point{startX, startY},
                                Point{end_point_X, end_point_Y},
                                Point{startX + dx1, startY + dy1},
@@ -715,20 +722,20 @@ void Path::render(Gdiplus::Graphics *graphics) const {
 
   Point last_point = this->bezier_list[0].point_N;
 
+
   Gdiplus::Matrix matrix = {
-    (Gdiplus::REAL)this->transform[0][0],
-    (Gdiplus::REAL)this->transform[0][1],
-    (Gdiplus::REAL)this->transform[1][0],
-    (Gdiplus::REAL)this->transform[1][1],
-    (Gdiplus::REAL)this->transform[0][2],
-    (Gdiplus::REAL)this->transform[1][2]
+    (Gdiplus::REAL)this->transform.m[0][0],
+    (Gdiplus::REAL)this->transform.m[1][0],
+    (Gdiplus::REAL)this->transform.m[0][1],
+    (Gdiplus::REAL)this->transform.m[1][1],
+    (Gdiplus::REAL)this->transform.d[0],
+    (Gdiplus::REAL)this->transform.d[1]
   };
 
   for (uint32_t i = 1; i < this->bezier_list.len(); ++i){
     BezierCurve curve = this->bezier_list[i];
 
     //if (last_point[0] != curve.point_0[0] || last_point[1] != curve.point_0[1]){
-
     if (std::abs(last_point[0] - curve.point_0[0]) > 0.01 || std::abs(last_point[1] - curve.point_0[1]) > 0.01){
       path_list.StartFigure();
     }
