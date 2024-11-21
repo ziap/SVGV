@@ -127,8 +127,8 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
 
 
     theta1 = theta2;
-    startX = (float)end_point_X;
-    startY = (float)end_point_Y;
+    startX = end_point_X;
+    startY = end_point_Y;
   }
   return arcs_list;
 }
@@ -735,8 +735,8 @@ void Path::render(Gdiplus::Graphics *graphics) const {
   for (uint32_t i = 1; i < this->bezier_list.len(); ++i){
     BezierCurve curve = this->bezier_list[i];
 
-    //if (last_point[0] != curve.point_0[0] || last_point[1] != curve.point_0[1]){
-    if (std::abs(last_point[0] - curve.point_0[0]) > 0.01 || std::abs(last_point[1] - curve.point_0[1]) > 0.01){
+    if (last_point[0] != curve.point_0[0] || last_point[1] != curve.point_0[1]){
+    //if (std::abs(last_point[0] - curve.point_0[0]) > 0.01 || std::abs(last_point[1] - curve.point_0[1]) > 0.01){
       path_list.StartFigure();
     }
 
