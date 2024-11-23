@@ -1,4 +1,6 @@
 #include "Circle.h"
+#include "ArrayList.h"
+#include "Matrix.h"
 
 using namespace SVGShapes;
 
@@ -18,7 +20,6 @@ constexpr std::string_view circle_attr_name[CIRCLE_ATTR_COUNT] {
 constexpr InverseIndex<CIRCLE_ATTR_COUNT> inv_circle_attribute= {&circle_attr_name};
 
 void Circle::render(Gdiplus::Graphics *) const {
-
 }
 
 Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)

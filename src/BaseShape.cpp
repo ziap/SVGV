@@ -3,40 +3,7 @@
 #include <cmath>
 #include <cctype>
 
-static void cout_transform(Transform transform) {
-  for (int i = 0; i < 2; i++)
-  for (int j = 0; j < 2; j++)
-    std::cout << transform.m[i][j] << " ";
-  std::cout << transform.d[0] << " " << transform.d[1] << "\n";
-}
 
-double sin64(double x) {
-  x *= 2;
-  int64_t ix = (int64_t)(x + 0.5) - (x < -0.5);
-  x -= ix;
-  double xx = x * x;
-  double p = -0.000000022283712160696968838090341141 * xx + 0.00000079485390373723208435107953106;
-  p = (p * xx + -0.000021915250301851374268722226604) * xx + 0.00046630278745932727290779370896;
-  p = (p * xx + -0.0073704309437021358482175409607) * xx + 0.082145886610993557443649772972;
-  p = (p * xx + -0.59926452932078689913965712261) * xx + 2.5501640398773453427519535834;
-  p = (p * xx + -5.1677127800499700284802062762) * xx + 3.1415926535897932384616860989;
-  if (ix & 1) p = -p;
-  return p * x;
-}
-
-double cos64(double x) {
-  x *= 2;
-  int64_t ix = (int64_t)(x + 0.5) - (x < -0.5);
-  x -= ix;
-  double xx = x * x;
-  double p = -0.00000013435212950953200670689916681 * xx + 0.0000043007241727348469251130229989;
-  p = (p * xx + -0.00010463741681752138304555983558) * xx + 0.0019295741872812348340250127913;
-  p = (p * xx + -0.025806891376592964031915358604) * xx + 0.23533063035799501990661634763;
-  p = (p * xx + -1.335262768854554964340264952) * xx + 4.0587121264167675439139412146;
-  p = (p * xx + -4.9348022005446793043098245253) * xx + 0.999999999999999999993615895;
-  if (ix & 1) p = -p;
-  return p;
-}
 
 RGBPaint::RGBPaint(double r, double g, double b) : r{r}, g{g}, b{b} {}
 
@@ -589,7 +556,6 @@ static Transform matrix(Array arr) {
 
 static Transform scale(Array arr) {
   Transform transform = Transform::identity();
-  std::cout << arr.n << " - \n";
   if (arr.n == 2) {
     transform.m[0][0] = arr.a[0];
     transform.m[1][1] = arr.a[1];
@@ -603,16 +569,12 @@ static Transform scale(Array arr) {
 
 static Transform rotate(Array arr) {
   Transform transform = Transform::identity();
-  // double angle = arr.a[0] * PI / 180;
-  double angle = arr.a[0] / 360;
-  std::cout << "ANGLE: " << angle << "\n";
-  transform.m[0][0] = cos64(angle); 
-  transform.m[0][1] = -sin64(angle);
-  transform.m[1][0] = sin64(angle);
-  transform.m[1][1] = cos64(angle);
-  std::cout << "COS: " << cos64(angle)<< "\n";
+  double angle = arr.a[0] * PI / 180;
+  transform.m[0][0] = std::cos(angle); 
+  transform.m[0][1] = -std::sin(angle);
+  transform.m[1][0] = std::sin(angle);
+  transform.m[1][1] = std::cos(angle);
 
-  std::cout << "so luong rotate : " << arr.n << "\n";
  
   if (arr.n > 1) {
     Array translate_arr;
@@ -658,32 +620,26 @@ static Transform solve_transform(std::string_view inf) {
 
   switch ((TransformType)inv_transform[str_type]){
     case TRANSFORM_MATRIX: {
-      std::cout <<"MATRIX\n";
       transform = matrix(arr);
     } break;
 
     case TRANSFORM_TRANSLATE:{
-      std::cout <<"TRANSLATE\n";
       transform = translate(arr);
     } break;
 
     case TRANSFORM_SCALE: {
-      std::cout <<"SCALE\n";
       transform = scale(arr);
     } break;
 
     case TRANSFORM_ROTATE: {
-      std::cout <<"ROTATE\n";
       transform = rotate(arr);
     } break;
 
     case TRANSFORM_SKEWX: {
-      std::cout <<"SKEWX\n";
       transform = skewX(arr);
     } break;
 
     case TRANSFORM_SKEWY: {
-      std::cout <<"SKEWY\n";
       transform = skewY(arr);
     } break;
 
@@ -882,6 +838,4 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->stroke_brush = this->stroke->get_brush(this->stroke_opacity);
   }
 
-  cout_transform(this->transform);
-  
 }

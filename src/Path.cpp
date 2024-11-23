@@ -1,4 +1,5 @@
 #include "Path.h"
+#include <iomanip>
 #include <cmath>
 
 using namespace SVGShapes;
@@ -130,10 +131,11 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
     startX = end_point_X;
     startY = end_point_Y;
   }
+   
   return arcs_list;
 }
 
-static bool is_next_command(const char &chr) {
+static bool is_next_command(char chr) {
   switch(chr) {
     case 'M': return true;
     case 'm': return true;
@@ -611,8 +613,8 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             point_n[1] = read_double(&value);
 
             this->bezier_list.append(arcs_to_curves(current_point, point_n, rx, ry, angle_degree, large_arc_flag, sweep_flag));
+            current_point = this->bezier_list[this->bezier_list.len() - 1].point_N;
 
-            current_point = point_n;
             pre_control_point = current_point;
 
             while (!value.empty() && !is_next_command(value[0]) )  {
@@ -626,7 +628,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
 
               this->bezier_list.append(arcs_to_curves(current_point, point_n, rx, ry, angle_degree, large_arc_flag, sweep_flag));
 
-              current_point = point_n;
+              current_point = this->bezier_list[this->bezier_list.len() - 1].point_N;
               pre_control_point = current_point;
             }
 
@@ -654,7 +656,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
 
             this->bezier_list.append(arcs_to_curves(current_point, point_n, rx, ry, angle_degree, large_arc_flag, sweep_flag));
 
-            current_point = point_n;
+            current_point = this->bezier_list[this->bezier_list.len() - 1].point_N;
             pre_control_point = current_point;
 
             while (!value.empty() && !is_next_command(value[0]) )  {
@@ -667,7 +669,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               point_n[1] = current_point[1] + read_double(&value);
               this->bezier_list.push(BezierCurve{current_point, point_n, current_point, point_n});
 
-              current_point = point_n;
+              current_point = this->bezier_list[this->bezier_list.len() - 1].point_N;
               pre_control_point = current_point;
             }
 
@@ -758,5 +760,9 @@ void Path::render(Gdiplus::Graphics *graphics) const {
   if (this->stroke_brush) {
     Gdiplus::Pen pen = {this->stroke_brush.get(), (float)this->stroke_width};
     graphics->DrawPath(&pen, &path_list);
-  }
+  } 
+  //else {
+  //  Gdiplus::Pen pen = {Gdiplus::Color(255, 0, 0, 255), (float)this->stroke_width};
+  //  graphics->DrawPath(&pen, &path_list);
+  //}
 }
