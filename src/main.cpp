@@ -1,3 +1,4 @@
+#include <iomanip>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <objidl.h>
@@ -8,19 +9,16 @@
 
 #include "parser.h"
 
-std::string read_file(const char *filename) {
-  std::ifstream fin(filename);
-  std::ostringstream ss;
-  ss << fin.rdbuf();
-  return ss.str();
-}
-
 class SVGRenderer {
 public:
   SVGRenderer() : shapes{nullptr} {}
   
-  void set_shapes(std::unique_ptr<BaseShape> shapes) {
-    this->shapes.swap(shapes);
+  void load_file(const char *filename) {
+    std::ifstream fin(filename);
+    std::ostringstream ss;
+    ss << fin.rdbuf();
+    this->svg_file = ss.str();
+    this->shapes = parse_xml(this->svg_file);
   }
 
   void render(Gdiplus::Graphics *graphics) {
@@ -30,6 +28,7 @@ public:
   }
 private:
   std::unique_ptr<BaseShape> shapes;
+  std::string svg_file;
 };
 
 class SVGWindow {
@@ -96,9 +95,8 @@ private:
         HDROP hDrop = (HDROP)wParam;
         char filePath[MAX_PATH];
         DragQueryFile(hDrop, 0, filePath, MAX_PATH); // Get number of files dropped
-        std::string svg = read_file(filePath);
         SVGRenderer *renderer = (SVGRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-        renderer->set_shapes(parse_xml(svg));
+        renderer->load_file(filePath);
         DragFinish(hDrop);
 
         InvalidateRect(hWnd, NULL, TRUE);

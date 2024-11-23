@@ -14,7 +14,7 @@ struct Matrix {
     if constexpr (N != 1 && M != 1) {
       return data + NCOLS * idx;
     } else {
-      return data[idx];
+      return this->data[idx];
     }
   }
 
@@ -22,7 +22,7 @@ struct Matrix {
     if constexpr (N != 1 && M != 1) {
       return data + NCOLS * idx;
     } else {
-      return data[idx];
+      return this->data[idx];
     }
   }
 
@@ -31,7 +31,9 @@ struct Matrix {
     Matrix<T, M, P> result = {};
     for (size_t i = 0; i < M; ++i) {
       for (size_t j = 0; j < P; ++j) {
-        for (size_t k = 0; k < N; ++k) result.data[P * i + j] += data[N * i + k] * other.data[P * k + j];
+        for (size_t k = 0; k < N; ++k) {
+          result.data[P * i + j] += this->data[N * i + k] * other.data[P * k + j];
+        }
       }
     }
     return result;
@@ -83,7 +85,7 @@ struct Matrix {
 
   constexpr static Matrix zeros() {
     Matrix result;
-    for (size_t i = 0; i < NROWS * NCOLS; ++i) result.data[i] = 0;
+    for (size_t i = 0; i < M * N; ++i) result.data[i] = 0;
     return result;
   }
 
@@ -140,7 +142,7 @@ struct AffineMatrix {
   constexpr AffineMatrix operator*(AffineMatrix other) const {
     return AffineMatrix {
       this->m * other.m,
-      this->m * other.d + this->d, 
+      this->m * other.d + this->d,
     };
   }
 };

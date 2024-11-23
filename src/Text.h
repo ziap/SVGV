@@ -2,7 +2,7 @@
 #define TEXT_H
 
 #include "BaseShape.h"
-#include "Point.h"
+#include "Matrix.h"
 
 namespace SVGShapes {
 

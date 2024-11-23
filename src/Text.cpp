@@ -25,10 +25,10 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
     
     switch ((TextAttr)inv_text_attribute[key]) {
       case TEXT_ATTR_X: {
-        this->pos.x = strtod(value.data(), nullptr);
+        this->pos[0] = strtod(value.data(), nullptr);
       } break;
       case TEXT_ATTR_Y: {
-        this->pos.y = strtod(value.data(), nullptr);
+        this->pos[1] = strtod(value.data(), nullptr);
       } break;
       case TEXT_ATTR_COUNT: {
         __builtin_unreachable();
@@ -39,6 +39,7 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
 
 void Text::render(Gdiplus::Graphics *) const {
   
+  std::cout << this->content << '\n';
   //   if (this->fill != nullptr) {
   //   RGB* colorFill = static_cast<RGB*>(fill.get());
   //   Color color = {
