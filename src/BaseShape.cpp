@@ -75,7 +75,7 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "stroke-opacity",
   "stroke-width",
   "stroke-dashoffset",
-  "stoke-dasharray",
+  "stroke-dasharray",
   "stroke-linejoin",
   "stroke-linecap",
   "stroke-miterlimit",
@@ -679,7 +679,7 @@ enum StyleType {
 constexpr std::string_view style_name[STYLE_COUNT] = {
   "fill",
   "stroke",
-  "stoke-width",
+  "stroke-width",
 };
 
 constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
