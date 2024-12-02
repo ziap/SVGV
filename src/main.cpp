@@ -1,47 +1,23 @@
-#include <iomanip>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <objidl.h>
 #include <shellapi.h>
+#include <gdiplus.h>
+#include <windowsx.h>
 
-#include <fstream>
-#include <sstream>
+#include "GdiplusRenderer.h"
 
-#include "parser.h"
-
-class SVGRenderer {
+class GdiplusWindow {
 public:
-  SVGRenderer() : shapes{nullptr} {}
-  
-  void load_file(const char *filename) {
-    std::ifstream fin(filename);
-    std::ostringstream ss;
-    ss << fin.rdbuf();
-    this->svg_file = ss.str();
-    this->shapes = parse_xml(this->svg_file);
-  }
-
-  void render(Gdiplus::Graphics *graphics) {
-    for (BaseShape *shape = this->shapes.get(); shape; shape = shape->next.get()) {
-      shape->render(graphics);
-    }
-  }
-private:
-  std::unique_ptr<BaseShape> shapes;
-  std::string svg_file;
-};
-
-class SVGWindow {
-public:
-  SVGWindow(int width, int height, const char *title, HINSTANCE instance, INT cmd_show) {
+  GdiplusWindow(int width, int height, const char *title, HINSTANCE instance, INT cmd_show) {
     // Initialize GDI+.
     Gdiplus::GdiplusStartupInput input;
     Gdiplus::GdiplusStartup(&gdiplus_token, &input, NULL);
 
     LPCSTR class_name = TEXT("SVGWindow");
-    WNDCLASS wnd_class = {
+    WNDCLASS wnd_class {
       CS_HREDRAW | CS_VREDRAW,
-      SVGWindow::callback,
+      GdiplusWindow::callback,
       0, 0,
       instance,
       LoadIcon(NULL, IDI_APPLICATION),
@@ -77,36 +53,62 @@ public:
     }
   }
 
-  ~SVGWindow() {
+  ~GdiplusWindow() {
     CloseWindow(this->window);
     Gdiplus::GdiplusShutdown(this->gdiplus_token);
   }
 private:
   HWND window;
   ULONG_PTR gdiplus_token;
-  SVGRenderer renderer;
+  GdiplusRenderer renderer;
 
   static LRESULT CALLBACK callback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch(message) {
       case WM_CREATE: {
         DragAcceptFiles(hWnd, TRUE);
       } break;
-     case WM_DROPFILES: {
+      case WM_LBUTTONDOWN: {
+        GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        renderer->drag_start(Point {
+          (double)GET_X_LPARAM(lParam),
+          (double)GET_Y_LPARAM(lParam),
+        });
+      } break;
+      case WM_LBUTTONUP: {
+        GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        renderer->drag_end();
+      } break;
+      case WM_MOUSEMOVE: {
+        GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        if (renderer->drag_move(Point {
+          (double)GET_X_LPARAM(lParam),
+          (double)GET_Y_LPARAM(lParam),
+        })) {
+          InvalidateRect(hWnd, NULL, TRUE);
+        }
+      } break;
+      case WM_MOUSEWHEEL: {
+        GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        double delta = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+        renderer->zoom(delta);
+
+        InvalidateRect(hWnd, NULL, TRUE);
+      } break;
+      case WM_DROPFILES: {
         HDROP hDrop = (HDROP)wParam;
         char filePath[MAX_PATH];
         DragQueryFile(hDrop, 0, filePath, MAX_PATH); // Get number of files dropped
-        SVGRenderer *renderer = (SVGRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
         renderer->load_file(filePath);
         DragFinish(hDrop);
-
         InvalidateRect(hWnd, NULL, TRUE);
       } break;
       case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-        Gdiplus::Graphics graphics = {hdc};
-        graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-        SVGRenderer *renderer = (SVGRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        Gdiplus::Graphics graphics {hdc};
+        graphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
+        GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
         renderer->render(&graphics);
         EndPaint(hWnd, &ps);
       } break;
@@ -123,7 +125,7 @@ private:
 };
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow) {
-  SVGWindow window(960, 720, "SVG viewer app", hInstance, iCmdShow);
+  GdiplusWindow window(960, 720, "SVG viewer app", hInstance, iCmdShow);
   window.run();
   return 0;
 }

@@ -9,10 +9,11 @@ namespace SVGShapes {
 
 class Polyline final : public BaseShape {
 public:
-  ArrayList<Point> point_list;
-
   Polyline(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void render(Gdiplus::Graphics *graphics) const override;
+
+  ArrayList<BezierCurve> get_beziers() const override;
+private:
+  ArrayList<Point> point_list;
 };
 
 };

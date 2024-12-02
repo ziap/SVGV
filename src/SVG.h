@@ -32,7 +32,6 @@ public:
   AxisAlignType align_y;
 
   SVG(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void render(Gdiplus::Graphics *graphics) const override;
 };
 
 };

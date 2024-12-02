@@ -4,6 +4,8 @@
 #include <cstdint>
 
 constexpr double PI = 3.141592653589793;
+constexpr double KX = 0.00115151904402214;
+constexpr double KY = 0.553336803557227;
 
 template<typename T>
 class Optional {
@@ -21,26 +23,6 @@ public:
 private:
   bool has_value;
   T data;
-};
-
-class RNG64 {
-public:
-  RNG64(const char *seed, uint32_t len);
-  uint64_t next();
-  uint64_t bounded(uint64_t range);
-  double uniform();
-private:
-  uint64_t states[4];
-};
-
-class RNG32 {
-public:
-  RNG32(const char *seed, uint32_t len);
-  uint32_t next();
-  uint32_t bounded(uint32_t range);
-  float uniform();
-private:
-  uint64_t state;
 };
 
 template<typename T, const T PRIME>

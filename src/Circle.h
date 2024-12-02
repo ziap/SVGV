@@ -7,12 +7,12 @@ namespace SVGShapes {
 
 class Circle final : public BaseShape {
 public:
-  double cx;
-  double cy;
-  double r;
-
   Circle(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void render(Gdiplus::Graphics *graphics) const override;
+
+  ArrayList<BezierCurve> get_beziers() const override;
+private:
+  Point c;
+  double r;
 };
 
 }

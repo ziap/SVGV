@@ -13,7 +13,7 @@ constexpr std::string_view text_attr_name[TEXT_ATTR_COUNT] {
   "y",
 };
 
-constexpr InverseIndex<TEXT_ATTR_COUNT> inv_text_attribute = {&text_attr_name};
+constexpr InverseIndex<TEXT_ATTR_COUNT> inv_text_attribute {&text_attr_name};
 
 Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent),
@@ -35,21 +35,4 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
       }
     }
   }
-}
-
-void Text::render(Gdiplus::Graphics *) const {
-  
-  std::cout << this->content << '\n';
-  //   if (this->fill != nullptr) {
-  //   RGB* colorFill = static_cast<RGB*>(fill.get());
-  //   Color color = {
-  //     static_cast<unsigned char>(colorFill->r * 255),
-  //     static_cast<unsigned char>(colorFill->g * 255),
-  //     static_cast<unsigned char>(colorFill->b * 255),
-  //     static_cast<unsigned char>(this->fill_opacity * 255),
-  //   };
-
-  // std::string str = {this->content.begin(), this->content.end()}; 
-  // DrawText(str.c_str(), this->pos.x, this->pos.y, this->font_size, color);
-  // }
 }

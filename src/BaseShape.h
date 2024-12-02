@@ -1,34 +1,40 @@
 #ifndef BASE_SHAPE_H
 #define BASE_SHAPE_H
 
-#include <objidl.h>
-#include <gdiplus.h>
-
-#include "utils.h"
-#include "XMLNode.h"
-#include "InverseIndex.h"
 #include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <memory>
+
+#include "utils.h"
+#include "ArrayList.h"
+#include "InverseIndex.h"
 #include "Matrix.h"
 
-class IPaint {
+class Attribute {
 public:
-  virtual std::unique_ptr<IPaint> clone() const = 0; 
-  virtual ~IPaint() = default;
-  virtual std::unique_ptr<const Gdiplus::Brush> get_brush(double opacity) = 0;
+  std::string_view key;
+  std::string_view value;
 };
 
-class RGBPaint final : public IPaint {
-public: 
-  RGBPaint(double r, double g, double b);
+enum PaintType {
+  PAINT_TRANSPARENT = 0,
+  PAINT_RGB
+};
 
-  std::unique_ptr<IPaint> clone() const override;
-  std::unique_ptr<const Gdiplus::Brush> get_brush(double opacity) override;
-
-private:
+struct RGBPaint {
   double r, g, b;
+};
+
+class Paint {
+public:
+  PaintType type;
+  union {
+    RGBPaint rgb_paint;
+  } variants;
+
+  static Paint new_transparent();
+  static Paint new_rgb(double r, double g, double b);
 };
 
 enum StrokeLineJoin {
@@ -53,12 +59,23 @@ enum FillRule {
   FILL_RULE_COUNT
 };
 
+class BezierCurve {
+public:
+  Point start;
+  Point end;
+  Point control_start;
+  Point control_end;
+};
+
 class BaseShape {
 public:
+  BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
+  virtual ~BaseShape() = default;
+
   bool visible;
 
-  std::unique_ptr<IPaint> fill;
-  std::unique_ptr<IPaint> stroke;
+  Paint fill;
+  Paint stroke;
 
   double font_size;
 
@@ -78,13 +95,9 @@ public:
   FillRule fill_rule;
 
   Transform transform;
-  std::unique_ptr<const Gdiplus::Brush> fill_brush;
-  std::unique_ptr<const Gdiplus::Brush> stroke_brush;
   std::unique_ptr<BaseShape> next;
 
-  BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
-  virtual void render(Gdiplus::Graphics *graphics) const = 0;
-  virtual ~BaseShape() = default;
+  virtual ArrayList<BezierCurve> get_beziers() const;
 };
 
 

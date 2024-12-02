@@ -19,37 +19,59 @@ constexpr std::string_view circle_attr_name[CIRCLE_ATTR_COUNT] {
 
 constexpr InverseIndex<CIRCLE_ATTR_COUNT> inv_circle_attribute= {&circle_attr_name};
 
-void Circle::render(Gdiplus::Graphics *) const {
-}
-
 Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
-  std::cout << "INFO: Creating Circle\n";
-  this->cx = 0;
-  this->cy = 0;
+  this->c = {0, 0};
   this->r = 0;
 
-  for(int i = 0; i < attrs_count; ++i){
+  for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
       
-      switch ((CircleAttr)inv_circle_attribute[key]) {
-        case CIRCLE_ATTR_CX: {
-          this->cx = strtod(value.data(), nullptr);
-        } break;
+    switch ((CircleAttr)inv_circle_attribute[key]) {
+      case CIRCLE_ATTR_CX: {
+        this->c[0] = strtod(value.data(), nullptr);
+      } break;
 
-        case CIRCLE_ATTR_CY: {
-          this->cy = strtod(value.data(), nullptr);
-        } break;
+      case CIRCLE_ATTR_CY: {
+        this->c[1] = strtod(value.data(), nullptr);
+      } break;
 
-        case CIRCLE_ATTR_R: {
-          this->r = strtod(value.data(), nullptr);
-        } break;
+      case CIRCLE_ATTR_R: {
+        this->r = strtod(value.data(), nullptr);
+      } break;
 
-        case CIRCLE_ATTR_COUNT: {
-          __builtin_unreachable();
-        }
+      case CIRCLE_ATTR_COUNT: {
+        __builtin_unreachable();
       }
+    }
   }
-  std::cout << "INFO: Finished read attributes circle\n";
+}
+
+ArrayList<BezierCurve> Circle::get_beziers() const {
+  double r = this->r;
+
+  Point p0 = this->c + Point {-r, 0};
+  Point p1 = this->c + Point {0, r};
+  Point p2 = this->c + Point {r, 0};
+  Point p3 = this->c + Point {0, -r};
+
+  ArrayList<BezierCurve> curves;
+  curves.push(BezierCurve {
+    p0, p1, p0 + Point {r * KX, r * KY}, p1 - Point {r * KY, r * KX}
+  });
+
+  curves.push(BezierCurve {
+    p1, p2, p1 + Point {r * KY, -r * KX}, p2 - Point {r * KX, -r * KY}
+  });
+
+  curves.push(BezierCurve {
+    p2, p3, p2 + Point {-r * KX, -r * KY}, p3 - Point {-r * KY, - r * KX }
+  });
+
+  curves.push(BezierCurve {
+    p3, p0, p3 + Point {-r * KY, r * KX}, p0 - Point {-r * KX, r * KY}
+  });
+
+  return curves;
 }

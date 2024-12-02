@@ -8,11 +8,12 @@ namespace SVGShapes {
 
 class Line final : public BaseShape {
 public:
+  Line(Attribute *attrs, int attrs_count, BaseShape *parent);
+
+  ArrayList<BezierCurve> get_beziers() const override;
+private:
   Point p1;
   Point p2;
-
-  Line(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void render(Gdiplus::Graphics *graphics) const override;
 };
 
 };

@@ -19,75 +19,77 @@ constexpr std::string_view ellipse_attr_name[ELLIPSE_ATTR_COUNT] {
 
 constexpr InverseIndex<ELLIPSE_ATTR_COUNT> inv_ellipse_attribute= {&ellipse_attr_name};
 
-void Ellipse::render(Gdiplus::Graphics *) const {
-
-}
-// std::cout << "The ellipse attrs: " <<
-//   "X: " << this->cx << " | " <<
-//   "Y: " << this->cy << " | " <<
-//   "RX: " << this->rx << " | " <<
-//   "RY: " << this->ry << '\n';
-//    if (this->fill != nullptr) {
-//    RGB* colorFill = static_cast<RGB*>(fill.get());
-//    Color color = {
-//      static_cast<unsigned char>(colorFill->r * 255),
-//      static_cast<unsigned char>(colorFill->g * 255),
-//      static_cast<unsigned char>(colorFill->b * 255),
-//      static_cast<unsigned char>((float)this->fill_opacity * 255),
-//    };
-
-// DrawEllipse(this->cx, this->cy, this->rx, this->ry, color);
-//   }
-    
-//   //draw stroke
-//   if (this->stroke != nullptr) {
-//   RGB* colorFill = static_cast<RGB*>(stroke.get());
-//   Color color = {
-//     static_cast<unsigned char>(colorFill->r * 255),
-//     static_cast<unsigned char>(colorFill->g * 255),
-//     static_cast<unsigned char>(colorFill->b * 255),
-//     static_cast<unsigned char>((float)this->stroke_opacity * 255),
-//   };
-
-//   for (int i = 0; i <= this->stroke_width; i++) {
-//     DrawEllipseLines(this->cx, this->cy, this->rx + i, this->ry + i, color);
-//   }
-// }
-
 Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
-  std::cout << "INFO: Creating Ellipse\n";
-  this->cx = 0;
-  this->cy = 0;
+  this->c = {0, 0};
   this->rx = 0;
   this->ry = 0;
 
-  for(int i = 0; i < attrs_count; ++i) {
-
+  for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
 
-      switch ((EllipseAttr)inv_ellipse_attribute[key]){
-        case ELLIPSE_ATTR_CX: {
-          this->cx = strtod(value.data(), nullptr);
-        } break;
+    switch ((EllipseAttr)inv_ellipse_attribute[key]){
+      case ELLIPSE_ATTR_CX: {
+        this->c[0] = strtod(value.data(), nullptr);
+      } break;
 
-        case ELLIPSE_ATTR_CY: {
-          this->cy = strtod(value.data(), nullptr);
-        } break;
+      case ELLIPSE_ATTR_CY: {
+        this->c[1] = strtod(value.data(), nullptr);
+      } break;
 
-        case ELLIPSE_ATTR_RX: {
-          this->rx = strtod(value.data(), nullptr);
-        } break;
+      case ELLIPSE_ATTR_RX: {
+        this->rx = strtod(value.data(), nullptr);
+      } break;
 
-        case ELLIPSE_ATTR_RY: {
-          this->ry = strtod(value.data(), nullptr);
-        } break;
+      case ELLIPSE_ATTR_RY: {
+        this->ry = strtod(value.data(), nullptr);
+      } break;
 
-        case ELLIPSE_ATTR_COUNT: {
-          __builtin_unreachable();
-        }
+      case ELLIPSE_ATTR_COUNT: {
+        __builtin_unreachable();
       }
+    }
   }
-  std::cout << "INFO: Finished read Ellipse attributes\n";
+}
+
+ArrayList<BezierCurve> Ellipse::get_beziers() const {
+  double rx = this->rx;
+  double ry = this->ry;
+
+  Point p0 = this->c + Point {-rx, 0};
+  Point p1 = this->c + Point {0, ry};
+  Point p2 = this->c + Point {rx, 0};
+  Point p3 = this->c + Point {0, -ry};
+
+  ArrayList<BezierCurve> curves;
+  curves.push(BezierCurve {
+    p0,
+    p1,
+    p0 + Point {rx * KX, ry * KY},
+    p1 - Point {rx * KY, ry * KX},
+  });
+
+  curves.push(BezierCurve {
+    p1,
+    p2,
+    p1 + Point {rx * KY, -ry * KX},
+    p2 - Point {rx * KX, -ry * KY},
+  });
+
+  curves.push(BezierCurve {
+    p2,
+    p3,
+    p2 + Point {-rx * KX, -ry * KY},
+    p3 - Point {-rx * KY, -ry * KX },
+  });
+
+  curves.push(BezierCurve {
+    p3,
+    p0,
+    p3 + Point {-rx * KY, ry * KX},
+    p0 - Point {-rx * KX, ry * KY},
+  });
+
+  return curves;
 }

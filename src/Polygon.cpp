@@ -1,59 +1,6 @@
 #include "Polygon.h"
-#include "Path.h"
 
 using namespace SVGShapes;
-
-void Polygon::render(Gdiplus::Graphics *graphics) const {
-  Gdiplus::FillMode fillmode;
-  switch (this->fill_rule) {
-    case FILL_RULE_NONZERO:
-      fillmode = Gdiplus::FillModeWinding;
-      break;
-    case FILL_RULE_EVENODD:
-      fillmode = Gdiplus::FillModeAlternate;
-      break;
-    case FILL_RULE_COUNT:
-       __builtin_unreachable();
-  }
-
-  Gdiplus::GraphicsPath path_list = {fillmode};
-
-  Gdiplus::Matrix matrix = {
-    (Gdiplus::REAL)this->transform.m[0][0],
-    (Gdiplus::REAL)this->transform.m[1][0],
-    (Gdiplus::REAL)this->transform.m[0][1],
-    (Gdiplus::REAL)this->transform.m[1][1],
-    (Gdiplus::REAL)this->transform.d[0],
-    (Gdiplus::REAL)this->transform.d[1]
-  };
-
-  path_list.StartFigure();
-  
-  uint32_t length = this->point_list.len();
-  for (uint32_t i = 0; i < length - 1; ++i){
-    path_list.AddBezier((Gdiplus::REAL)this->point_list[i][0],
-                        (Gdiplus::REAL)this->point_list[i][1],
-                        (Gdiplus::REAL)this->point_list[i][0],
-                        (Gdiplus::REAL)this->point_list[i][1],
-                        (Gdiplus::REAL)this->point_list[i + 1][0],
-                        (Gdiplus::REAL)this->point_list[i + 1][1],
-                        (Gdiplus::REAL)this->point_list[i + 1][0],
-                        (Gdiplus::REAL)this->point_list[i + 1][1]);
-  }
-  
-  path_list.CloseFigure();
-
-  path_list.Transform(&matrix);
-
-  if (this->fill_brush) {
-    graphics->FillPath(this->fill_brush.get(), &path_list);
-  }
-
-  if (this->stroke_brush) {
-    Gdiplus::Pen pen = {this->stroke_brush.get(), (float)this->stroke_width};
-    graphics->DrawPath(&pen, &path_list);
-  }
-}
 
 static std::string_view trim_start(std::string_view str) {
   while (str.size() && (isspace(str[0]) || str[0] == ',')) {
@@ -83,8 +30,6 @@ static ArrayList<Point> read_point(std::string_view str) {
 }
 
 Polygon::Polygon(Attribute *attrs, int attrs_count, BaseShape *parent) : BaseShape(attrs, attrs_count, parent) {
-
-  std::cout << "INFO: Creating Polygon\n";
   for (int i = 0; i < attrs_count; ++i){
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
@@ -93,5 +38,26 @@ Polygon::Polygon(Attribute *attrs, int attrs_count, BaseShape *parent) : BaseSha
       this->point_list = read_point(value);
     }
   }
-  std::cout << "INFO: Finished read Polyline attributes\n";
+}
+
+ArrayList<BezierCurve> Polygon::get_beziers() const {
+  ArrayList<BezierCurve> curves;
+
+  for (uint32_t i = 1; i < this->point_list.len(); ++i) {
+    Point start = this->point_list[i - 1];
+    Point end = this->point_list[i];
+    Point mid = (start + end) / 2;
+
+    curves.push(BezierCurve {start, end, mid, mid});
+  }
+
+  if (this->point_list.len() > 2) {
+    Point start = this->point_list[this->point_list.len() - 1];
+    Point end = this->point_list[0];
+    Point mid = (start + end) / 2;
+
+    curves.push(BezierCurve {start, end, mid, mid});
+  }
+
+  return curves;
 }

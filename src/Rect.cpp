@@ -16,69 +16,120 @@ constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] {
   "x", 
   "y",
   "rx",
-  "rx",
+  "ry",
   "width",
   "height",
 };
 
 constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute = {&rect_attr_name};
 
+Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
+: BaseShape(attrs, attrs_count, parent) {
+  this->x = 0;
+  this->y = 0;
+  this->width = 0;
+  this->height = 0;
+  this->rx = 0;
+  this->ry = 0;
 
-void Rect::render(Gdiplus::Graphics *graphic) const {
-  if (this->fill_brush) {
-    graphic->FillRectangle(this->fill_brush.get(), (float)this->x, (float)this->y, (float)this->width, (float)this->height);
-  }
+  //go through all of attributes readed, read the rect's attrs
+  for (int i = 0; i < attrs_count; ++i) {
+    std::string_view key = attrs[i].key;
+    std::string_view value = attrs[i].value;
 
-  if (this->stroke_brush) {
-    Gdiplus::Pen pen = {this->stroke_brush.get(), (float)this->stroke_width};
-    graphic->DrawRectangle(&pen, (float)this->x, (float)this->y, (float)this->width, (float)this->height);
+    switch((RectAttr)inv_rect_attribute[key]){
+      case RECT_ATTR_X: {
+        this->x = strtod(value.data(), nullptr);
+      } break;
+
+      case RECT_ATTR_Y: {
+        this->y = strtod(value.data(), nullptr);
+      } break;
+
+      case RECT_ATTR_RX: {
+        this->rx = strtod(value.data(), nullptr);
+      } break;
+
+      case RECT_ATTR_RY: {
+        this->ry = strtod(value.data(), nullptr);
+      } break;
+
+      case RECT_ATTR_WIDTH: {
+        this->width = strtod(value.data(), nullptr);
+      } break;
+
+      case RECT_ATTR_HEIGHT: {
+        this->height = strtod(value.data(), nullptr);
+      } break;
+
+      case RECT_ATTR_COUNT: {
+        __builtin_unreachable();
+      }
+    }
   }
 }
 
-Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
-  : BaseShape(attrs, attrs_count, parent) {
-    std::cout << "INFO: Creating Rect\n";
-    this->x = 0;
-    this->y = 0;
-    this->width = 0;
-    this->height = 0;
-    this->rx = 0;
-    this->ry = 0;
-  
-    //go through all of attributes readed, read the rect's attrs
-    for (int i = 0; i < attrs_count; ++i) {
-      std::string_view key = attrs[i].key;
-      std::string_view value = attrs[i].value;
+ArrayList<BezierCurve> Rect::get_beziers() const {
+  ArrayList<BezierCurve> curves;
 
-      switch((RectAttr)inv_rect_attribute[key]){
-        case RECT_ATTR_X: {
-          this->x = strtod(value.data(), nullptr);
-        } break;
+  double rx = std::min(this->rx, this->width / 2);
+  double ry = std::min(this->ry, this->height / 2);
 
-        case RECT_ATTR_Y: {
-          this->y = strtod(value.data(), nullptr);
-        } break;
+  Point sides[4][2] = {
+    {
+      { this->x, this->y + ry },
+      { this->x, this->y + this->height - ry },
+    },
+    {
+      { this->x + rx, this->y + this->height },
+      { this->x + this->width - rx, this->y + this->height },
+    },
+    {
+      { this->x + this->width, this->y + this->height - ry },
+      { this->x + this->width, this->y + ry },
+    },
+    {
+      { this->x + this->width - rx, this->y },
+      { this->x + rx, this->y },
+    },
+  };
 
-        case RECT_ATTR_RX: {
-          this->rx = strtod(value.data(), nullptr);
-        } break;
+  Point mids[4];
+  for (int i = 0; i < 4; ++i) {
+    mids[i] = (sides[i][0] + sides[i][1]) / 2;
+  }
 
-        case RECT_ATTR_RY: {
-          this->ry = strtod(value.data(), nullptr);
-        } break;
-                            
-        case RECT_ATTR_WIDTH: {
-          this->width = strtod(value.data(), nullptr);
-        } break;
+  curves.push(BezierCurve { sides[0][0], sides[0][1], mids[0], mids[0] });
+  curves.push(BezierCurve {
+    sides[0][1],
+    sides[1][0],
+    sides[0][1] + Point {rx * KX, ry * KY},
+    sides[1][0] - Point {rx * KY, ry * KX},
+  });
 
-        case RECT_ATTR_HEIGHT: {
-          this->height = strtod(value.data(), nullptr);
-        } break;
+  curves.push(BezierCurve { sides[1][0], sides[1][1], mids[1], mids[1] });
+  curves.push(BezierCurve {
+    sides[1][1],
+    sides[2][0],
+    sides[1][1] + Point {rx * KY, -ry * KX},
+    sides[2][0] - Point {rx * KX, -ry * KY},
+  });
 
-        case RECT_ATTR_COUNT: {
-          __builtin_unreachable();
-        }
-      }
-    }
-    std::cout << "INFO: Finished read rect attributes\n";
+  curves.push(BezierCurve { sides[2][0], sides[2][1], mids[2], mids[2] });
+  curves.push(BezierCurve {
+    sides[2][1],
+    sides[3][0],
+    sides[2][1] + Point {-rx * KX, -ry * KY},
+    sides[3][0] - Point {-rx * KY, - ry * KX },
+  });
+
+  curves.push(BezierCurve { sides[3][0], sides[3][1], mids[3], mids[3] });
+  curves.push(BezierCurve {
+    sides[3][1],
+    sides[0][0],
+    sides[3][1] + Point {-rx * KY, ry * KX},
+    sides[0][0] - Point {-rx * KX, ry * KY},
+  });
+
+  return curves;
 }

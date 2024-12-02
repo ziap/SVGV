@@ -12,7 +12,6 @@ public:
   Point pos;
 
   Text(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void render(Gdiplus::Graphics *graphics) const override;
 };
 
 };

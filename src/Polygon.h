@@ -9,10 +9,11 @@ namespace SVGShapes {
 
 class Polygon final : public BaseShape{
 public:
-  ArrayList<Point> point_list;
-
   Polygon(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void render(Gdiplus::Graphics *graphics) const override;
+
+  virtual ArrayList<BezierCurve> get_beziers() const override;
+private:
+  ArrayList<Point> point_list;
 };
 
 };

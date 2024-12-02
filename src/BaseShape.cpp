@@ -3,21 +3,17 @@
 #include <cmath>
 #include <cctype>
 
-
-
-RGBPaint::RGBPaint(double r, double g, double b) : r{r}, g{g}, b{b} {}
-
-std::unique_ptr<IPaint> RGBPaint::clone() const {
-  return std::make_unique<RGBPaint>(r, g, b);
+Paint Paint::new_transparent() {
+  Paint paint;
+  paint.type = PAINT_TRANSPARENT;
+  return paint;
 }
 
-std::unique_ptr<const Gdiplus::Brush> RGBPaint::get_brush(double opacity){
-  return std::make_unique<const Gdiplus::SolidBrush>(Gdiplus::Color{
-    (BYTE)(opacity * 255), 
-    (BYTE)(this->r * 255), 
-    (BYTE)(this->g * 255), 
-    (BYTE)(this->b * 255)
-  });
+Paint Paint::new_rgb(double r, double g, double b) {
+  Paint paint;
+  paint.type = PAINT_RGB;
+  paint.variants.rgb_paint = RGBPaint { r, g, b };
+  return paint;
 }
 
 constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
@@ -418,7 +414,7 @@ static std::string_view trim_start(std::string_view sv) {
   return sv;
 }
 
-static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
+static Paint read_color_hex(std::string_view value) {
   double r, g, b; 
   value = value.substr(1);
 
@@ -433,16 +429,16 @@ static std::unique_ptr<IPaint> read_color_hex(std::string_view value) {
   g /= 255;
   b /= 255;
 
-  return (std::make_unique<RGBPaint> (r, g, b));
+  return Paint::new_rgb(r, g, b);
 }
 
-static std::unique_ptr<IPaint> read_color_text(std::string_view value) {
-  if (inv_color[value] == -1) return nullptr;
+static Paint read_color_text(std::string_view value) {
+  if (inv_color[value] == -1) return Paint::new_transparent();
   std::string_view color_hex = hex_color[inv_color[value]]; 
   return read_color_hex(color_hex);
 }
 
-static std::unique_ptr<IPaint> read_RGB(std::string_view value) {
+static Paint read_RGB(std::string_view value) {
   double r, g, b;
   int start = value.find('(');
   int end = value.find(',');
@@ -460,18 +456,18 @@ static std::unique_ptr<IPaint> read_RGB(std::string_view value) {
   r/= 255;
   g/=255;
   b/=255;
-  return (std::make_unique<RGBPaint> (r, g, b));
+  return Paint::new_rgb(r, g, b);
 }
 
-static std::unique_ptr<IPaint> read_paint(std::string_view value) {
+static Paint read_paint(std::string_view value) {
   if (value[0] == '#') return read_color_hex(value);
   if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') return read_RGB(value);
-  if (value == "none") return nullptr;
+  if (value == "none") return Paint::new_transparent();
   return read_color_text(value);
 } 
 
 static double convert_opacity(std::string_view value) {
-  double opacity = strtod(value.data(), nullptr);;
+  double opacity = strtod(value.data(), nullptr);
   if (value[value.size() - 1] == '%') {
     opacity /= 100;
   }
@@ -713,8 +709,8 @@ static void solve_style(std::string_view value, BaseShape *shape) {
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
     this->visible = true;
-    this->fill = std::make_unique<RGBPaint>(0, 0, 0);
-    this->stroke = nullptr;
+    this->fill = Paint::new_rgb(0, 0, 0);
+    this->stroke = Paint::new_transparent();
     this->font_size = 16;
     this->opacity = 1.0;
     this->fill_opacity = 1.0;
@@ -729,10 +725,8 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
   } else {
     this->visible = parent->visible;
-    if (parent->fill != nullptr)
-      this->fill = (parent->fill)->clone();
-    if (parent->stroke != nullptr)
-      this->stroke = (parent->stroke)->clone();
+    this->fill = parent->fill;
+    this->stroke = parent->stroke;
     this->font_size = parent->font_size;
     this->opacity = parent->opacity;
     this->fill_opacity = parent->fill_opacity;
@@ -829,13 +823,8 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       }
     }
   }
+}
 
-  if (this->fill) {
-    this->fill_brush = this->fill->get_brush(this->fill_opacity);
-  }
-
-  if (this->stroke) {
-    this->stroke_brush = this->stroke->get_brush(this->stroke_opacity);
-  }
-
+ArrayList<BezierCurve> BaseShape::get_beziers() const {
+  return ArrayList<BezierCurve> {};
 }

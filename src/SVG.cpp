@@ -109,6 +109,3 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
     }
   }
 }
-
-void SVG::render(Gdiplus::Graphics *) const {
-}

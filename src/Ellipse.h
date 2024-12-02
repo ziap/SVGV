@@ -7,13 +7,13 @@ namespace SVGShapes {
 
 class Ellipse final : public BaseShape {
 public:
-  double cx;
-  double cy;
+  Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent);
+
+  ArrayList<BezierCurve> get_beziers() const override;
+private:
+  Point c;
   double rx;
   double ry;
-
-  Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent);
-  void render(Gdiplus::Graphics *graphics) const override;
 };
 
 };
