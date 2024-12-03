@@ -8,7 +8,6 @@
 #include "Polyline.h"
 #include "Polygon.h"
 #include "Text.h"
-#include "SVG.h"
 #include "Group.h"
 
 enum SVGTags {
@@ -48,7 +47,7 @@ constexpr std::string_view tags_str[TAG_COUNT] = {
 
 constexpr InverseIndex<TAG_COUNT> inv_tags = {&tags_str};
 
-std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
+ParseResult parse_xml(std::string_view content) {
   int cursor = 0;
   int end = content.size();
   int mark = 0;
@@ -66,7 +65,6 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
   bool is_parsing_tag = false;
   while (cursor < end) {
     if (!is_parsing_tag && content[cursor] == '<') {
-      // TODO: Add text support
       if (SVGShapes::Text* text = dynamic_cast<SVGShapes::Text*>(stack.get())) {
         text->content = content.substr(mark, cursor - mark);
       }
@@ -82,22 +80,30 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
       while (tag_content.size() && isspace(tag_content[0])) tag_content = tag_content.substr(1);
       if (tag_content[0] == '!' || tag_content[0] == '?') continue;
 
-      if (tag_content[0] == '/') {
+      while (tag_content.size() && isspace(tag_content[0])) tag_content = tag_content.substr(1);
+      size_t name_end = 0;
+
+      while (name_end < tag_content.size() && !isspace(tag_content[name_end])) ++name_end;
+
+      std::string_view tag_name = tag_content.substr(0, name_end);
+      if (tag_name[0] == '/') {
+        if (inv_tags[tag_name.substr(1)] == -1) continue;
         if (stack) {
           std::unique_ptr<BaseShape> node = std::move(stack);
           stack = std::move(node->next);
 
           *tail = std::move(node);
+          if (stack.get() == nullptr) {
+            if (SVGShapes::SVG *svg = dynamic_cast<SVGShapes::SVG*>(tail->get())) {
+              return ParseResult { std::move(head), svg };
+            }
+          }
+
           tail = &(*tail)->next;
         }
         continue;
       }
 
-      while (tag_content.size() && isspace(tag_content[0])) tag_content = tag_content.substr(1);
-      size_t name_end = 0;
-
-      while (name_end < tag_content.size() && !isspace(tag_content[name_end])) ++name_end;
-      std::string_view tag_name = tag_content.substr(0, name_end);
       tag_content = tag_content.substr(name_end);
 
       ArrayList<Attribute> attrs;
@@ -185,5 +191,6 @@ std::unique_ptr<BaseShape> parse_xml(std::string_view content) {
       ++cursor;
     }
   }
-  return head;
+
+  return ParseResult { std::move(head), nullptr };
 }

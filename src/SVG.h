@@ -1,3 +1,5 @@
+#ifndef SVG_H
+#define SVG_H
 #include "BaseShape.h"
 
 namespace SVGShapes {
@@ -21,8 +23,7 @@ public:
   double width;
   double height;
 
-  double view_min_x;
-  double view_min_y;
+  Point view_min;
 
   double view_width;
   double view_height;
@@ -35,3 +36,4 @@ public:
 };
 
 };
+#endif

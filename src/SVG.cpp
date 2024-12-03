@@ -39,8 +39,7 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
   this->width = 0;
   this->height = 0;
 
-  this->view_min_x = 0;
-  this->view_min_y = 0;
+  this->view_min = Point {0, 0};
   this->view_width = 0;
   this->view_height = 0;
 
@@ -62,7 +61,7 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
       case ATTRIBUTE_VIEWBOX: {
         {
           char *out;
-          this->view_min_x = strtod(value.data(), &out);
+          this->view_min[0] = strtod(value.data(), &out);
           value = value.substr(out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {
@@ -70,7 +69,7 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
         }
         {
           char *out ;
-          this->view_min_y = strtod(value.data(), &out);
+          this->view_min[1] = strtod(value.data(), &out);
           value = value.substr(out - value.data());
         }
         while (value.size() && (isspace(value[0]) || value[0] == '%' || value[0] == ',')) {

@@ -6,7 +6,7 @@
 
 class GdiplusRenderer {
 public:
-  GdiplusRenderer();
+  GdiplusRenderer(int init_width, int init_height);
   
   void load_file(const char *filename);
 
@@ -17,6 +17,7 @@ public:
   void drag_end();
 
   void zoom(double delta);
+  void resize(int new_width, int new_height);
 private:
   std::deque<GdiplusFragment> shapes;
   std::string svg_file;
@@ -24,6 +25,9 @@ private:
   Point center;
   double scale;
   bool dragging;
+
+  int width;
+  int height;
 
   Point mouse_last;
 };
