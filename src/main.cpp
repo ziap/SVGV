@@ -54,7 +54,6 @@ public:
   }
 
   ~GdiplusWindow() {
-    CloseWindow(this->window);
     Gdiplus::GdiplusShutdown(this->gdiplus_token);
   }
 private:
