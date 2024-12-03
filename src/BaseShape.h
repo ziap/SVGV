@@ -84,8 +84,8 @@ public:
   double stroke_opacity;
 
   double stroke_width;
-  float stroke_dash_offset;
-  float stroke_dash_array[8];
+  double stroke_dash_offset;
+  double stroke_dash_array[8];
   int stroke_dash_count;
 
   StrokeLineJoin stroke_line_join;

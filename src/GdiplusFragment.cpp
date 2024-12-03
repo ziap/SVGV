@@ -37,25 +37,24 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape)
 
   path {get_gdiplus_fillmode(shape->fill_rule)} {
     if(const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
-      std::wstring wstringText = std::wstring(text->content.begin(), text->content.end());
+      std::wstring str = std::wstring(text->content.begin(), text->content.end());
       Gdiplus::FontFamily family(L"Times New Roman");
       int fontStyle = Gdiplus::FontStyleRegular;
 
-      float emSize = static_cast<float>(text->font_size);
 
       Gdiplus::PointF origin(
-        static_cast<float>(text->pos[0]), 
-        static_cast<float>(text->pos[1] - text->font_size)
+        (Gdiplus::REAL)(text->pos[0]), 
+        (Gdiplus::REAL)(text->pos[1] - text->font_size)
       );
 
       Gdiplus::StringFormat format(Gdiplus::StringFormat::GenericDefault());
   
       this->path.AddString(
-        wstringText.c_str(),
-        static_cast<int>(wstringText.length()),
+        str.c_str(),
+        (INT)(str.length()),
         &family,
         fontStyle,
-        emSize,
+        (Gdiplus::REAL) text->font_size,
         origin,
         &format
       );
@@ -175,9 +174,13 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape)
         __builtin_unreachable();
       } break;
     }
-    this->pen.SetDashOffset((float)shape->stroke_dash_offset);
-    this->pen.SetDashPattern(shape->stroke_dash_array, shape->stroke_dash_count);
-    this->pen.SetMiterLimit((float)shape->miter_limit);
+    this->pen.SetDashOffset((Gdiplus::REAL)shape->stroke_dash_offset);
+    Gdiplus::REAL dasharray[8];
+    for (int i = 0; i < shape->stroke_dash_count; i++)
+      dasharray[i] = shape->stroke_dash_array[i];
+
+    this->pen.SetDashPattern(dasharray, shape->stroke_dash_count);
+    this->pen.SetMiterLimit((Gdiplus::REAL)shape->miter_limit);
 }
 
 void GdiplusFragment::render(Gdiplus::Graphics *graphics) {
