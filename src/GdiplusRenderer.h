@@ -29,6 +29,9 @@ private:
   int width;
   int height;
 
+  double view_width;
+  double view_height;
+
   Point mouse_last;
 };
 

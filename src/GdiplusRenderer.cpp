@@ -8,12 +8,14 @@
 #include "SVG.h"
 
 GdiplusRenderer::GdiplusRenderer(int init_width, int init_height)
-    : shapes{},
-      center{0, 0},
-      scale{1},
-      dragging{false},
-      width{init_width},
-      height{init_height} {}
+  : shapes{},
+  center{0, 0},
+  scale{1},
+  dragging{false},
+  width{init_width},
+  height{init_height},
+  view_width{0}, 
+  view_height{0} {}
 
 void GdiplusRenderer::load_file(const char *filename) {
   std::ifstream fin(filename);
@@ -32,16 +34,20 @@ void GdiplusRenderer::load_file(const char *filename) {
 
   if (svg.root) {
     if (svg.root->view_width && svg.root->view_height) {
-      double scale1 = this->width / svg.root->view_width;
-      double scale2 = this->height / svg.root->view_height;
-
-      double scale = std::min(scale1, scale2);
+      double scale = std::min(
+        this->width / svg.root->view_width,
+        this->height / svg.root->view_height
+      );
       double pad1 = (this->width - svg.root->view_width * scale) / 2;
       double pad2 = (this->height - svg.root->view_height * scale) / 2;
       this->scale = scale;
       this->center = svg.root->view_min + Point {pad1, pad2};
+      this->view_width = svg.root->view_width;
+      this->view_height = svg.root->view_height;
     } else {
       this->center = svg.root->view_min;
+      this->view_width = 0;
+      this->view_height = 0;
     }
   }
 }
@@ -84,10 +90,35 @@ void GdiplusRenderer::zoom(double delta) {
 }
 
 void GdiplusRenderer::resize(int new_width, int new_height) {
-  this->center = (this->center - Point {this->width * 0.5, this->height * 0.5}) / this->scale;
-  this->scale /= std::sqrt(this->width * this->height);
+  if (this->view_width && this->view_height) {
+    double old_rel_scale = std::min(
+      this->width / this->view_width,
+      this->height / this->view_height
+    );
+
+    double new_rel_scale = std::min(
+      new_width / this->view_width,
+      new_height / this->view_height
+    );
+
+    this->center = (this->center - Point {
+      this->width * 0.5,
+      this->height * 0.5
+    }) / this->scale;
+
+    this->scale = this->scale * new_rel_scale / old_rel_scale;
+
+    this->center = this->center * this->scale + Point {
+      new_width * 0.5,
+      new_height * 0.5
+    };
+  } else {
+    this->center = this->center + Point {
+      (new_width - this->width) * 0.5,
+      (new_height - this->height) * 0.5
+    };
+  }
+
   this->width = new_width;
   this->height = new_height;
-  this->scale *= std::sqrt(this->width * this->height);
-  this->center = this->center * this->scale + Point {this->width * 0.5, this->height * 0.5};
 }
