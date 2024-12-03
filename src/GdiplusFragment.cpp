@@ -39,7 +39,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape)
     if(const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
       std::wstring str = std::wstring(text->content.begin(), text->content.end());
       Gdiplus::FontFamily family(L"Times New Roman");
-      int fontStyle = Gdiplus::FontStyleRegular;
+      int font_style = Gdiplus::FontStyleRegular;
 
 
       Gdiplus::PointF origin(
@@ -53,7 +53,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape)
         str.c_str(),
         (INT)(str.length()),
         &family,
-        fontStyle,
+        font_style,
         (Gdiplus::REAL) text->font_size,
         origin,
         &format
