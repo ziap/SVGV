@@ -475,7 +475,7 @@ static double convert_opacity(std::string_view value) {
   return opacity;
 }
 
-static void convert_array(std::string_view value, float *a, int *count) {
+static void convert_array(std::string_view value, double *a, int *count) {
   while (value.size() > 0 && (*count) < 8) {
     value = trim_start(value);
     char *end;
