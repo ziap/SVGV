@@ -37,6 +37,7 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
   if (point_start[0] == point_end[0] && point_start[1] == point_end[1]){ 
     return {};
   }
+
   if (rx == 0.0f && ry == 0.0f){
     arcs_list.push(BezierCurve {point_start, point_end, point_start, point_end});
     return arcs_list;
@@ -46,12 +47,12 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
   double cos_phi = std::cos(angle_degree * PI / 180);
 
   double x1_dash = cos_phi * (point_start[0] - point_end[0]) / 2.0
-                   + sin_phi * (point_start[1] - point_end[1]) / 2.0;
+                 + sin_phi * (point_start[1] - point_end[1]) / 2.0;
   double y1_dash = -sin_phi * (point_start[0] - point_end[0]) / 2.0
-                   + cos_phi * (point_start[1] - point_end[1]) / 2.0;
+                 + cos_phi * (point_start[1] - point_end[1]) / 2.0;
   double root;
   double numerator = rx * rx * ry * ry - rx * rx
-                     * y1_dash * y1_dash - ry * ry * x1_dash * x1_dash;
+                   * y1_dash * y1_dash - ry * ry * x1_dash * x1_dash;
 
   double radius_x = rx;
   double radius_y = ry;
@@ -61,10 +62,9 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
     radius_x *= s;
     radius_y *= s;
     root = 0.0;
-  }
-  else{
+  } else{
     root = ((large_arc_flag == 1 && sweep_flag == 1) || (large_arc_flag == 0 && sweep_flag == 0) ? -1.0 : 1.0) 
-     * std::sqrt(numerator / (rx * rx * y1_dash * y1_dash + ry * ry * x1_dash * x1_dash));
+         * std::sqrt(numerator / (rx * rx * y1_dash * y1_dash + ry * ry * x1_dash * x1_dash));
   }
 
   double cx_dash = root * radius_x * y1_dash / radius_y;
@@ -73,13 +73,18 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
   double cx = cos_phi * cx_dash - sin_phi * cy_dash + (point_start[0] + point_end[0]) / 2.0;
   double cy = sin_phi * cx_dash + cos_phi * cy_dash + (point_start[1] + point_end[1]) / 2.0;
 
-  double theta1 = get_vector_angle(Point{1.0, 0.0}, Point{(x1_dash - cx_dash) / radius_x, (y1_dash - cy_dash) / radius_y});
-  double dtheta = get_vector_angle(Point{(x1_dash - cx_dash) / radius_x, (y1_dash - cy_dash) / radius_y}, Point{(-x1_dash - cx_dash) / radius_x, (-y1_dash - cy_dash) / radius_y}); 
+  double theta1 = get_vector_angle(
+    Point{1.0, 0.0},
+    Point{(x1_dash - cx_dash) / radius_x, (y1_dash - cy_dash) / radius_y}
+  );
+  double dtheta = get_vector_angle(
+    Point{(x1_dash - cx_dash) / radius_x, (y1_dash - cy_dash) / radius_y},
+    Point{(-x1_dash - cx_dash) / radius_x, (-y1_dash - cy_dash) / radius_y}
+  ); 
 
   if (sweep_flag == 0 && dtheta > 0){
     dtheta -= 2.0 * PI;
-  }
-  else if (sweep_flag == 1 && dtheta < 0){
+  } else if (sweep_flag == 1 && dtheta < 0){
     dtheta += 2.0 * PI;
   }
 
@@ -163,15 +168,14 @@ static bool is_next_command(char chr) {
 Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
   : BaseShape(attrs, attrs_count, parent) {
 
-  Point current_point = {};
-  Point start_point = {};
-  Point pre_control_point = {};
-
-    
   for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
     if (key == "d") {
+      Point current_point;
+      Point start_point;
+      Point pre_control_point;
+
       value = trim_start(value);
       while (!value.empty()) {
         char command = value[0];
@@ -199,6 +203,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = current_point; 
             }
           } break;
+
           case 'm': {
             double dx = read_double(&value);
             double dy = read_double(&value);
@@ -220,6 +225,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = current_point; 
             }
           } break;
+
           case 'L': {
             // read 2 points 
             double x = read_double(&value);
@@ -310,6 +316,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = current_point; 
             }
           } break;
+
           case 'V': {
             double y = read_double(&value);
             Point des_point = {current_point[0], y};
@@ -330,6 +337,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = current_point; 
             }
           } break;
+
           case 'v': {
             double dy = read_double(&value);
             Point des_point = {current_point[0], current_point[1] + dy};
@@ -349,6 +357,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = current_point; 
             }
           } break;
+
           case 'C': {
             double x[3];
             double y[3];
@@ -380,6 +389,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = point_ce;
             }
           } break;
+
           case 'c': {
             double x[3];
             double y[3];
@@ -410,6 +420,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = point_ce;
             }
           } break;
+
           case 'S': {
             double x[2];
             double y[2];
@@ -419,8 +430,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             Point point_ce = {x[0], y[0]};
             Point point_n = {x[1], y[1]};
-            Point point_cs = {current_point[0] - pre_control_point[0] + current_point[0],
-                              current_point[1] - pre_control_point[1] + current_point[1]};
+            Point point_cs = {
+              current_point[0] - pre_control_point[0] + current_point[0],
+              current_point[1] - pre_control_point[1] + current_point[1],
+            };
 
             this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
             current_point = point_n;
@@ -434,14 +447,17 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               }
               Point point_ce = {x[0], y[0]};
               Point point_n = {x[1], y[1]};
-              Point point_cs = {current_point[0] - pre_control_point[0] + current_point[0],
-                                current_point[1] - pre_control_point[1] + current_point[1]};
+              Point point_cs = {
+                current_point[0] - pre_control_point[0] + current_point[0],
+                current_point[1] - pre_control_point[1] + current_point[1],
+              };
 
               this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
               current_point = point_n;
               pre_control_point = point_ce;
             }
           } break;
+
           case 's': {
             double x[2];
             double y[2];
@@ -451,8 +467,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
             }
             Point point_ce = {x[0] + current_point[0], y[0] + current_point[1]};
             Point point_n = {x[1] + current_point[0], y[1] + current_point[1]};
-            Point point_cs = {current_point[0] - pre_control_point[0] + current_point[0],
-                              current_point[1] - pre_control_point[1] + current_point[1]};
+            Point point_cs = {
+              current_point[0] - pre_control_point[0] + current_point[0],
+              current_point[1] - pre_control_point[1] + current_point[1],
+            };
 
             this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
             current_point = point_n;
@@ -466,14 +484,17 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               }
               Point point_ce = {x[0] + current_point[0], y[0] + current_point[1]};
               Point point_n = {x[1] + current_point[0], y[1] + current_point[1]};
-              Point point_cs = {current_point[0] - pre_control_point[0] + current_point[0],
-                                current_point[1] - pre_control_point[1] + current_point[1]};
+              Point point_cs = {
+                current_point[0] - pre_control_point[0] + current_point[0],
+                current_point[1] - pre_control_point[1] + current_point[1],
+              };
 
               this->bezier_list.push(BezierCurve{current_point, point_n, point_cs, point_ce});
               current_point = point_n;
               pre_control_point = point_ce;
             }
           } break;
+
           case 'Q': {
             double x[2];
             double y[2];
@@ -549,12 +570,15 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = point_c;
             }
           } break;
+
           case 'T': {//quadratic abnormal, Input the end of previous bezier curve 
             double x = read_double(&value);
             double y = read_double(&value);
             Point point_n = {x, y};
-            Point point_c = {current_point[0] - pre_control_point[0] + current_point[0],
-                             current_point[1] - pre_control_point[1] + current_point[1]};
+            Point point_c = {
+              current_point[0] - pre_control_point[0] + current_point[0],
+              current_point[1] - pre_control_point[1] + current_point[1],
+            };
 
             Point c1 = (2 * point_c + current_point) / 3;
             Point c2 = (2 * point_c + point_n) / 3;
@@ -569,8 +593,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               y = read_double(&value);
               point_n[0] = x;
               point_n[1] = y;
-              Point point_c = {current_point[0] - pre_control_point[0] + current_point[0],
-                             current_point[1] - pre_control_point[1] + current_point[1]};
+              Point point_c = {
+                current_point[0] - pre_control_point[0] + current_point[0],
+                current_point[1] - pre_control_point[1] + current_point[1],
+              };
 
               Point c1 = (2 * point_c + current_point) / 3;
               Point c2 = (2 * point_c + point_n) / 3;
@@ -579,12 +605,15 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = point_c;
             }
           } break;
+
           case 't': {
             double x = read_double(&value);
             double y = read_double(&value);
             Point point_n = {current_point[0] + x, current_point[0] + y};
-            Point point_c = {current_point[0] - pre_control_point[0] + current_point[0],
-                             current_point[1] - pre_control_point[1] + current_point[1]};
+            Point point_c = {
+              current_point[0] - pre_control_point[0] + current_point[0],
+              current_point[1] - pre_control_point[1] + current_point[1],
+            };
 
             Point c1 = (2 * point_c + current_point) / 3;
             Point c2 = (2 * point_c + point_n) / 3;
@@ -600,8 +629,10 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               x = read_double(&value);
               y = read_double(&value);
               Point point_n = {current_point[0] + x, current_point[1] + y};
-              Point point_c = {current_point[0] - pre_control_point[0] + current_point[0],
-                               current_point[1] - pre_control_point[1] + current_point[1]};
+              Point point_c = {
+                current_point[0] - pre_control_point[0] + current_point[0],
+                current_point[1] - pre_control_point[1] + current_point[1],
+              };
 
               Point c1 = (2 * point_c + current_point) / 3;
               Point c2 = (2 * point_c + point_n) / 3;
@@ -648,6 +679,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = current_point;
             }
           } break;
+
           case 'a': {
             double rx, ry;
             double angle_degree;  
@@ -682,6 +714,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
               pre_control_point = current_point;
             }
           } break;
+
           case 'Z': 
           case 'z': {
             Point mid_point = (current_point + start_point) / 2;
