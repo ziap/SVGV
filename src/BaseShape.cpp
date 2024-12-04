@@ -2,6 +2,7 @@
 #include "InverseIndex.h"
 #include <cmath>
 #include <cctype>
+#include <cstdint>
 
 Paint Paint::new_transparent() {
   Paint paint;
@@ -82,332 +83,97 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
 
 constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute = {&attribute_name};
 
-
-enum ColorType {
-  COLOR_ALICEBLUE = 0, 
-  COLOR_ANTIQUEWHITE, 
-  COLOR_AQUA, 
-  COLOR_AQUAMARINE, 
-  COLOR_AZURE, 
-  COLOR_BEIGE, 
-  COLOR_BISQUE, 
-  COLOR_BLACK, 
-  COLOR_BLANCHEDALMOND, 
-  COLOR_BLUE, 
-  COLOR_BLUEVIOLET, 
-  COLOR_BROWN, 
-  COLOR_BURLYWOOD, 
-  COLOR_CADETBLUE, 
-  COLOR_CHARTREUSE, 
-  COLOR_CHOCOLATE, 
-  COLOR_CORAL, 
-  COLOR_CORNFLOWERBLUE, 
-  COLOR_CORNSILK, 
-  COLOR_CRIMSON, 
-  COLOR_CYAN, 
-  COLOR_DARKBLUE, 
-  COLOR_DARKCYAN, 
-  COLOR_DARKGOLDENROD, 
-  COLOR_DARKGRAY, 
-  COLOR_DARKGREY, 
-  COLOR_DARKGREEN, 
-  COLOR_DARKKHAKI, 
-  COLOR_DARKMAGENTA, 
-  COLOR_DARKOLIVEGREEN, 
-  COLOR_DARKORANGE, 
-  COLOR_DARKORCHID, 
-  COLOR_DARKRED, 
-  COLOR_DARKSALMON, 
-  COLOR_DARKSEAGREEN, 
-  COLOR_DARKSLATEBLUE, 
-  COLOR_DARKSLATEGRAY, 
-  COLOR_DARKSLATEGREY, 
-  COLOR_DARKTURQUOISE, 
-  COLOR_DARKVIOLET, 
-  COLOR_DEEPPINK, 
-  COLOR_DEEPSKYBLUE, 
-  COLOR_DIMGRAY, 
-  COLOR_DIMGREY, 
-  COLOR_DODGERBLUE, 
-  COLOR_FIREBRICK, 
-  COLOR_FLORALWHITE, 
-  COLOR_FORESTGREEN, 
-  COLOR_FUCHSIA, 
-  COLOR_GAINSBORO, 
-  COLOR_GHOSTWHITE, 
-  COLOR_GOLD, 
-  COLOR_GOLDENROD, 
-  COLOR_GRAY, 
-  COLOR_GREY, 
-  COLOR_GREEN, 
-  COLOR_GREENYELLOW, 
-  COLOR_HONEYDEW, 
-  COLOR_HOTPINK, 
-  COLOR_INDIANRED, 
-  COLOR_INDIGO, 
-  COLOR_IVORY, 
-  COLOR_KHAKI, 
-  COLOR_LAVENDER, 
-  COLOR_LAVENDERBLUSH, 
-  COLOR_LAWNGREEN, 
-  COLOR_LEMONCHIFFON, 
-  COLOR_LIGHTBLUE, 
-  COLOR_LIGHTCORAL, 
-  COLOR_LIGHTCYAN, 
-  COLOR_LIGHTGOLDENRODYELLOW, 
-  COLOR_LIGHTGRAY, 
-  COLOR_LIGHTGREY, 
-  COLOR_LIGHTGREEN, 
-  COLOR_LIGHTPINK, 
-  COLOR_LIGHTSALMON, 
-  COLOR_LIGHTSEAGREEN, 
-  COLOR_LIGHTSKYBLUE, 
-  COLOR_LIGHTSLATEGRAY, 
-  COLOR_LIGHTSLATEGREY, 
-  COLOR_LIGHTSTEELBLUE, 
-  COLOR_LIGHTYELLOW, 
-  COLOR_LIME, 
-  COLOR_LIMEGREEN, 
-  COLOR_LINEN, 
-  COLOR_MAGENTA, 
-  COLOR_MAROON, 
-  COLOR_MEDIUMAQUAMARINE, 
-  COLOR_MEDIUMBLUE, 
-  COLOR_MEDIUMORCHID, 
-  COLOR_MEDIUMPURPLE, 
-  COLOR_MEDIUMSEAGREEN, 
-  COLOR_MEDIUMSLATEBLUE, 
-  COLOR_MEDIUMSPRINGGREEN, 
-  COLOR_MEDIUMTURQUOISE, 
-  COLOR_MEDIUMVIOLETRED, 
-  COLOR_MIDNIGHTBLUE, 
-  COLOR_MINTCREAM, 
-  COLOR_MISTYROSE, 
-  COLOR_MOCCASIN, 
-  COLOR_NAVAJOWHITE, 
-  COLOR_NAVY, 
-  COLOR_OLDLACE, 
-  COLOR_OLIVE, 
-  COLOR_OLIVEDRAB, 
-  COLOR_ORANGE, 
-  COLOR_ORANGERED, 
-  COLOR_ORCHID, 
-  COLOR_PALEGOLDENROD, 
-  COLOR_PALEGREEN, 
-  COLOR_PALETURQUOISE, 
-  COLOR_PALEVIOLETRED, 
-  COLOR_PAPAYAWHIP, 
-  COLOR_PEACHPUFF, 
-  COLOR_PERU, 
-  COLOR_PINK, 
-  COLOR_PLUM, 
-  COLOR_POWDERBLUE, 
-  COLOR_PURPLE, 
-  COLOR_REBECCAPURPLE, 
-  COLOR_RED, 
-  COLOR_ROSYBROWN, 
-  COLOR_ROYALBLUE, 
-  COLOR_SADDLEBROWN, 
-  COLOR_SALMON, 
-  COLOR_SANDYBROWN, 
-  COLOR_SEAGREEN, 
-  COLOR_SEASHELL, 
-  COLOR_SIENNA, 
-  COLOR_SILVER, 
-  COLOR_SKYBLUE, 
-  COLOR_SLATEBLUE, 
-  COLOR_SLATEGRAY, 
-  COLOR_SLATEGREY, 
-  COLOR_SNOW, 
-  COLOR_SPRINGGREEN, 
-  COLOR_STEELBLUE, 
-  COLOR_TAN, 
-  COLOR_TEAL, 
-  COLOR_THISTLE, 
-  COLOR_TOMATO, 
-  COLOR_TURQUOISE, 
-  COLOR_VIOLET, 
-  COLOR_WHEAT, 
-  COLOR_WHITE, 
-  COLOR_WHITESMOKE, 
-  COLOR_YELLOW, 
-  COLOR_YELLOWGREEN, 
-  COLOR_COUNT,
+constexpr std::string_view color_name[] = {
+  "aliceblue",       "antiquewhite",      "aqua",                 "aquamarine",
+  "azure",           "beige",             "bisque",               "black",
+  "blanchedalmond",  "blue",              "blueviolet",           "brown",
+  "burlywood",       "cadetblue",         "chartreuse",           "chocolate",
+  "coral",           "cornflowerblue",    "cornsilk",             "crimson",
+  "cyan",            "darkblue",          "darkcyan",             "darkgoldenrod",
+  "darkgray",        "darkgrey",          "darkgreen",            "darkkhaki",
+  "darkmagenta",     "darkolivegreen",    "darkorange",           "darkorchid",
+  "darkred",         "darksalmon",        "darkseagreen",         "darkslateblue",
+  "darkslategray",   "darkslategrey",     "darkturquoise",        "darkviolet",
+  "deeppink",        "deepskyblue",       "dimgray",              "dimgrey",
+  "dodgerblue",      "firebrick",         "floralwhite",          "forestgreen",
+  "fuchsia",         "gainsboro",         "ghostwhite",           "gold",
+  "goldenrod",       "gray",              "grey",                 "green",
+  "greenyellow",     "honeydew",          "hotpink",              "indianred ",
+  "indigo ",         "ivory",             "khaki",                "lavender",
+  "lavenderblush",   "lawngreen",         "lemonchiffon",         "lightblue",
+  "lightcoral",      "lightcyan",         "lightgoldenrodyellow", "lightgray",
+  "lightgrey",       "lightgreen",        "lightpink",            "lightsalmon",
+  "lightseagreen",   "lightskyblue",      "lightslategray",       "lightslategrey",
+  "lightsteelblue",  "lightyellow",       "lime",                 "limegreen",
+  "linen",           "magenta",           "maroon",               "mediumaquamarine",
+  "mediumblue",      "mediumorchid",      "mediumpurple",         "mediumseagreen",
+  "mediumslateblue", "mediumspringgreen", "mediumturquoise",      "mediumvioletred",
+  "midnightblue",    "mintcream",         "mistyrose",            "moccasin",
+  "navajowhite",     "navy",              "oldlace",              "olive",
+  "olivedrab",       "orange",            "orangered",            "orchid",
+  "palegoldenrod",   "palegreen",         "paleturquoise",        "palevioletred",
+  "papayawhip",      "peachpuff",         "peru",                 "pink",
+  "plum",            "powderblue",        "purple",               "rebeccapurple",
+  "red",             "rosybrown",         "royalblue",            "saddlebrown",
+  "salmon",          "sandybrown",        "seagreen",             "seashell",
+  "sienna",          "silver",            "skyblue",              "slateblue",
+  "slategray",       "slategrey",         "snow",                 "springgreen",
+  "steelblue",       "tan",               "teal",                 "thistle",
+  "tomato",          "turquoise",         "violet",               "wheat",
+  "white",           "whitesmoke",        "yellow",               "yellowgreen",
 };
 
-constexpr std::string_view color_name[COLOR_COUNT] = {
-  "aliceblue", 
-  "antiquewhite", 
-  "aqua", 
-  "aquamarine", 
-  "azure", 
-  "beige", 
-  "bisque", 
-  "black", 
-  "blanchedalmond", 
-  "blue", 
-  "blueviolet", 
-  "brown", 
-  "burlywood", 
-  "cadetblue", 
-  "chartreuse", 
-  "chocolate", 
-  "coral", 
-  "cornflowerblue", 
-  "cornsilk", 
-  "crimson", 
-  "cyan", 
-  "darkblue", 
-  "darkcyan", 
-  "darkgoldenrod", 
-  "darkgray", 
-  "darkgrey", 
-  "darkgreen", 
-  "darkkhaki", 
-  "darkmagenta", 
-  "darkolivegreen", 
-  "darkorange", 
-  "darkorchid", 
-  "darkred", 
-  "darksalmon", 
-  "darkseagreen", 
-  "darkslateblue", 
-  "darkslategray", 
-  "darkslategrey", 
-  "darkturquoise", 
-  "darkviolet", 
-  "deeppink", 
-  "deepskyblue", 
-  "dimgray", 
-  "dimgrey", 
-  "dodgerblue", 
-  "firebrick", 
-  "floralwhite", 
-  "forestgreen", 
-  "fuchsia", 
-  "gainsboro", 
-  "ghostwhite", 
-  "gold", 
-  "goldenrod", 
-  "gray", 
-  "grey", 
-  "green", 
-  "greenyellow", 
-  "honeydew", 
-  "hotpink", 
-  "indianred ", 
-  "indigo ", 
-  "ivory", 
-  "khaki", 
-  "lavender", 
-  "lavenderblush", 
-  "lawngreen", 
-  "lemonchiffon", 
-  "lightblue", 
-  "lightcoral", 
-  "lightcyan", 
-  "lightgoldenrodyellow", 
-  "lightgray", 
-  "lightgrey", 
-  "lightgreen", 
-  "lightpink", 
-  "lightsalmon", 
-  "lightseagreen", 
-  "lightskyblue", 
-  "lightslategray", 
-  "lightslategrey", 
-  "lightsteelblue", 
-  "lightyellow", 
-  "lime", 
-  "limegreen", 
-  "linen", 
-  "magenta", 
-  "maroon", 
-  "mediumaquamarine", 
-  "mediumblue", 
-  "mediumorchid", 
-  "mediumpurple", 
-  "mediumseagreen", 
-  "mediumslateblue", 
-  "mediumspringgreen", 
-  "mediumturquoise", 
-  "mediumvioletred", 
-  "midnightblue", 
-  "mintcream", 
-  "mistyrose", 
-  "moccasin", 
-  "navajowhite", 
-  "navy", 
-  "oldlace", 
-  "olive", 
-  "olivedrab", 
-  "orange", 
-  "orangered", 
-  "orchid", 
-  "palegoldenrod", 
-  "palegreen", 
-  "paleturquoise", 
-  "palevioletred", 
-  "papayawhip", 
-  "peachpuff", 
-  "peru", 
-  "pink", 
-  "plum", 
-  "powderblue", 
-  "purple", 
-  "rebeccapurple", 
-  "red", 
-  "rosybrown", 
-  "royalblue", 
-  "saddlebrown", 
-  "salmon", 
-  "sandybrown", 
-  "seagreen", 
-  "seashell", 
-  "sienna", 
-  "silver", 
-  "skyblue", 
-  "slateblue", 
-  "slategray", 
-  "slategrey", 
-  "snow", 
-  "springgreen", 
-  "steelblue", 
-  "tan", 
-  "teal", 
-  "thistle", 
-  "tomato", 
-  "turquoise", 
-  "violet", 
-  "wheat", 
-  "white", 
-  "whitesmoke", 
-  "yellow", 
-  "yellowgreen", 
-};
+constexpr size_t COLOR_COUNT = sizeof(color_name) / sizeof(color_name[0]);
 
 constexpr InverseIndex<COLOR_COUNT> inv_color = {&color_name};
 
-std::string_view hex_color[COLOR_COUNT] = {
-  "#F0F8FF", "#FAEBD7", "#00FFFF", "#7FFFD4", "#F0FFFF", "#F5F5DC", "#FFE4C4", "#000000", "#FFEBCD", 
-  "#0000FF", "#8A2BE2", "#A52A2A", "#DEB887", "#5F9EA0", "#7FFF00", "#D2691E", "#FF7F50", "#6495ED", 
-  "#FFF8DC", "#DC143C", "#00FFFF", "#00008B", "#008B8B", "#B8860B", "#A9A9A9", "#A9A9A9", "#006400", 
-  "#BDB76B", "#8B008B", "#556B2F", "#FF8C00", "#9932CC", "#8B0000", "#E9967A", "#8FBC8F", "#483D8B", 
-  "#2F4F4F", "#2F4F4F", "#00CED1", "#9400D3", "#FF1493", "#00BFFF", "#696969", "#696969", "#1E90FF", 
-  "#B22222", "#FFFAF0", "#228B22", "#FF00FF", "#DCDCDC", "#F8F8FF", "#FFD700", "#DAA520", "#808080", 
-  "#808080", "#008000", "#ADFF2F", "#F0FFF0", "#FF69B4", "#CD5C5C", "#4B0082", "#FFFFF0", "#F0E68C", 
-  "#E6E6FA", "#FFF0F5", "#7CFC00", "#FFFACD", "#ADD8E6", "#F08080", "#E0FFFF", "#FAFAD2", "#D3D3D3", 
-  "#D3D3D3", "#90EE90", "#FFB6C1", "#FFA07A", "#20B2AA", "#87CEFA", "#778899", "#778899", "#B0C4DE", 
-  "#FFFFE0", "#00FF00", "#32CD32", "#32CD32", "#FF00FF", "#800000", "#66CDAA", "#0000CD", "#BA55D3", 
-  "#9370DB", "#3CB371", "#7B68EE", "#00FA9A", "#48D1CC", "#C71585", "#191970", "#F5FFFA", "#FFE4E1", 
-  "#FFE4B5", "#FFDEAD", "#000080", "#FDF5E6", "#808000", "#6B8E23", "#FFA500", "#FF4500", "#DA70D6", 
-  "#EEE8AA", "#98FB98", "#AFEEEE", "#DB7093", "#FFEFD5", "#FFDAB9", "#CD853F", "#FFC0CB", "#DDA0DD", 
-  "#B0E0E6", "#800080", "#663399", "#FF0000", "#BC8F8F", "#4169E1", "#8B4513", "#FA8072", "#F4A460", 
-  "#2E8B57", "#FFF5EE", "#A0522D", "#C0C0C0", "#87CEEB", "#6A5ACD", "#708090", "#708090", "#FFFAFA", 
-  "#00FF7F", "#4682B4", "#D2B48C", "#008080", "#D8BFD8", "#FF6347", "#40E0D0", "#EE82EE", "#F5DEB3", 
-  "#FFFFFF", "#F5F5F5", "#FFFF00", "#9ACD32", 
-};
+static constexpr RGBPaint hex_u32(uint32_t hex) {
+  double b = hex & 0xFF;
+  double g = (hex >> 8) & 0xFF;
+  double r = (hex >> 16) & 0xFF;
 
+  return RGBPaint {r / 255, g / 255, b / 255};
+}
+
+constexpr RGBPaint hex_color[COLOR_COUNT] = {
+    hex_u32(0xF0F8FF), hex_u32(0xFAEBD7), hex_u32(0x00FFFF), hex_u32(0x7FFFD4),
+    hex_u32(0xF0FFFF), hex_u32(0xF5F5DC), hex_u32(0xFFE4C4), hex_u32(0x000000),
+    hex_u32(0xFFEBCD), hex_u32(0x0000FF), hex_u32(0x8A2BE2), hex_u32(0xA52A2A),
+    hex_u32(0xDEB887), hex_u32(0x5F9EA0), hex_u32(0x7FFF00), hex_u32(0xD2691E),
+    hex_u32(0xFF7F50), hex_u32(0x6495ED), hex_u32(0xFFF8DC), hex_u32(0xDC143C),
+    hex_u32(0x00FFFF), hex_u32(0x00008B), hex_u32(0x008B8B), hex_u32(0xB8860B),
+    hex_u32(0xA9A9A9), hex_u32(0xA9A9A9), hex_u32(0x006400), hex_u32(0xBDB76B),
+    hex_u32(0x8B008B), hex_u32(0x556B2F), hex_u32(0xFF8C00), hex_u32(0x9932CC),
+    hex_u32(0x8B0000), hex_u32(0xE9967A), hex_u32(0x8FBC8F), hex_u32(0x483D8B),
+    hex_u32(0x2F4F4F), hex_u32(0x2F4F4F), hex_u32(0x00CED1), hex_u32(0x9400D3),
+    hex_u32(0xFF1493), hex_u32(0x00BFFF), hex_u32(0x696969), hex_u32(0x696969),
+    hex_u32(0x1E90FF), hex_u32(0xB22222), hex_u32(0xFFFAF0), hex_u32(0x228B22),
+    hex_u32(0xFF00FF), hex_u32(0xDCDCDC), hex_u32(0xF8F8FF), hex_u32(0xFFD700),
+    hex_u32(0xDAA520), hex_u32(0x808080), hex_u32(0x808080), hex_u32(0x008000),
+    hex_u32(0xADFF2F), hex_u32(0xF0FFF0), hex_u32(0xFF69B4), hex_u32(0xCD5C5C),
+    hex_u32(0x4B0082), hex_u32(0xFFFFF0), hex_u32(0xF0E68C), hex_u32(0xE6E6FA),
+    hex_u32(0xFFF0F5), hex_u32(0x7CFC00), hex_u32(0xFFFACD), hex_u32(0xADD8E6),
+    hex_u32(0xF08080), hex_u32(0xE0FFFF), hex_u32(0xFAFAD2), hex_u32(0xD3D3D3),
+    hex_u32(0xD3D3D3), hex_u32(0x90EE90), hex_u32(0xFFB6C1), hex_u32(0xFFA07A),
+    hex_u32(0x20B2AA), hex_u32(0x87CEFA), hex_u32(0x778899), hex_u32(0x778899),
+    hex_u32(0xB0C4DE), hex_u32(0xFFFFE0), hex_u32(0x00FF00), hex_u32(0x32CD32),
+    hex_u32(0x32CD32), hex_u32(0xFF00FF), hex_u32(0x800000), hex_u32(0x66CDAA),
+    hex_u32(0x0000CD), hex_u32(0xBA55D3), hex_u32(0x9370DB), hex_u32(0x3CB371),
+    hex_u32(0x7B68EE), hex_u32(0x00FA9A), hex_u32(0x48D1CC), hex_u32(0xC71585),
+    hex_u32(0x191970), hex_u32(0xF5FFFA), hex_u32(0xFFE4E1), hex_u32(0xFFE4B5),
+    hex_u32(0xFFDEAD), hex_u32(0x000080), hex_u32(0xFDF5E6), hex_u32(0x808000),
+    hex_u32(0x6B8E23), hex_u32(0xFFA500), hex_u32(0xFF4500), hex_u32(0xDA70D6),
+    hex_u32(0xEEE8AA), hex_u32(0x98FB98), hex_u32(0xAFEEEE), hex_u32(0xDB7093),
+    hex_u32(0xFFEFD5), hex_u32(0xFFDAB9), hex_u32(0xCD853F), hex_u32(0xFFC0CB),
+    hex_u32(0xDDA0DD), hex_u32(0xB0E0E6), hex_u32(0x800080), hex_u32(0x663399),
+    hex_u32(0xFF0000), hex_u32(0xBC8F8F), hex_u32(0x4169E1), hex_u32(0x8B4513),
+    hex_u32(0xFA8072), hex_u32(0xF4A460), hex_u32(0x2E8B57), hex_u32(0xFFF5EE),
+    hex_u32(0xA0522D), hex_u32(0xC0C0C0), hex_u32(0x87CEEB), hex_u32(0x6A5ACD),
+    hex_u32(0x708090), hex_u32(0x708090), hex_u32(0xFFFAFA), hex_u32(0x00FF7F),
+    hex_u32(0x4682B4), hex_u32(0xD2B48C), hex_u32(0x008080), hex_u32(0xD8BFD8),
+    hex_u32(0xFF6347), hex_u32(0x40E0D0), hex_u32(0xEE82EE), hex_u32(0xF5DEB3),
+    hex_u32(0xFFFFFF), hex_u32(0xF5F5F5), hex_u32(0xFFFF00), hex_u32(0x9ACD32),
+};
 
 static std::string_view trim_start(std::string_view sv) {
   while (sv.size() && (isspace(sv[0]) || sv[0] == ',')) sv = sv.substr(1);
@@ -415,47 +181,42 @@ static std::string_view trim_start(std::string_view sv) {
 }
 
 static Paint read_color_hex(std::string_view value) {
-  double r, g, b; 
   value = value.substr(1);
 
-  uint32_t p = 0;
-  p = strtoul(value.data(), nullptr, 16);
+  uint32_t p = strtoul(value.data(), nullptr, 16);
 
-  b = p & 0xFF;
-  g = (p >> 8) & 0xFF;
-  r = (p >> 16) & 0xFF;
-
-  r /= 255;
-  g /= 255;
-  b /= 255;
-
-  return Paint::new_rgb(r, g, b);
+  Paint paint;
+  paint.type = PAINT_RGB;
+  paint.variants.rgb_paint = hex_u32(p);
+  return paint;
 }
 
 static Paint read_color_text(std::string_view value) {
   if (inv_color[value] == -1) return Paint::new_transparent();
-  std::string_view color_hex = hex_color[inv_color[value]]; 
-  return read_color_hex(color_hex);
+
+  Paint paint;
+  paint.type = PAINT_RGB;
+  paint.variants.rgb_paint = hex_color[inv_color[value]];
+  return paint;
 }
 
 static Paint read_RGB(std::string_view value) {
-  double r, g, b;
   int start = value.find('(');
   int end = value.find(',');
-  r = strtod(value.data() + start + 1, nullptr);
+  double r = strtod(value.data() + start + 1, nullptr);
 
   value = trim_start(value.substr(end + 1));
 
   end = value.find(',');
-  g = strtod(value.data(), nullptr);
+  double g = strtod(value.data(), nullptr);
 
   value = trim_start(value.substr(end + 1));
 
-  b = strtod(value.data(), nullptr);
+  double b = strtod(value.data(), nullptr);
 
-  r/= 255;
-  g/=255;
-  b/=255;
+  r /= 255;
+  g /= 255;
+  b /= 255;
   return Paint::new_rgb(r, g, b);
 }
 
@@ -539,7 +300,7 @@ static Transform translate(Array arr) {
 }
 
 static Transform matrix(Array arr) {
-  Transform transform = Transform::identity();
+  Transform transform;
   transform.m[0][0] = arr.a[0]; 
   transform.m[1][0] = arr.a[1]; 
   transform.m[0][1] = arr.a[2]; 
@@ -551,7 +312,7 @@ static Transform matrix(Array arr) {
 }
 
 static Transform scale(Array arr) {
-  Transform transform = Transform::identity();
+  Transform transform = Transform::zeros();
   if (arr.n == 2) {
     transform.m[0][0] = arr.a[0];
     transform.m[1][1] = arr.a[1];
@@ -564,32 +325,32 @@ static Transform scale(Array arr) {
 }
 
 static Transform rotate(Array arr) {
-  Transform transform = Transform::identity();
+  Transform transform;
   double angle = arr.a[0] * PI / 180;
   transform.m[0][0] = std::cos(angle); 
   transform.m[0][1] = -std::sin(angle);
   transform.m[1][0] = std::sin(angle);
   transform.m[1][1] = std::cos(angle);
-
+  transform.d[0] = 0;
+  transform.d[1] = 0;
  
   if (arr.n > 1) {
     Array translate_arr;
-    translate_arr.a[0] = arr.a[1]; translate_arr.a[1] = arr.a[2]; translate_arr.n = arr.n - 1;
-    Transform translate1 = Transform::identity();
-    translate1 = translate(translate_arr);
-    transform = translate1 * transform;
+    translate_arr.a[0] = arr.a[1];
+    translate_arr.a[1] = arr.a[2];
+    translate_arr.n = arr.n - 1;
+    transform = translate(translate_arr) * transform;
 
-    translate1 = Transform::identity();
-    translate_arr.a[0] = -arr.a[1]; translate_arr.a[1] = -arr.a[2];
-    translate1 = translate(translate_arr);
-    transform = transform * translate1;
+    translate_arr.a[0] = -arr.a[1];
+    translate_arr.a[1] = -arr.a[2];
+    transform = transform * translate(translate_arr);
   }
 
   return transform;
 }
 
 static Transform skewX(Array arr) {
-   Transform transform = Transform::identity();
+  Transform transform = Transform::identity();
   transform.m[0][1] = std::tan(arr.a[0] * PI / 180);
 
   return transform;  
@@ -602,7 +363,14 @@ static Transform skewY(Array arr) {
   return transform;
 }
 
-
+Transform (*transform_fns[TRANSFORM_COUNT])(Array arr) = {
+  matrix,
+  translate,
+  scale,
+  rotate,
+  skewX,
+  skewY,
+};
 
 static Transform solve_transform(std::string_view inf) {
   int end = inf.find('(');
@@ -610,54 +378,22 @@ static Transform solve_transform(std::string_view inf) {
 
   inf = inf.substr(end + 1);
 
-  Array arr = split_number(inf);
-  
-  Transform transform = Transform::identity();
-
-  switch ((TransformType)inv_transform[str_type]){
-    case TRANSFORM_MATRIX: {
-      transform = matrix(arr);
-    } break;
-
-    case TRANSFORM_TRANSLATE:{
-      transform = translate(arr);
-    } break;
-
-    case TRANSFORM_SCALE: {
-      transform = scale(arr);
-    } break;
-
-    case TRANSFORM_ROTATE: {
-      transform = rotate(arr);
-    } break;
-
-    case TRANSFORM_SKEWX: {
-      transform = skewX(arr);
-    } break;
-
-    case TRANSFORM_SKEWY: {
-      transform = skewY(arr);
-    } break;
-
-    case TRANSFORM_COUNT: {
-      __builtin_unreachable();
-    }
+  int type = inv_transform[str_type];
+  if (type >= 0 && type < TRANSFORM_COUNT) {
+    return transform_fns[type](split_number(inf));
   }
 
-  return transform;
+  return Transform::identity();
 }
 
 static Transform convert_transform(std::string_view value) {
-  Transform tmp = Transform::identity();
   Transform transform = Transform::identity();
   
-  int start = 0, end = 0;
   while (value.size() > 0) {
     value = trim_start(value);
-    end = value.find(")");
-    std::string_view type = value.substr(start, end - start);
-    tmp = solve_transform(type);
-    transform = transform * tmp;
+    int end = value.find(')');
+    std::string_view type = value.substr(0, end);
+    transform = transform * solve_transform(type);
 
     value = value.substr(end + 1);
   }
@@ -741,7 +477,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->fill_rule = parent->fill_rule;
   }
 
-  for(int i = 0; i < attrs_count; i++) {
+  for (int i = 0; i < attrs_count; i++) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
     

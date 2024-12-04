@@ -111,25 +111,11 @@ struct AffineMatrix {
     };
   }
 
-  constexpr static AffineMatrix from_translate(Matrix<T, N, 1> translate) {
+  constexpr static AffineMatrix zeros() {
     return AffineMatrix {
-      Matrix<T, N, N>::identity(),
-      translate
+      Matrix<T, N, N>::zeros(),
+      Matrix<T, N, 1>::zeros()
     };
-  }
-
-  constexpr static AffineMatrix from_data(const T (&data)[(N + 1) * N]) {
-    AffineMatrix matrix;
-    for (size_t i = 0; i < N; ++i) {
-      for (size_t j = 0; j < N; ++j) {
-        matrix.m.data[N * i + j] = data[(N + 1) * i + j];
-      }
-    }
-
-    for (size_t i = 0; i < N; ++i) {
-      matrix.d.data[i] = data[(N + 1) * i + N];
-    }
-    return matrix;
   }
 
   constexpr AffineMatrix operator+(AffineMatrix other) const {
