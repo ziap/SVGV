@@ -684,11 +684,12 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
           } break;
           case 'Z': 
           case 'z': {
-            this->bezier_list.push(BezierCurve{current_point, start_point, current_point, start_point});
-
+            Point mid_point = (current_point + start_point) / 2;
+            this->bezier_list.push(BezierCurve{current_point, start_point, mid_point, mid_point});
             while (!value.empty() && (isspace(value[0]) || value[0] == ',')) {
               value = value.substr(1);
             }
+            current_point = start_point;
           } break;
         }
       }
