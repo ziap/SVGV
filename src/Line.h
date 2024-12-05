@@ -2,7 +2,6 @@
 #define LINE_H
 
 #include "BaseShape.h"
-#include "Matrix.h"
 
 namespace SVGShapes {
 

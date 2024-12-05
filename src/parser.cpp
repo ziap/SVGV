@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "InverseIndex.h"
 
 #include "Path.h"
 #include "Rect.h"
@@ -9,6 +10,8 @@
 #include "Polygon.h"
 #include "Text.h"
 #include "Group.h"
+
+#include <iostream>
 
 enum SVGTags {
   TAG_G = 0,
@@ -162,15 +165,19 @@ ParseResult parse_xml(std::string_view content) {
           new_shape = std::make_unique<SVGShapes::SVG>(attrs.begin(), attrs.len(), stack.get());
         } break;
         case TAG_LINEAR_GRADIENT: {
+          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
           std::cout << "ERROR: Gradient not supported\n";
         } break;
         case TAG_RADIAL_GRADIENT: {
+          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
           std::cout << "ERROR: Gradient not supported\n";
         } break;
         case TAG_STOP: {
+          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
           std::cout << "ERROR: Gradient not supported\n";
         } break;
         case TAG_DEFS: {
+          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
           std::cout << "ERROR: Gradient not supported\n";
         } break;
         case TAG_COUNT: {

@@ -1,4 +1,5 @@
 #include "SVG.h"
+#include "InverseIndex.h"
 #include <cctype>
 
 using namespace SVGShapes;

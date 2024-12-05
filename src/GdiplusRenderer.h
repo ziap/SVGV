@@ -18,6 +18,8 @@ public:
 
   void zoom(double delta);
   void resize(int new_width, int new_height);
+
+  void clear();
 private:
   std::deque<GdiplusFragment> shapes;
   std::string svg_file;

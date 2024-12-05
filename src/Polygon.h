@@ -2,8 +2,6 @@
 #define POLYGON_H
 
 #include "BaseShape.h"  
-#include "ArrayList.h"
-#include "Matrix.h"
 
 namespace SVGShapes {
 

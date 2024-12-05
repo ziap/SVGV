@@ -1,4 +1,5 @@
 #include "Rect.h"
+#include "InverseIndex.h"
 
 using namespace SVGShapes;
 

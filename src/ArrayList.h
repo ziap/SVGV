@@ -5,7 +5,6 @@
 #include <iterator>
 #include <memory>
 
-#include <cstdint>
 #include <cstring>
 
 #include "utils.h"

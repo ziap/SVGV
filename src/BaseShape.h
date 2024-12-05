@@ -1,40 +1,15 @@
 #ifndef BASE_SHAPE_H
 #define BASE_SHAPE_H
 
-#include <algorithm>
-#include <cstring>
-#include <iostream>
-#include <memory>
-
-#include "utils.h"
 #include "ArrayList.h"
-#include "InverseIndex.h"
+#include "utils.h"
 #include "Matrix.h"
+#include "Paint.h"
 
 class Attribute {
 public:
   std::string_view key;
   std::string_view value;
-};
-
-enum PaintType {
-  PAINT_TRANSPARENT = 0,
-  PAINT_RGB
-};
-
-struct RGBPaint {
-  double r, g, b;
-};
-
-class Paint {
-public:
-  PaintType type;
-  union {
-    RGBPaint rgb_paint;
-  } variants;
-
-  static Paint new_transparent();
-  static Paint new_rgb(double r, double g, double b);
 };
 
 enum StrokeLineJoin {

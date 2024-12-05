@@ -1,6 +1,8 @@
 #include "GdiplusFragment.h"
 #include "Text.h"
 
+#include <string>
+
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity) {
   switch (paint.type) {
     case PAINT_TRANSPARENT:
@@ -36,11 +38,10 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape)
   },
 
   path {get_gdiplus_fillmode(shape->fill_rule)} {
-    if(const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
+    if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
       std::wstring str = std::wstring(text->content.begin(), text->content.end());
       Gdiplus::FontFamily family(L"Times New Roman");
       int font_style = Gdiplus::FontStyleRegular;
-
 
       Gdiplus::PointF origin(
         (Gdiplus::REAL)(text->pos[0]), 

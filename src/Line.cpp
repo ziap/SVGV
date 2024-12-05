@@ -1,4 +1,5 @@
 #include "Line.h"
+#include "InverseIndex.h"
 
 using namespace SVGShapes;
 

@@ -45,6 +45,11 @@ public:
     UpdateWindow(this->window);
   }
 
+  GdiplusWindow(const GdiplusWindow&) = delete;
+  GdiplusWindow& operator=(const GdiplusWindow&) = delete;
+  GdiplusWindow(GdiplusWindow&&) = delete;
+  GdiplusWindow& operator=(GdiplusWindow&&) = delete;
+
   void run() {
     MSG msg;
     while(GetMessage(&msg, NULL, 0, 0)) {
@@ -54,6 +59,7 @@ public:
   }
 
   ~GdiplusWindow() {
+    this->renderer.clear();
     Gdiplus::GdiplusShutdown(this->gdiplus_token);
   }
 private:

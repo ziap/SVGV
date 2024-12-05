@@ -22,9 +22,7 @@ void GdiplusRenderer::load_file(const char *filename) {
   std::ostringstream ss;
   ss << fin.rdbuf();
   this->svg_file = ss.str();
-  this->shapes.clear();
-  this->center = {0, 0};
-  this->scale = 1;
+  this->clear();
   ParseResult svg = parse_xml(this->svg_file);
 
   for (const BaseShape *shape = svg.shapes.get(); shape; shape = shape->next.get()) {
@@ -121,4 +119,10 @@ void GdiplusRenderer::resize(int new_width, int new_height) {
 
   this->width = new_width;
   this->height = new_height;
+}
+
+void GdiplusRenderer::clear() {
+  this->shapes.clear();
+  this->center = {0, 0};
+  this->scale = 1;
 }
