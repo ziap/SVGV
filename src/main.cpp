@@ -85,7 +85,7 @@ private:
         }
       } break;
       case WM_MOUSEWHEEL: {
-        double delta = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+        double delta = (double)GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
         renderer->zoom(delta);
 
         InvalidateRect(hWnd, NULL, TRUE);
