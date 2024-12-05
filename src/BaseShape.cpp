@@ -13,7 +13,12 @@ Paint Paint::new_transparent() {
 Paint Paint::new_rgb(double r, double g, double b) {
   Paint paint;
   paint.type = PAINT_RGB;
-  paint.variants.rgb_paint = RGBPaint { r, g, b };
+  paint.variants.rgb_paint = RGBPaint {
+    std::clamp(r, 0.0, 1.0),
+    std::clamp(g, 0.0, 1.0),
+    std::clamp(b, 0.0, 1.0),
+  };
+
   return paint;
 }
 
@@ -182,9 +187,15 @@ static std::string_view trim_start(std::string_view sv) {
 
 static Paint read_color_hex(std::string_view value) {
   value = value.substr(1);
-
   uint32_t p = strtoul(value.data(), nullptr, 16);
 
+  if (value.size() == 3) {
+    uint32_t b = p & 0xf;
+    uint32_t g = p & 0xf0;
+    uint32_t r = p & 0xf00;
+    p = b | (b << 4) | (g << 4) | (g << 8) | (r << 8) | (r << 12);
+  }
+  
   Paint paint;
   paint.type = PAINT_RGB;
   paint.variants.rgb_paint = hex_u32(p);
