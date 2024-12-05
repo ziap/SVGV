@@ -18,7 +18,7 @@ Paint Paint::new_rgb(double r, double g, double b) {
     std::clamp(g, 0.0, 1.0),
     std::clamp(b, 0.0, 1.0),
   };
-  
+
   return paint;
 }
 
@@ -200,17 +200,6 @@ static Paint read_color_hex(std::string_view value) {
   paint.type = PAINT_RGB;
   paint.variants.rgb_paint = hex_u32(p);
   return paint;
-    // 0xabc
-    // r = 0xa00
-    // g = 0x0b0
-    // b = 0x00c
-
-    // b << 4 =  0x0000c0
-    // g << 4 =  0x000b00
-    // g << 8 =  0x00b000
-    // r << 8 =  0x0a0000
-    // r << 12 = 0xa00000
-
 }
 
 static Paint read_color_text(std::string_view value) {
