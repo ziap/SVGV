@@ -12,7 +12,12 @@ Paint Paint::new_transparent() {
 Paint Paint::new_rgb(double r, double g, double b) {
   Paint paint;
   paint.type = PAINT_RGB;
-  paint.variants.rgb_paint = RGBPaint {std::clamp(r, 0.0, 1.0), std::clamp(g, 0.0, 1.0), std::clamp(b, 0.0, 1.0)};
+  paint.variants.rgb_paint = RGBPaint {
+    std::clamp(r, 0.0, 1.0), 
+    std::clamp(g, 0.0, 1.0), 
+    std::clamp(b, 0.0, 1.0),
+  };
+  
   return paint;
 }
 
