@@ -9,7 +9,7 @@
 
 class GdiplusWindow {
 public:
-  GdiplusWindow(int width, int height, const char *title, HINSTANCE instance, INT cmd_show) :
+  GdiplusWindow(int width, int height, const char *title, HINSTANCE instance, std::string_view argument, INT cmd_show) :
     renderer{width, height} {
     // Initialize GDI+.
     Gdiplus::GdiplusStartupInput input;
@@ -44,6 +44,15 @@ public:
 
     ShowWindow(this->window, cmd_show);
     UpdateWindow(this->window);
+
+    if (argument.size() && !this->renderer.load_file(argument)) {
+      char msg[64];
+      snprintf(
+        msg, sizeof(msg), "Failed to open file `%.*s`",
+        (int)argument.size(), argument.data()
+      );
+      MessageBox(this->window, msg, "Error", MB_ICONWARNING | MB_OK);
+    }
   }
 
   GdiplusWindow(const GdiplusWindow&) = delete;
@@ -153,8 +162,8 @@ private:
   }
 };
 
-INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow) {
-  GdiplusWindow window(960, 720, "SVG viewer app", hInstance, iCmdShow);
+INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR argument, INT iCmdShow) {
+  GdiplusWindow window(960, 720, "SVG viewer app", hInstance, argument, iCmdShow);
   window.run();
   return 0;
 }

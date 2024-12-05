@@ -8,7 +8,7 @@ class GdiplusRenderer {
 public:
   GdiplusRenderer(int init_width, int init_height);
   
-  void load_file(const char *filename);
+  bool load_file(std::string_view filename);
 
   void render(Gdiplus::Graphics *graphics);
 

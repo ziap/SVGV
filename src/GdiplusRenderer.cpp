@@ -18,8 +18,13 @@ GdiplusRenderer::GdiplusRenderer(int init_width, int init_height) :
   view_width{0}, 
   view_height{0} {}
 
-void GdiplusRenderer::load_file(const char *filename) {
+bool GdiplusRenderer::load_file(std::string_view filename) {
   std::ifstream fin(filename);
+
+  if (!fin.is_open()) {
+    return false;
+  }
+
   std::ostringstream ss;
   ss << fin.rdbuf();
   this->svg_file = ss.str();
@@ -27,7 +32,6 @@ void GdiplusRenderer::load_file(const char *filename) {
   ParseResult svg = parse_xml(this->svg_file);
 
   for (const BaseShape *shape = svg.shapes.get(); shape; shape = shape->next.get()) {
-
     this->shapes.emplace_back(shape);
   }
 
@@ -49,6 +53,8 @@ void GdiplusRenderer::load_file(const char *filename) {
       this->view_height = 0;
     }
   }
+
+  return true;
 }
 
 void GdiplusRenderer::render(Gdiplus::Graphics *graphics) {

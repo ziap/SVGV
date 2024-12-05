@@ -5,7 +5,7 @@
 
 enum PaintType {
   PAINT_TRANSPARENT = 0,
-  PAINT_RGB
+  PAINT_RGB,
 };
 
 struct RGBPaint {
