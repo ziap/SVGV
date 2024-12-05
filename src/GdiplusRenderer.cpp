@@ -7,8 +7,9 @@
 #include "parser.h"
 #include "SVG.h"
 
-GdiplusRenderer::GdiplusRenderer(int init_width, int init_height)
-  : shapes{},
+GdiplusRenderer::GdiplusRenderer(int init_width, int init_height) :
+  shapes{},
+  background{Gdiplus::Color {255, 255, 255, 255}},
   center{0, 0},
   scale{1},
   dragging{false},
@@ -51,6 +52,7 @@ void GdiplusRenderer::load_file(const char *filename) {
 }
 
 void GdiplusRenderer::render(Gdiplus::Graphics *graphics) {
+  graphics->FillRectangle(&this->background, 0, 0, this->width, this->height);
   graphics->TranslateTransform(
     (Gdiplus::REAL)this->center[0],
     (Gdiplus::REAL)this->center[1]

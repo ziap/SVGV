@@ -9,7 +9,8 @@
 
 class GdiplusWindow {
 public:
-  GdiplusWindow(int width, int height, const char *title, HINSTANCE instance, INT cmd_show) : renderer{width, height} {
+  GdiplusWindow(int width, int height, const char *title, HINSTANCE instance, INT cmd_show) :
+    renderer{width, height} {
     // Initialize GDI+.
     Gdiplus::GdiplusStartupInput input;
     Gdiplus::GdiplusStartup(&gdiplus_token, &input, NULL);
@@ -108,12 +109,36 @@ private:
         DragFinish(hDrop);
         InvalidateRect(hWnd, NULL, TRUE);
       } break;
+      case WM_ERASEBKGND:
+        return (LRESULT)1;
       case WM_PAINT: {
         PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
+        BeginPaint(hWnd, &ps);
+
+        RECT rc;
+        GetClientRect(hWnd, &rc);
+
+        HDC hdc = CreateCompatibleDC(ps.hdc);
+        HBITMAP bitmap = CreateCompatibleBitmap(
+          ps.hdc,
+          rc.right - rc.left,
+          rc.bottom - rc.top
+        );
+        HBITMAP old_bitmap = (HBITMAP)SelectObject(hdc, bitmap);
+
         Gdiplus::Graphics graphics {hdc};
         graphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
         renderer->render(&graphics);
+
+        BitBlt(
+          ps.hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+          hdc, 0, 0, SRCCOPY
+        );
+
+        SelectObject(hdc, old_bitmap);
+        DeleteObject(bitmap);
+        DeleteDC(hdc);
+
         EndPaint(hWnd, &ps);
       } break;
       case WM_DESTROY: {

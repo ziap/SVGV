@@ -35,8 +35,8 @@ constexpr std::string_view y_align_name[AXIS_ALIGN_COUNT] = {
 };
 constexpr InverseIndex<AXIS_ALIGN_COUNT> inv_y_align = {&y_align_name};
 
-SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent)
-  : BaseShape(attrs, attrs_count, parent) {
+SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent) :
+  BaseShape(attrs, attrs_count, parent) {
   this->width = 0;
   this->height = 0;
 

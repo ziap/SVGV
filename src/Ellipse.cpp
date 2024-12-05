@@ -20,8 +20,8 @@ constexpr std::string_view ellipse_attr_name[ELLIPSE_ATTR_COUNT] {
 
 constexpr InverseIndex<ELLIPSE_ATTR_COUNT> inv_ellipse_attribute= {&ellipse_attr_name};
 
-Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent)
-  : BaseShape(attrs, attrs_count, parent) {
+Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent) :
+  BaseShape(attrs, attrs_count, parent) {
   this->c = {0, 0};
   this->rx = 0;
   this->ry = 0;

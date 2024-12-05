@@ -29,7 +29,8 @@ static ArrayList<Point> read_point(std::string_view str) {
   return point_list;
 }
 
-Polygon::Polygon(Attribute *attrs, int attrs_count, BaseShape *parent) : BaseShape(attrs, attrs_count, parent) {
+Polygon::Polygon(Attribute *attrs, int attrs_count, BaseShape *parent) :
+  BaseShape(attrs, attrs_count, parent) {
   for (int i = 0; i < attrs_count; ++i){
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;

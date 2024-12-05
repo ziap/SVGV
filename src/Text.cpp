@@ -16,10 +16,10 @@ constexpr std::string_view text_attr_name[TEXT_ATTR_COUNT] {
 
 constexpr InverseIndex<TEXT_ATTR_COUNT> inv_text_attribute {&text_attr_name};
 
-Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent)
-  : BaseShape(attrs, attrs_count, parent),
-    content{""},
-    pos{0, 0} {
+Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent) :
+  BaseShape(attrs, attrs_count, parent),
+  content{""},
+  pos{0, 0} {
   for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;

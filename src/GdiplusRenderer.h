@@ -22,6 +22,7 @@ public:
   void clear();
 private:
   std::deque<GdiplusFragment> shapes;
+  Gdiplus::SolidBrush background;
   std::string svg_file;
 
   Point center;

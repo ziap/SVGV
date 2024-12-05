@@ -18,8 +18,8 @@ constexpr std::string_view circle_attr_name[CIRCLE_ATTR_COUNT] {
 
 constexpr InverseIndex<CIRCLE_ATTR_COUNT> inv_circle_attribute= {&circle_attr_name};
 
-Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent)
-  : BaseShape(attrs, attrs_count, parent) {
+Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent) :
+  BaseShape(attrs, attrs_count, parent) {
   this->c = {0, 0};
   this->r = 0;
 
