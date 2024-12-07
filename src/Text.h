@@ -9,6 +9,7 @@ class Text : public BaseShape {
 public:
   std::string_view content;
   Point pos;
+  Point d;
 
   Text(Attribute *attrs, int attrs_count, BaseShape *parent);
 };

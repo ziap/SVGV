@@ -36,17 +36,14 @@ constexpr std::string_view y_align_name[AXIS_ALIGN_COUNT] = {
 constexpr InverseIndex<AXIS_ALIGN_COUNT> inv_y_align = {&y_align_name};
 
 SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent) :
-  BaseShape(attrs, attrs_count, parent) {
-  this->width = 0;
-  this->height = 0;
-
-  this->view_min = Point {0, 0};
-  this->view_width = 0;
-  this->view_height = 0;
-
-  this->align_type = ALIGN_NONE;
-  this->align_x = AXIS_ALIGN_MIN;
-  this->align_y = AXIS_ALIGN_MIN;
+  BaseShape(attrs, attrs_count, parent),
+  width{0}, height{0}, 
+  view_min{0, 0}, 
+  view_width{0}, 
+  view_height{0}, 
+  align_type{ALIGN_NONE}, 
+  align_x{AXIS_ALIGN_MIN}, 
+  align_y{AXIS_ALIGN_MIN} {
 
   for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;

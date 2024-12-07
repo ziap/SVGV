@@ -46,8 +46,8 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     int font_style = Gdiplus::FontStyleRegular;
 
     Gdiplus::PointF origin{
-      (Gdiplus::REAL)(text->pos[0]), 
-      (Gdiplus::REAL)(text->pos[1] - text->font_size)
+      (Gdiplus::REAL)(text->pos[0] + text->d[0]), 
+      (Gdiplus::REAL)(text->pos[1] + text->d[1] - text->font_size)
     };
 
     Gdiplus::StringFormat format = Gdiplus::StringFormat::GenericDefault();

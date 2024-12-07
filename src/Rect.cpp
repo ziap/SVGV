@@ -24,14 +24,11 @@ constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] {
 
 constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute = {&rect_attr_name};
 
-Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent)
-: BaseShape(attrs, attrs_count, parent) {
-  this->x = 0;
-  this->y = 0;
-  this->width = 0;
-  this->height = 0;
-  this->rx = 0;
-  this->ry = 0;
+Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent) : 
+  BaseShape(attrs, attrs_count, parent),
+  x{0}, y{0}, 
+  rx{0}, ry{0},
+  width{0}, height{0} {
 
   //go through all of attributes readed, read the rect's attrs
   for (int i = 0; i < attrs_count; ++i) {

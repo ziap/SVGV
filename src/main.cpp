@@ -53,6 +53,8 @@ public:
       );
       MessageBox(this->window, msg, "Error", MB_ICONWARNING | MB_OK);
     }
+
+    InvalidateRect(this->window, NULL, TRUE);
   }
 
   GdiplusWindow(const GdiplusWindow&) = delete;
