@@ -257,7 +257,7 @@ static Transform solve_transform(std::string_view inf) {
   inf = inf.substr(end + 1);
 
   int type = inv_transform[str_type];
-  if (type >= 0 && type < TRANSFORM_COUNT) {
+  if (type != -1) {
     return transform_fns[type](split_number(inf));
   }
 
@@ -407,11 +407,11 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_STROKE_LINE_JOIN: {
-        this->stroke_line_join = (StrokeLineJoin)inv_linejoin[value];
+        if (inv_linejoin[value] != -1) this->stroke_line_join = (StrokeLineJoin)inv_linejoin[value];
       } break;
 
       case ATTRIBUTE_STROKE_LINE_CAP: {
-        this->stroke_line_cap = (StrokeLineCap)inv_linecap[value];
+        if (inv_linecap[value] != -1) this->stroke_line_cap = (StrokeLineCap)inv_linecap[value];
       } break;
 
       case ATTRIBUTE_MITER_LIMIT: {
@@ -419,7 +419,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_FILL_RULE: {
-        this->fill_rule = (FillRule)inv_fillrule[value];
+        if (inv_fillrule[value] != -1) this->fill_rule = (FillRule)inv_fillrule[value];
       } break;
       
       case ATTRIBUTE_TRANSFORM: {
