@@ -48,23 +48,24 @@ static double det(Transform transform) {
 }
 
 static std::wstring remove_spaces(const std::wstring& input) {
-  std::wstring result = input;
-  
-  for (size_t i = 0; i < result.size(); ++i) {
-    if (std::iswspace(result[i])) result[i] = L' ';
-  }
+  std::wstring result = L"";
+  bool is_space = false;  
 
-  size_t i = 1;
-  while (i < result.size()) {
-    if (std::iswspace(result[i]) && std::iswspace(result[i - 1])) {
-      result.erase(i, 1);
-    } else {
-      i++;
+  for (size_t i = 0; i < input.size(); ++i) {
+    if (std::iswspace(input[i])) {
+      if (!is_space) {
+        result += L' ';
+        is_space = true;
+      } else {
+        result += input[i];
+        is_space = false;
+      }
     }
   }
 
   return result;
 }
+
 std::wstring string_to_wide_string(const std::string_view& string) {
   if (string.empty()) return L"";
 
@@ -134,57 +135,58 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     bool set_font_family = false;
 
     std::string_view tmp_font_family = text->font_family;
-    while ((pos = (tmp_font_family).find(',')) != std::string_view::npos || tmp_font_family.size() > 0) {
+    while (tmp_font_family.size() > 0) {
+      pos = (tmp_font_family).find(',');
       if (pos == std::string_view::npos) pos = tmp_font_family.size();
       if (set_font_family == true) break;
-        std::string_view font = tmp_font_family.substr(0, pos);
-        if (pos < tmp_font_family.size()) tmp_font_family = tmp_font_family.substr(pos + 1);
+      std::string_view font = tmp_font_family.substr(0, pos);
+      if (pos < tmp_font_family.size()) tmp_font_family = tmp_font_family.substr(pos + 1);
        
-        if (inv_genericfont[font] == -1) {
-          std::wstring s{font.begin(), font.end()};
-          Gdiplus::FontFamily family{s.c_str()};
-          if (family.IsAvailable()) {
-            set_font_family = true;
-            this->path.AddString(
-              str.c_str(), 
-              (INT)(str.length()), 
-              &family,
-              font_style,
-              (Gdiplus::REAL) text->font_size,
-              origin,
-              &format
-            );
-            break;
-          }
-        } else {
-          const Gdiplus::FontFamily *family;
-          switch(inv_genericfont[font]) {
-            case GENERIC_FONT_SERIF: {
-              set_font_family = true;
-              family = Gdiplus::FontFamily::GenericSerif();
-            } break;
-            case GENERIC_FONT_SANSSERIF: {
-              set_font_family = true;
-              family = Gdiplus::FontFamily::GenericSansSerif();
-            } break;
-            case GENERIC_FONT_MONOSPACE: {
-              set_font_family = true;
-              family = Gdiplus::FontFamily::GenericMonospace();
-            } break;
-            case GENERIC_FONT_COUNT: {
-              __builtin_unreachable();
-            } 
-          }
+      if (inv_genericfont[font] == -1) {
+        std::wstring s{font.begin(), font.end()};
+        Gdiplus::FontFamily family{s.c_str()};
+        if (family.IsAvailable()) {
+          set_font_family = true;
           this->path.AddString(
             str.c_str(), 
             (INT)(str.length()), 
-            family,
+            &family,
             font_style,
             (Gdiplus::REAL) text->font_size,
             origin,
             &format
           );
+          break;
         }
+      } else {
+        const Gdiplus::FontFamily *family;
+        switch(inv_genericfont[font]) {
+          case GENERIC_FONT_SERIF: {
+            set_font_family = true;
+            family = Gdiplus::FontFamily::GenericSerif();
+          } break;
+          case GENERIC_FONT_SANSSERIF: {
+            set_font_family = true;
+            family = Gdiplus::FontFamily::GenericSansSerif();
+          } break;
+          case GENERIC_FONT_MONOSPACE: {
+            set_font_family = true;
+            family = Gdiplus::FontFamily::GenericMonospace();
+          } break;
+          case GENERIC_FONT_COUNT: {
+            __builtin_unreachable();
+          } 
+        }
+        this->path.AddString(
+          str.c_str(), 
+          (INT)(str.length()), 
+          family,
+          font_style,
+          (Gdiplus::REAL) text->font_size,
+          origin,
+          &format
+        );
+      }
     }
 
     if (set_font_family == false) {
