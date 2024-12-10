@@ -71,6 +71,17 @@ constexpr size_t COLOR_COUNT = sizeof(color_name) / sizeof(color_name[0]);
 
 constexpr InverseIndex<COLOR_COUNT> inv_color = {&color_name};
 
+constexpr int max_size(const std::string_view *a, int n) {
+  int max = a[0].size();
+  for (int i = 1; i < n; i++) {
+    max = std::max(max, (int)a[i].size());
+  }
+
+  return max;
+}
+
+constexpr int color_max_size = max_size(color_name, COLOR_COUNT);
+
 static constexpr RGBPaint hex_u32(uint32_t hex) {
   double b = hex & 0xFF;
   double g = (hex >> 8) & 0xFF;
@@ -137,11 +148,20 @@ static Paint read_color_hex(std::string_view value) {
 }
 
 static Paint read_color_text(std::string_view value) {
-  if (inv_color[value] == -1) return Paint::new_transparent();
+  char result[color_max_size + 1];
+  int len = std::min((int)value.size(), color_max_size + 1);
+  for (int i = 0; i < len; i++) {
+    result[i] = tolower(value[i]);
+  }
 
+  result[len] = '\0';
+
+  int type = inv_color[result];
+  if (type == -1) return Paint::new_transparent();
+  
   Paint paint;
   paint.type = PAINT_RGB;
-  paint.variants.rgb_paint = hex_color[inv_color[value]];
+  paint.variants.rgb_paint = hex_color[type];
   return paint;
 }
 

@@ -3,22 +3,39 @@
 #include <cmath>
 #include <cctype>
 
-constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
+enum FontWeight {
+  FONTWEIGHT_NORMAL = 0,
+  FONTWEIGHT_BOLD,
+  FONTWEIGHT_BOLDER,
+  FONTWEIGHT_LIGHTER,
+  FONTWEIGHT_COUNT,
+};
+
+constexpr std::string_view fontweight_name[FONTWEIGHT_COUNT] = {
+  "normal",
+  "bold",
+  "bolder",
+  "lighter",
+};
+
+constexpr InverseIndex<FONTWEIGHT_COUNT> inv_fontweight{&fontweight_name};
+
+constexpr std::string_view fillrule_name[FILL_RULE_COUNT] = {
   "nonzero",
   "evenodd",
 };
 
-constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
+constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule{&fillrule_name};
 
-constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
+constexpr std::string_view linecap_name[LINE_CAP_COUNT] = {
   "butt",
   "round",
   "square",
 };
 
-constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
+constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap{&linecap_name};
 
-constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
+constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] = {
   "arcs",
   "bevel",
   "miter",
@@ -26,7 +43,15 @@ constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
   "round",
 };
 
-constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
+constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin{&linejoin_name};
+
+constexpr std::string_view fontstyle_name[FONTSTYLE_COUNT] = {
+  "normal",
+  "italic",
+  "oblique",
+};
+
+constexpr InverseIndex<FONTSTYLE_COUNT> inv_fontstyle{&fontstyle_name};
 
 enum AttributeType {
   ATTRIBUTE_VISIBLE = 0,
@@ -45,6 +70,9 @@ enum AttributeType {
   ATTRIBUTE_FILL_RULE,
   ATTRIBUTE_TRANSFORM,
   ATTRIBUTE_STYLE, 
+  ATTRIBUTE_FONT_STYLE,
+  ATTRIBUTE_FONT_WEIGHT,
+  ATTRIBUTE_FONT_FAMILY,
   ATTRIBUTE_COUNT,
 };
 
@@ -65,9 +93,12 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "fill-rule",
   "transform",
   "style",
+  "font-style",
+  "font-weight",
+  "font-family",
 };
 
-constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute = {&attribute_name};
+constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute{&attribute_name};
 
 static std::string_view trim_start(std::string_view sv) {
   while (sv.size() && (isspace(sv[0]) || sv[0] == ',')) sv = sv.substr(1);
@@ -226,7 +257,7 @@ static Transform solve_transform(std::string_view inf) {
   inf = inf.substr(end + 1);
 
   int type = inv_transform[str_type];
-  if (type >= 0 && type < TRANSFORM_COUNT) {
+  if (type != -1) {
     return transform_fns[type](split_number(inf));
   }
 
@@ -306,6 +337,9 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->miter_limit = 4;
     this->transform = Transform::identity();
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
+    this->font_style = FontStyle::FONTSTYLE_NORMAL;
+    this->font_weight = 400;
+    this->font_family = "serif";
   } else {
     this->visible = parent->visible;
     this->fill = parent->fill;
@@ -322,6 +356,9 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->miter_limit = parent->miter_limit;
     this->transform = parent->transform;
     this->fill_rule = parent->fill_rule;
+    this->font_style = parent->font_style;
+    this->font_weight = parent->font_weight;
+    this->font_family = parent->font_family;
   }
 
   for (int i = 0; i < attrs_count; i++) {
@@ -370,11 +407,13 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_STROKE_LINE_JOIN: {
-        this->stroke_line_join = (StrokeLineJoin)inv_linejoin[value];
+        int type = inv_linejoin[value];
+        if (type != -1) this->stroke_line_join = (StrokeLineJoin) type;
       } break;
 
       case ATTRIBUTE_STROKE_LINE_CAP: {
-        this->stroke_line_cap = (StrokeLineCap)inv_linecap[value];
+        int type = inv_linecap[value];
+        if (type != -1) this->stroke_line_cap = (StrokeLineCap)type;
       } break;
 
       case ATTRIBUTE_MITER_LIMIT: {
@@ -382,7 +421,8 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_FILL_RULE: {
-        this->fill_rule = (FillRule)inv_fillrule[value];
+        int type = inv_fillrule[value];
+        if (type != -1) this->fill_rule = (FillRule)type;
       } break;
       
       case ATTRIBUTE_TRANSFORM: {
@@ -399,6 +439,67 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
           if (end != value.size()) value = value.substr(end + 1);
           else value = value.substr(end);
         }
+      } break;
+
+      case ATTRIBUTE_FONT_STYLE: {
+        this->font_style = (FontStyle)inv_fontstyle[value];
+      } break;
+
+      case ATTRIBUTE_FONT_WEIGHT: {
+        int type = inv_fontweight[value];
+        if (type == -1) {
+          this->font_weight = strtod(value.data(), nullptr);
+        }  else {
+          switch ((FontWeight)type) {
+            case FONTWEIGHT_NORMAL: {
+              this->font_weight = 400;
+            } break;
+            case FONTWEIGHT_BOLD: {
+              this->font_weight = 700;
+            } break;
+            case FONTWEIGHT_BOLDER: {
+              if (parent == nullptr) {
+                this->font_weight = 700;
+              } else {
+                if (parent->font_weight < 100) {
+                  this->font_weight = 100;
+                } else if (parent->font_weight < 400) {
+                  this->font_weight = 400;
+                } else if (parent->font_weight < 700) {
+                  this->font_weight = 700;
+                } else if (parent->font_weight < 900){
+                  this->font_weight = 900;
+                } else {
+                  this->font_weight = parent->font_weight;
+                }
+              } 
+            } break;
+            case FONTWEIGHT_LIGHTER: {
+              if (parent == nullptr) {
+                this->font_weight = 100;
+              } else {
+                if (parent->font_weight > 900) {
+                  this->font_weight = 900;
+                } else if (parent->font_weight > 700) {
+                  this->font_weight = 700;
+                } else if (parent->font_weight > 400) {
+                  this->font_weight = 400;
+                } else if (parent->font_weight > 100){
+                  this->font_weight = 100;
+                } else {
+                  this->font_weight = parent->font_weight;
+                }
+              } 
+            } break;
+            case FONTWEIGHT_COUNT: {
+              __builtin_unreachable();
+            }
+          }
+        } 
+      } break;
+      
+      case ATTRIBUTE_FONT_FAMILY: {
+        this->font_family = value;
       } break;
 
       case ATTRIBUTE_COUNT: {

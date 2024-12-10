@@ -140,7 +140,7 @@ ArrayList<BezierCurve> arcs_to_curves(Point point_start, Point point_end, double
 }
 
 static bool is_next_command(char chr) {
-  switch(chr) {
+  switch (chr) {
     case 'M': return true;
     case 'm': return true;
     case 'L': return true;
@@ -180,7 +180,7 @@ Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
       while (!value.empty()) {
         char command = value[0];
         value = value.substr(1);
-        switch(command) {
+        switch (command) {
           case 'M': {
             // read 2 points 
             double x = read_double(&value);

@@ -3,6 +3,21 @@
 
 #include <string>
 
+enum GenericFont {
+  GENERIC_FONT_SERIF = 0,
+  GENERIC_FONT_SANSSERIF,
+  GENERIC_FONT_MONOSPACE,
+  GENERIC_FONT_COUNT,
+};
+
+constexpr std::string_view genericfont_name[GENERIC_FONT_COUNT] = {
+  "serif",
+  "sans-serif",
+  "monospace",
+};
+
+constexpr InverseIndex<GENERIC_FONT_COUNT> inv_genericfont{&genericfont_name};
+
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity) {
   switch (paint.type) {
     case PAINT_TRANSPARENT:
@@ -32,6 +47,35 @@ static double det(Transform transform) {
   return transform.m[0][0] * transform.m[1][1] - transform.m[0][1] * transform.m[1][0];
 }
 
+static std::wstring remove_spaces(const std::wstring& input) {
+  std::wstring result = L"";
+  bool is_space = false;  
+
+  for (size_t i = 0; i < input.size(); ++i) {
+    if (std::iswspace(input[i])) {
+      if (is_space == false) {
+        result += L' ';
+        is_space = true;
+      }
+    } else {
+      result += input[i];
+      is_space = false;
+    }
+  }
+
+  return result;
+}
+
+std::wstring string_to_wide_string(const std::string_view& string) {
+  if (string.empty()) return L"";
+
+  const size_t size_needed = MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)string.size(), nullptr, 0);
+
+  std::wstring result(size_needed, 0);
+  MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)string.size(), result.data(), size_needed);
+  return result;
+}
+
 GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
   fill_brush{paint_to_brush(shape->fill, shape->fill_opacity)},
   stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity)},
@@ -41,26 +85,118 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
   },
   path {get_gdiplus_fillmode(shape->fill_rule)} {
   if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
-    std::wstring str = std::wstring{text->content.begin(), text->content.end()};
-    Gdiplus::FontFamily family{L"Times New Roman"};
-    int font_style = Gdiplus::FontStyleRegular;
+    std::wstring str = string_to_wide_string(text->content);
+    str = remove_spaces(str);
+
+    int font_style;
+    switch (text->font_style) {
+      case FONTSTYLE_NORMAL: {
+        if (text->font_weight >= 500) font_style = Gdiplus::FontStyleBold;
+        else font_style = Gdiplus::FontStyleRegular;
+
+      } break;
+
+      case FONTSTYLE_ITALIC:
+      case FONTSTYLE_OBLIQUE: {
+        if (text->font_weight >= 500) font_style = Gdiplus::FontStyleBoldItalic;
+        else font_style = Gdiplus::FontStyleItalic;
+      } break;
+
+      case FONTSTYLE_COUNT: {
+        __builtin_unreachable();
+      }     
+    }
 
     Gdiplus::PointF origin{
       (Gdiplus::REAL)(text->pos[0] + text->d[0]), 
       (Gdiplus::REAL)(text->pos[1] + text->d[1] - text->font_size)
     };
 
-    Gdiplus::StringFormat format = Gdiplus::StringFormat::GenericDefault();
+    Gdiplus::StringFormat format;
+    
+    switch (text->text_anchor) {
+      case TEXTANCHOR_START: {
+        format.SetAlignment(Gdiplus::StringAlignmentNear);
+      } break;
+      case TEXTANCHOR_MIDDLE: {
+        format.SetAlignment(Gdiplus::StringAlignmentCenter);
+      } break;
+      case TEXTANCHOR_END: {
+        format.SetAlignment(Gdiplus::StringAlignmentFar);
+      } break;
+      case TEXTANCHOR_COUNT: {
+        __builtin_unreachable();
+      }
+    }
 
-    this->path.AddString(
-      str.c_str(),
-      (INT)(str.length()),
-      &family,
-      font_style,
-      (Gdiplus::REAL) text->font_size,
-      origin,
-      &format
-    );
+    bool set_font_family = false;
+    std::string_view tmp_font_family = text->font_family;
+
+    while (tmp_font_family.size() > 0) {
+      size_t pos = (tmp_font_family).find(',');
+      std::string_view font = tmp_font_family.substr(0, pos);
+
+      if (pos != std::string_view::npos) tmp_font_family = tmp_font_family.substr(pos + 1);
+      else tmp_font_family = "";
+      
+      int type = inv_genericfont[font];
+      if (type == -1) {
+        std::wstring s{font.begin(), font.end()};
+        Gdiplus::FontFamily family{s.c_str()};
+        if (family.IsAvailable()) {
+          set_font_family = true;
+          this->path.AddString(
+            str.c_str(), 
+            (INT)(str.length()), 
+            &family,
+            font_style,
+            (Gdiplus::REAL) text->font_size,
+            origin,
+            &format
+          );
+          break;
+        }
+      } else {
+        set_font_family = true;
+        const Gdiplus::FontFamily *family;
+        switch ((GenericFont)type) {
+          case GENERIC_FONT_SERIF: {
+            family = Gdiplus::FontFamily::GenericSerif();
+          } break;
+          case GENERIC_FONT_SANSSERIF: {
+            family = Gdiplus::FontFamily::GenericSansSerif();
+          } break;
+          case GENERIC_FONT_MONOSPACE: {
+            family = Gdiplus::FontFamily::GenericMonospace();
+          } break;
+          case GENERIC_FONT_COUNT: {
+            __builtin_unreachable();
+          } 
+        }
+        this->path.AddString(
+          str.c_str(), 
+          (INT)(str.length()), 
+          family,
+          font_style,
+          (Gdiplus::REAL) text->font_size,
+          origin,
+          &format
+        );
+        break;
+      }
+    }
+
+    if (set_font_family == false) {
+      this->path.AddString(
+        str.c_str(), 
+        (INT)(str.length()), 
+        Gdiplus::FontFamily::GenericSerif(),
+        font_style,
+        (Gdiplus::REAL) text->font_size,
+        origin,
+        &format
+      );
+    }
   } else {
     ArrayList<BezierCurve> beziers = shape->get_beziers();
 
