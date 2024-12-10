@@ -55,7 +55,8 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent) :
         this->d[1] = strtod(value.data(), nullptr);
       } break;
       case TEXT_ATTR_ANCHOR: {
-        if (inv_textanchor[value] != -1) this->text_anchor = (TextAnchor)inv_textanchor[value];
+        int type = inv_textanchor[value];
+        if (type != -1) this->text_anchor = (TextAnchor)type;
       } break;
 
       case TEXT_ATTR_COUNT: {

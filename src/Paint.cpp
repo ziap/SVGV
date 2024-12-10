@@ -156,11 +156,12 @@ static Paint read_color_text(std::string_view value) {
 
   result[len] = '\0';
 
-  if (inv_color[result] == -1) return Paint::new_transparent();
+  int type = inv_color[result];
+  if (type == -1) return Paint::new_transparent();
   
   Paint paint;
   paint.type = PAINT_RGB;
-  paint.variants.rgb_paint = hex_color[inv_color[result]];
+  paint.variants.rgb_paint = hex_color[type];
   return paint;
 }
 

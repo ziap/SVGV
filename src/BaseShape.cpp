@@ -407,11 +407,13 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_STROKE_LINE_JOIN: {
-        if (inv_linejoin[value] != -1) this->stroke_line_join = (StrokeLineJoin)inv_linejoin[value];
+        int type = inv_linejoin[value];
+        if (type != -1) this->stroke_line_join = (StrokeLineJoin) type;
       } break;
 
       case ATTRIBUTE_STROKE_LINE_CAP: {
-        if (inv_linecap[value] != -1) this->stroke_line_cap = (StrokeLineCap)inv_linecap[value];
+        int type = inv_linecap[value];
+        if (type != -1) this->stroke_line_cap = (StrokeLineCap)type;
       } break;
 
       case ATTRIBUTE_MITER_LIMIT: {
@@ -419,7 +421,8 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_FILL_RULE: {
-        if (inv_fillrule[value] != -1) this->fill_rule = (FillRule)inv_fillrule[value];
+        int type = inv_fillrule[value];
+        if (type != -1) this->fill_rule = (FillRule)type;
       } break;
       
       case ATTRIBUTE_TRANSFORM: {
