@@ -474,16 +474,16 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
               if (parent == nullptr) {
                 this->font_weight = 100;
               } else {
-                if (parent->font_weight < 100) {
-                  this->font_weight = parent->font_weight;
-                } else if (parent->font_weight < 400) {
-                  this->font_weight = 100;
-                } else if (parent->font_weight < 700) {
-                  this->font_weight = 400;
-                } else if (parent->font_weight < 900){
-                  this->font_weight = 700;
-                } else {
+                if (parent->font_weight > 900) {
                   this->font_weight = 900;
+                } else if (parent->font_weight > 700) {
+                  this->font_weight = 700;
+                } else if (parent->font_weight > 400) {
+                  this->font_weight = 400;
+                } else if (parent->font_weight > 100){
+                  this->font_weight = 100;
+                } else {
+                  this->font_weight = parent->font_weight;
                 }
               } 
             } break;

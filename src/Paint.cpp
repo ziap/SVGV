@@ -186,8 +186,6 @@ static Paint read_RGB(std::string_view value) {
 }
 
 Paint read_paint(std::string_view value) {
-
-  
   if (value[0] == '#') return read_color_hex(value);
   if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') return read_RGB(value);
   if (value == "none") return Paint::new_transparent();
