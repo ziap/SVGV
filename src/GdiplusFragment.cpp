@@ -53,13 +53,13 @@ static std::wstring remove_spaces(const std::wstring& input) {
 
   for (size_t i = 0; i < input.size(); ++i) {
     if (std::iswspace(input[i])) {
-      if (!is_space) {
+      if (is_space == false) {
         result += L' ';
         is_space = true;
-      } else {
-        result += input[i];
-        is_space = false;
       }
+    } else {
+      result += input[i];
+      is_space = false;
     }
   }
 
@@ -88,7 +88,6 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     std::wstring str = string_to_wide_string(text->content);
     str = remove_spaces(str);
 
-    
     int font_style;
     switch (text->font_style) {
       case FONTSTYLE_NORMAL: {
@@ -130,17 +129,17 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
       }
     }
 
-    size_t pos;
-
     bool set_font_family = false;
-
     std::string_view tmp_font_family = text->font_family;
+
     while (tmp_font_family.size() > 0) {
-      pos = (tmp_font_family).find(',');
-      if (pos == std::string_view::npos) pos = tmp_font_family.size();
       if (set_font_family == true) break;
+      
+      size_t pos = (tmp_font_family).find(',');
       std::string_view font = tmp_font_family.substr(0, pos);
-      if (pos < tmp_font_family.size()) tmp_font_family = tmp_font_family.substr(pos + 1);
+
+      if (pos != std::string_view::npos) tmp_font_family = tmp_font_family.substr(pos + 1);
+      else tmp_font_family = "";
        
       if (inv_genericfont[font] == -1) {
         std::wstring s{font.begin(), font.end()};
