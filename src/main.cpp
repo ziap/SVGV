@@ -81,7 +81,7 @@ private:
 
   static LRESULT CALLBACK callback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-    switch(message) {
+    switch (message) {
       case WM_CREATE: {
         DragAcceptFiles(hWnd, TRUE);
       } break;

@@ -138,8 +138,9 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
 
       if (pos != std::string_view::npos) tmp_font_family = tmp_font_family.substr(pos + 1);
       else tmp_font_family = "";
-       
-      if (inv_genericfont[font] == -1) {
+      
+      int type = inv_genericfont[font];
+      if (type == -1) {
         std::wstring s{font.begin(), font.end()};
         Gdiplus::FontFamily family{s.c_str()};
         if (family.IsAvailable()) {
@@ -158,7 +159,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
       } else {
         set_font_family = true;
         const Gdiplus::FontFamily *family;
-        switch(inv_genericfont[font]) {
+        switch ((GenericFont)type) {
           case GENERIC_FONT_SERIF: {
             family = Gdiplus::FontFamily::GenericSerif();
           } break;

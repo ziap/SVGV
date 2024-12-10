@@ -446,10 +446,11 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_FONT_WEIGHT: {
-        if (inv_fontweight[value] == -1) {
+        int type = inv_fontweight[value];
+        if (type == -1) {
           this->font_weight = strtod(value.data(), nullptr);
         }  else {
-          switch (inv_fontweight[value]) {
+          switch ((FontWeight)type) {
             case FONTWEIGHT_NORMAL: {
               this->font_weight = 400;
             } break;
