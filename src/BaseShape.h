@@ -41,14 +41,6 @@ enum FontStyle {
   FONTSTYLE_COUNT,
 };
 
-enum FontWeight {
-  FONTWEIGHT_NORMAL = 0,
-  FONTWEIGHT_BOLD,
-  FONTWEIGHT_BOLDER,
-  FONTWEIGHT_LIGHTER,
-  FONTWEIGHT_COUNT,
-};
-
 class BezierCurve {
 public:
   Point start;

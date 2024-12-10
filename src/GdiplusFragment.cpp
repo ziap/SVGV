@@ -66,24 +66,17 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
 
     Gdiplus::FontFamily default_family{L"times new roman"};
 
-    int font_style;
+    int font_style
     switch (text->font_style) {
       case FONTSTYLE_NORMAL: {
-        if (text->font_weight > 500)
-          font_style = Gdiplus::FontStyleBold;
+        if (text->font_weight >= 500) font_style = Gdiplus::FontStyleBold;
         else font_style = Gdiplus::FontStyleRegular;
 
       } break;
 
-      case FONTSTYLE_ITALIC: {
-        if (text->font_weight > 500)
-          font_style = Gdiplus::FontStyleBoldItalic;
-        else font_style = Gdiplus::FontStyleItalic;
-      } break;
-
+      case FONTSTYLE_ITALIC:
       case FONTSTYLE_OBLIQUE: {
-        if (text->font_weight == FONTWEIGHT_BOLD)
-          font_style = Gdiplus::FontStyleBoldItalic;
+        if (text->font_weight >= 500) font_style = Gdiplus::FontStyleBoldItalic;
         else font_style = Gdiplus::FontStyleItalic;
       } break;
 

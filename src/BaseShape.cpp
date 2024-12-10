@@ -3,6 +3,23 @@
 #include <cmath>
 #include <cctype>
 
+enum FontWeight {
+  FONTWEIGHT_NORMAL = 0,
+  FONTWEIGHT_BOLD,
+  FONTWEIGHT_BOLDER,
+  FONTWEIGHT_LIGHTER,
+  FONTWEIGHT_COUNT,
+};
+
+constexpr std::string_view fontweight_name[FONTWEIGHT_COUNT] = {
+  "normal",
+  "bold",
+  "bolder",
+  "lighter",
+};
+
+constexpr InverseIndex<FONTWEIGHT_COUNT> inv_fontweight{&fontweight_name};
+
 constexpr std::string_view fillrule_name[FILL_RULE_COUNT] = {
   "nonzero",
   "evenodd",
@@ -321,7 +338,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->transform = Transform::identity();
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
     this->font_style = FontStyle::FONTSTYLE_NORMAL;
-    this->font_weight = 0;
+    this->font_weight = 400;
     this->font_family = "times new roman";
   } else {
     this->visible = parent->visible;
@@ -426,7 +443,46 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       } break;
 
       case ATTRIBUTE_FONT_WEIGHT: {
-        this->font_weight = strtod(value.data(), nullptr);
+        if (inv_fontweight[value] == -1) {
+          this->font_weight = strtod(value.data(), nullptr);
+          if (this->font_weight < 100 || this->font_weight > 900) {
+            if (parent == nullptr || parent->font_weight < 400) {
+              this->font_weight = 400;
+            } else if (parent->font_weight < 700) {
+              this->font_weight = 700;
+            } else {
+              this->font_weight = 900;
+            }
+          }
+        }  else {
+          switch (inv_fontweight[value]) {
+            case FONTWEIGHT_NORMAL: {
+              this->font_weight = 400;
+            } break;
+            case FONTWEIGHT_BOLD: {
+              this->font_weight = 700;
+            } break;
+            case FONTWEIGHT_BOLDER: {
+              if (parent == nullptr || parent->font_weight < 400) {
+                this->font_weight = 400;
+              } else if (parent->font_weight < 700) {
+                this->font_weight = 700;
+              } else {
+                this->font_weight = 900;
+              }
+            } break;
+            case FONTWEIGHT_LIGHTER: {
+              if (parent == nullptr || parent->font_weight <= 700) {
+                this->font_weight = 400;
+              } else {
+                this->font_weight = 700;
+              }
+            } break;
+            case FONTWEIGHT_COUNT: {
+              __builtin_unreachable();
+            }
+          }
+        } 
       } break;
       
       case ATTRIBUTE_FONT_FAMILY: {
