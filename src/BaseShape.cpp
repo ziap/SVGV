@@ -339,7 +339,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
     this->font_style = FontStyle::FONTSTYLE_NORMAL;
     this->font_weight = 400;
-    this->font_family = "times new roman";
+    this->font_family = "serif";
   } else {
     this->visible = parent->visible;
     this->fill = parent->fill;
@@ -445,15 +445,6 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       case ATTRIBUTE_FONT_WEIGHT: {
         if (inv_fontweight[value] == -1) {
           this->font_weight = strtod(value.data(), nullptr);
-          if (this->font_weight < 100 || this->font_weight > 900) {
-            if (parent == nullptr || parent->font_weight < 400) {
-              this->font_weight = 400;
-            } else if (parent->font_weight < 700) {
-              this->font_weight = 700;
-            } else {
-              this->font_weight = 900;
-            }
-          }
         }  else {
           switch (inv_fontweight[value]) {
             case FONTWEIGHT_NORMAL: {
@@ -463,20 +454,38 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
               this->font_weight = 700;
             } break;
             case FONTWEIGHT_BOLDER: {
-              if (parent == nullptr || parent->font_weight < 400) {
-                this->font_weight = 400;
-              } else if (parent->font_weight < 700) {
+              if (parent == nullptr) {
                 this->font_weight = 700;
               } else {
-                this->font_weight = 900;
-              }
+                if (parent->font_weight < 100) {
+                  this->font_weight = 100;
+                } else if (parent->font_weight < 400) {
+                  this->font_weight = 400;
+                } else if (parent->font_weight < 700) {
+                  this->font_weight = 700;
+                } else if (parent->font_weight < 900){
+                  this->font_weight = 900;
+                } else {
+                  this->font_weight = parent->font_weight;
+                }
+              } 
             } break;
             case FONTWEIGHT_LIGHTER: {
-              if (parent == nullptr || parent->font_weight <= 700) {
-                this->font_weight = 400;
+              if (parent == nullptr) {
+                this->font_weight = 100;
               } else {
-                this->font_weight = 700;
-              }
+                if (parent->font_weight < 100) {
+                  this->font_weight = parent->font_weight;
+                } else if (parent->font_weight < 400) {
+                  this->font_weight = 100;
+                } else if (parent->font_weight < 700) {
+                  this->font_weight = 400;
+                } else if (parent->font_weight < 900){
+                  this->font_weight = 700;
+                } else {
+                  this->font_weight = 900;
+                }
+              } 
             } break;
             case FONTWEIGHT_COUNT: {
               __builtin_unreachable();

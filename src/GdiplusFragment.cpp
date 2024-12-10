@@ -3,6 +3,21 @@
 
 #include <string>
 
+enum FontFamily {
+  FONTFAMILY_SERIF = 0,
+  FONTFAMILY_SANSSERIF,
+  FONTFAMILY_MONOSPACE,
+  FONTFAMILY_COUNT,
+};
+
+constexpr std::string_view fontfamily_name[FONTFAMILY_COUNT] = {
+  "serif",
+  "sans-serif",
+  "monospace",
+};
+
+constexpr InverseIndex<FONTFAMILY_COUNT> inv_fontfamily{&fontfamily_name};
+
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity) {
   switch (paint.type) {
     case PAINT_TRANSPARENT:
@@ -60,13 +75,71 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     std::wstring str{text->content.begin(), text->content.end()};
     str = remove_spaces(str);
 
-    std::wstring s{text->font_family.begin(), text->font_family.end()};
+    size_t pos;
+    size_t start = 0;
+    const Gdiplus::FontFamily* family;
 
-    Gdiplus::FontFamily family{s.c_str()};
+    bool set_font_family = false;
+    while ((pos = (text->font_family).find(',', start)) != std::string_view::npos) {
+      if (set_font_family == true) break;
+        std::string_view font = (text->font_family).substr(start, pos - start);
+       
+        if (inv_fontfamily[font] == -1) {
+          std::wstring s{font.begin(), font.end()};
+          family = new Gdiplus::FontFamily(s.c_str());
+          if (family->IsAvailable()) set_font_family = true;
+        } else {
+          switch(inv_fontfamily[font]) {
+            case FONTFAMILY_SERIF: {
+              family = Gdiplus::FontFamily::GenericSerif();
+              set_font_family = true;
+            } break;
+            case FONTFAMILY_SANSSERIF: {
+              family = Gdiplus::FontFamily::GenericSansSerif();
+              set_font_family = true;
+            } break;
+            case FONTFAMILY_MONOSPACE: {
+              family = Gdiplus::FontFamily::GenericMonospace();
+              set_font_family = true;
+            } break;
+            case FONTFAMILY_COUNT: {
+              __builtin_unreachable();
+            } 
+          }
+        }
+        start = pos + 1;  
+    }
 
-    Gdiplus::FontFamily default_family{L"times new roman"};
+    if (set_font_family == false) {
+      std::string_view font = (text->font_family).substr(start, pos - start);
+       
+      if (inv_fontfamily[font] == -1) {
+        std::wstring s{font.begin(), font.end()};
+        family = new Gdiplus::FontFamily(s.c_str());
+        if (family->IsAvailable()) set_font_family = true;
+      } else {
+        switch(inv_fontfamily[font]) {
+          case FONTFAMILY_SERIF: {
+            family = Gdiplus::FontFamily::GenericSerif();
+            set_font_family = true;
+          } break;
+          case FONTFAMILY_SANSSERIF: {
+            family = Gdiplus::FontFamily::GenericSansSerif();
+            set_font_family = true;
+          } break;
+          case FONTFAMILY_MONOSPACE: {
+            family = Gdiplus::FontFamily::GenericMonospace();
+            set_font_family = true;
+          } break;
+          case FONTFAMILY_COUNT: {
+            __builtin_unreachable();
+          } 
+        }
+      }
+    }
+    if (set_font_family == false) family = Gdiplus::FontFamily::GenericSerif();
 
-    int font_style
+    int font_style;
     switch (text->font_style) {
       case FONTSTYLE_NORMAL: {
         if (text->font_weight >= 500) font_style = Gdiplus::FontStyleBold;
@@ -106,27 +179,16 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
         __builtin_unreachable();
       }
     }
-    if (!family.IsAvailable()) {
-      this->path.AddString(
-                  str.c_str(), 
-                  (INT)(str.length()), 
-                  &default_family,
-                  font_style,
-                  (Gdiplus::REAL) text->font_size,
-                  origin,
-                  &format
-                );
-    } else {
-      this->path.AddString(
-                  str.c_str(), 
-                  (INT)(str.length()), 
-                  &family,
-                  font_style,
-                  (Gdiplus::REAL) text->font_size,
-                  origin,
-                  &format
-                );
-    }
+
+    this->path.AddString(
+                str.c_str(), 
+                (INT)(str.length()), 
+                family,
+                font_style,
+                (Gdiplus::REAL) text->font_size,
+                origin,
+                &format
+    );
   } else {
     ArrayList<BezierCurve> beziers = shape->get_beziers();
 
