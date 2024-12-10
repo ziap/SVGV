@@ -2,7 +2,6 @@
 #include "Text.h"
 
 #include <string>
-#include <iostream>
 
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity) {
   switch (paint.type) {
