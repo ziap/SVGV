@@ -3,20 +3,20 @@
 
 #include <string>
 
-enum FontFamily {
-  FONTFAMILY_SERIF = 0,
-  FONTFAMILY_SANSSERIF,
-  FONTFAMILY_MONOSPACE,
-  FONTFAMILY_COUNT,
+enum GenericFont {
+  GENERIC_FONT_SERIF = 0,
+  GENERIC_FONT_SANSSERIF,
+  GENERIC_FONT_MONOSPACE,
+  GENERIC_FONT_COUNT,
 };
 
-constexpr std::string_view fontfamily_name[FONTFAMILY_COUNT] = {
+constexpr std::string_view genericfont_name[GENERIC_FONT_COUNT] = {
   "serif",
   "sans-serif",
   "monospace",
 };
 
-constexpr InverseIndex<FONTFAMILY_COUNT> inv_fontfamily{&fontfamily_name};
+constexpr InverseIndex<GENERIC_FONT_COUNT> inv_genericfont{&genericfont_name};
 
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity) {
   switch (paint.type) {
@@ -130,15 +130,17 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     }
 
     size_t pos;
-    size_t start = 0;
 
     bool set_font_family = false;
 
-    while ((pos = (text->font_family).find(',', start)) != std::string_view::npos) {
+    std::string_view tmp_font_family = text->font_family;
+    while ((pos = (tmp_font_family).find(',')) != std::string_view::npos || tmp_font_family.size() > 0) {
+      if (pos == std::string_view::npos) pos = tmp_font_family.size();
       if (set_font_family == true) break;
-        std::string_view font = (text->font_family).substr(start, pos - start);
+        std::string_view font = tmp_font_family.substr(0, pos);
+        if (pos < tmp_font_family.size()) tmp_font_family = tmp_font_family.substr(pos + 1);
        
-        if (inv_fontfamily[font] == -1) {
+        if (inv_genericfont[font] == -1) {
           std::wstring s{font.begin(), font.end()};
           Gdiplus::FontFamily family{s.c_str()};
           if (family.IsAvailable()) {
@@ -155,109 +157,36 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
             break;
           }
         } else {
-          switch(inv_fontfamily[font]) {
-            case FONTFAMILY_SERIF: {
+          const Gdiplus::FontFamily *family;
+          switch(inv_genericfont[font]) {
+            case GENERIC_FONT_SERIF: {
               set_font_family = true;
-              this->path.AddString(
-                str.c_str(), 
-                (INT)(str.length()), 
-                Gdiplus::FontFamily::GenericSerif(),
-                font_style,
-                (Gdiplus::REAL) text->font_size,
-                origin,
-                &format
-              );
+              family = Gdiplus::FontFamily::GenericSerif();
             } break;
-            case FONTFAMILY_SANSSERIF: {
+            case GENERIC_FONT_SANSSERIF: {
               set_font_family = true;
-              this->path.AddString(
-                str.c_str(), 
-                (INT)(str.length()), 
-                Gdiplus::FontFamily::GenericSansSerif(),
-                font_style,
-                (Gdiplus::REAL) text->font_size,
-                origin,
-                &format
-              );
+              family = Gdiplus::FontFamily::GenericSansSerif();
             } break;
-            case FONTFAMILY_MONOSPACE: {
+            case GENERIC_FONT_MONOSPACE: {
               set_font_family = true;
-              this->path.AddString(
-                str.c_str(), 
-                (INT)(str.length()), 
-                Gdiplus::FontFamily::GenericMonospace(),
-                font_style,
-                (Gdiplus::REAL) text->font_size,
-                origin,
-                &format
-              );
+              family = Gdiplus::FontFamily::GenericMonospace();
             } break;
-            case FONTFAMILY_COUNT: {
+            case GENERIC_FONT_COUNT: {
               __builtin_unreachable();
             } 
           }
-        }
-        start = pos + 1;  
-    }
-
-    if (set_font_family == false) {
-      std::string_view font = (text->font_family).substr(start, pos - start);
-       
-      if (inv_fontfamily[font] == -1) {
-        std::wstring s{font.begin(), font.end()};
-        Gdiplus::FontFamily family{s.c_str()};
-        if (family.IsAvailable()) {
           this->path.AddString(
             str.c_str(), 
             (INT)(str.length()), 
-            &family,
+            family,
             font_style,
             (Gdiplus::REAL) text->font_size,
             origin,
             &format
           );
         }
-      } else {
-        switch(inv_fontfamily[font]) {
-          case FONTFAMILY_SERIF: {
-            this->path.AddString(
-              str.c_str(), 
-              (INT)(str.length()), 
-              Gdiplus::FontFamily::GenericSerif(),
-              font_style,
-              (Gdiplus::REAL) text->font_size,
-              origin,
-              &format
-            );
-          } break;
-          case FONTFAMILY_SANSSERIF: {
-            this->path.AddString(
-              str.c_str(), 
-              (INT)(str.length()), 
-              Gdiplus::FontFamily::GenericSansSerif(),
-              font_style,
-              (Gdiplus::REAL) text->font_size,
-              origin,
-              &format
-            );
-          } break;
-          case FONTFAMILY_MONOSPACE: {
-            this->path.AddString(
-              str.c_str(), 
-              (INT)(str.length()), 
-              Gdiplus::FontFamily::GenericMonospace(),
-              font_style,
-              (Gdiplus::REAL) text->font_size,
-              origin,
-              &format
-            );
-          } break;
-          case FONTFAMILY_COUNT: {
-            __builtin_unreachable();
-          } 
-        }
-      }
     }
+
     if (set_font_family == false) {
       this->path.AddString(
         str.c_str(), 
