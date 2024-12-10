@@ -48,20 +48,28 @@ static double det(Transform transform) {
 }
 
 static std::wstring remove_spaces(const std::wstring& input) {
-    std::wstring result = input;
+  std::wstring result = input;
   
-    for (size_t i = 0; i < result.size(); ++i) {
-        if (std::iswspace(result[i])) 
-            result[i] = L' ';
-    }
+  for (size_t i = 0; i < result.size(); ++i) {
+    if (std::iswspace(result[i])) result[i] = L' ';
+  }
 
-    result.erase(std::unique(result.begin(), result.end(),
-                             [](wchar_t a, wchar_t b) { return std::iswspace(a) && std::iswspace(b); }),
-                 result.end());
+  result.erase(std::unique(result.begin(), result.end(),
+              [](wchar_t a, wchar_t b) { return std::iswspace(a) && std::iswspace(b); }),
+  
+  result.end());
 
-    return result;
+  return result;
 }
+std::wstring string_to_wide_string(const std::string_view& string) {
+  if (string.empty()) return L"";
 
+  const size_t size_needed = MultiByteToWideChar(CP_UTF8, 0, string.data(), static_cast<int>(string.size()), nullptr, 0);
+
+  std::wstring result(size_needed, 0);
+  MultiByteToWideChar(CP_UTF8, 0, string.data(), static_cast<int>(string.size()), result.data(), size_needed);
+  return result;
+}
 
 GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
   fill_brush{paint_to_brush(shape->fill, shape->fill_opacity)},
@@ -72,7 +80,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
   },
   path {get_gdiplus_fillmode(shape->fill_rule)} {
   if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
-    std::wstring str{text->content.begin(), text->content.end()};
+    std::wstring str = string_to_wide_string(text->content);
     str = remove_spaces(str);
 
     size_t pos;
@@ -181,13 +189,13 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     }
 
     this->path.AddString(
-                str.c_str(), 
-                (INT)(str.length()), 
-                family,
-                font_style,
-                (Gdiplus::REAL) text->font_size,
-                origin,
-                &format
+      str.c_str(), 
+      (INT)(str.length()), 
+      family,
+      font_style,
+      (Gdiplus::REAL) text->font_size,
+      origin,
+      &format
     );
   } else {
     ArrayList<BezierCurve> beziers = shape->get_beziers();
