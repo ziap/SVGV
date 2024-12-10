@@ -133,8 +133,6 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     std::string_view tmp_font_family = text->font_family;
 
     while (tmp_font_family.size() > 0) {
-      if (set_font_family == true) break;
-      
       size_t pos = (tmp_font_family).find(',');
       std::string_view font = tmp_font_family.substr(0, pos);
 
@@ -158,18 +156,16 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
           break;
         }
       } else {
+        set_font_family = true;
         const Gdiplus::FontFamily *family;
         switch(inv_genericfont[font]) {
           case GENERIC_FONT_SERIF: {
-            set_font_family = true;
             family = Gdiplus::FontFamily::GenericSerif();
           } break;
           case GENERIC_FONT_SANSSERIF: {
-            set_font_family = true;
             family = Gdiplus::FontFamily::GenericSansSerif();
           } break;
           case GENERIC_FONT_MONOSPACE: {
-            set_font_family = true;
             family = Gdiplus::FontFamily::GenericMonospace();
           } break;
           case GENERIC_FONT_COUNT: {
@@ -185,6 +181,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
           origin,
           &format
         );
+        break;
       }
     }
 

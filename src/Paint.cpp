@@ -3,7 +3,6 @@
 #include "InverseIndex.h"
 #include <algorithm>
 #include <cctype>
-#include <string>
 
 static std::string_view trim_start(std::string_view sv) {
   while (sv.size() && (isspace(sv[0]) || sv[0] == ',')) sv = sv.substr(1);
