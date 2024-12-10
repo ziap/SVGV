@@ -34,6 +34,21 @@ enum FillRule {
   FILL_RULE_COUNT
 };
 
+enum FontStyle {
+  FONTSTYLE_NORMAL = 0,
+  FONTSTYLE_ITALIC,
+  FONTSTYLE_OBLIQUE,
+  FONTSTYLE_COUNT,
+};
+
+enum FontWeight {
+  FONTWEIGHT_NORMAL = 0,
+  FONTWEIGHT_BOLD,
+  FONTWEIGHT_BOLDER,
+  FONTWEIGHT_LIGHTER,
+  FONTWEIGHT_COUNT,
+};
+
 class BezierCurve {
 public:
   Point start;
@@ -53,6 +68,9 @@ public:
   Paint stroke;
 
   double font_size;
+  FontStyle font_style;
+  int font_weight;
+  std::string_view font_family;
 
   double opacity;
   double fill_opacity;

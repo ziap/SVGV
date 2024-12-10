@@ -3,22 +3,22 @@
 #include <cmath>
 #include <cctype>
 
-constexpr std::string_view fillrule_name[FILL_RULE_COUNT] {
+constexpr std::string_view fillrule_name[FILL_RULE_COUNT] = {
   "nonzero",
   "evenodd",
 };
 
-constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule = {&fillrule_name};
+constexpr InverseIndex<FILL_RULE_COUNT> inv_fillrule{&fillrule_name};
 
-constexpr std::string_view linecap_name[LINE_CAP_COUNT] {
+constexpr std::string_view linecap_name[LINE_CAP_COUNT] = {
   "butt",
   "round",
   "square",
 };
 
-constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap = {&linecap_name};
+constexpr InverseIndex<LINE_CAP_COUNT> inv_linecap{&linecap_name};
 
-constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
+constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] = {
   "arcs",
   "bevel",
   "miter",
@@ -26,7 +26,15 @@ constexpr std::string_view linejoin_name[LINE_JOIN_COUNT] {
   "round",
 };
 
-constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin = {&linejoin_name};
+constexpr InverseIndex<LINE_JOIN_COUNT> inv_linejoin{&linejoin_name};
+
+constexpr std::string_view fontstyle_name[FONTSTYLE_COUNT] = {
+  "normal",
+  "italic",
+  "oblique",
+};
+
+constexpr InverseIndex<FONTSTYLE_COUNT> inv_fontstyle{&fontstyle_name};
 
 enum AttributeType {
   ATTRIBUTE_VISIBLE = 0,
@@ -45,6 +53,9 @@ enum AttributeType {
   ATTRIBUTE_FILL_RULE,
   ATTRIBUTE_TRANSFORM,
   ATTRIBUTE_STYLE, 
+  ATTRIBUTE_FONT_STYLE,
+  ATTRIBUTE_FONT_WEIGHT,
+  ATTRIBUTE_FONT_FAMILY,
   ATTRIBUTE_COUNT,
 };
 
@@ -65,9 +76,12 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "fill-rule",
   "transform",
   "style",
+  "font-style",
+  "font-weight",
+  "font-family",
 };
 
-constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute = {&attribute_name};
+constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute{&attribute_name};
 
 static std::string_view trim_start(std::string_view sv) {
   while (sv.size() && (isspace(sv[0]) || sv[0] == ',')) sv = sv.substr(1);
@@ -306,6 +320,9 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->miter_limit = 4;
     this->transform = Transform::identity();
     this->fill_rule = FillRule::FILL_RULE_NONZERO;
+    this->font_style = FontStyle::FONTSTYLE_NORMAL;
+    this->font_weight = 0;
+    this->font_family = "times new roman";
   } else {
     this->visible = parent->visible;
     this->fill = parent->fill;
@@ -322,6 +339,9 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
     this->miter_limit = parent->miter_limit;
     this->transform = parent->transform;
     this->fill_rule = parent->fill_rule;
+    this->font_style = parent->font_style;
+    this->font_weight = parent->font_weight;
+    this->font_family = parent->font_family;
   }
 
   for (int i = 0; i < attrs_count; i++) {
@@ -399,6 +419,18 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
           if (end != value.size()) value = value.substr(end + 1);
           else value = value.substr(end);
         }
+      } break;
+
+      case ATTRIBUTE_FONT_STYLE: {
+        this->font_style = (FontStyle)inv_fontstyle[value];
+      } break;
+
+      case ATTRIBUTE_FONT_WEIGHT: {
+        this->font_weight = strtod(value.data(), nullptr);
+      } break;
+      
+      case ATTRIBUTE_FONT_FAMILY: {
+        this->font_family = value;
       } break;
 
       case ATTRIBUTE_COUNT: {

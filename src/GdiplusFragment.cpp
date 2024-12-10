@@ -2,6 +2,7 @@
 #include "Text.h"
 
 #include <string>
+#include <iostream>
 
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity) {
   switch (paint.type) {
@@ -32,6 +33,22 @@ static double det(Transform transform) {
   return transform.m[0][0] * transform.m[1][1] - transform.m[0][1] * transform.m[1][0];
 }
 
+static std::wstring remove_spaces(const std::wstring& input) {
+    std::wstring result = input;
+  
+    for (size_t i = 0; i < result.size(); ++i) {
+        if (std::iswspace(result[i])) 
+            result[i] = L' ';
+    }
+
+    result.erase(std::unique(result.begin(), result.end(),
+                             [](wchar_t a, wchar_t b) { return std::iswspace(a) && std::iswspace(b); }),
+                 result.end());
+
+    return result;
+}
+
+
 GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
   fill_brush{paint_to_brush(shape->fill, shape->fill_opacity)},
   stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity)},
@@ -41,26 +58,83 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
   },
   path {get_gdiplus_fillmode(shape->fill_rule)} {
   if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
-    std::wstring str = std::wstring{text->content.begin(), text->content.end()};
-    Gdiplus::FontFamily family{L"Times New Roman"};
-    int font_style = Gdiplus::FontStyleRegular;
+    std::wstring str{text->content.begin(), text->content.end()};
+    str = remove_spaces(str);
+
+    std::wstring s{text->font_family.begin(), text->font_family.end()};
+
+    Gdiplus::FontFamily family{s.c_str()};
+
+    Gdiplus::FontFamily default_family{L"times new roman"};
+
+    int font_style;
+    switch (text->font_style) {
+      case FONTSTYLE_NORMAL: {
+        if (text->font_weight > 500)
+          font_style = Gdiplus::FontStyleBold;
+        else font_style = Gdiplus::FontStyleRegular;
+
+      } break;
+
+      case FONTSTYLE_ITALIC: {
+        if (text->font_weight > 500)
+          font_style = Gdiplus::FontStyleBoldItalic;
+        else font_style = Gdiplus::FontStyleItalic;
+      } break;
+
+      case FONTSTYLE_OBLIQUE: {
+        if (text->font_weight == FONTWEIGHT_BOLD)
+          font_style = Gdiplus::FontStyleBoldItalic;
+        else font_style = Gdiplus::FontStyleItalic;
+      } break;
+
+      case FONTSTYLE_COUNT: {
+        __builtin_unreachable();
+      }     
+    }
 
     Gdiplus::PointF origin{
       (Gdiplus::REAL)(text->pos[0] + text->d[0]), 
       (Gdiplus::REAL)(text->pos[1] + text->d[1] - text->font_size)
     };
 
-    Gdiplus::StringFormat format = Gdiplus::StringFormat::GenericDefault();
-
-    this->path.AddString(
-      str.c_str(),
-      (INT)(str.length()),
-      &family,
-      font_style,
-      (Gdiplus::REAL) text->font_size,
-      origin,
-      &format
-    );
+    Gdiplus::StringFormat format;
+    
+    switch (text->text_anchor) {
+      case TEXTANCHOR_START: {
+        format.SetAlignment(Gdiplus::StringAlignmentNear);
+      } break;
+      case TEXTANCHOR_MIDDLE: {
+        format.SetAlignment(Gdiplus::StringAlignmentCenter);
+      } break;
+      case TEXTANCHOR_END: {
+        format.SetAlignment(Gdiplus::StringAlignmentFar);
+      } break;
+      case TEXTANCHOR_COUNT: {
+        __builtin_unreachable();
+      }
+    }
+    if (!family.IsAvailable()) {
+      this->path.AddString(
+                  str.c_str(), 
+                  (INT)(str.length()), 
+                  &default_family,
+                  font_style,
+                  (Gdiplus::REAL) text->font_size,
+                  origin,
+                  &format
+                );
+    } else {
+      this->path.AddString(
+                  str.c_str(), 
+                  (INT)(str.length()), 
+                  &family,
+                  font_style,
+                  (Gdiplus::REAL) text->font_size,
+                  origin,
+                  &format
+                );
+    }
   } else {
     ArrayList<BezierCurve> beziers = shape->get_beziers();
 
