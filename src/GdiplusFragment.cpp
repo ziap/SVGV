@@ -68,10 +68,10 @@ static std::wstring remove_spaces(const std::wstring& input) {
 std::wstring string_to_wide_string(const std::string_view& string) {
   if (string.empty()) return L"";
 
-  const size_t size_needed = MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)(string.size()), nullptr, 0);
+  const size_t size_needed = MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)string.size(), nullptr, 0);
 
   std::wstring result(size_needed, 0);
-  MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)(string.size()), result.data(), size_needed);
+  MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)string.size(), result.data(), size_needed);
   return result;
 }
 
