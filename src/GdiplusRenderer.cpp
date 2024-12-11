@@ -27,9 +27,9 @@ bool GdiplusRenderer::load_file(std::string_view filename) {
 
   std::ostringstream ss;
   ss << fin.rdbuf();
-  this->svg_file = ss.str();
+  std::string svg_file = ss.str();
   this->clear();
-  ParseResult svg = parse_xml(this->svg_file);
+  ParseResult svg = parse_xml(svg_file);
 
   for (const BaseShape *shape = svg.shapes.get(); shape; shape = shape->next.get()) {
     this->shapes.emplace_back(shape);
