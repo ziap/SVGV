@@ -49,11 +49,10 @@ static double det(Transform transform) {
 
 static std::wstring remove_spaces(const std::wstring& input) {
   std::wstring result = L"";
-  bool is_space = false;  
-
-  bool is_alpha = false;
+  bool is_space = true;
+    
   for (size_t i = 0; i < input.size(); ++i) {
-    if (std::iswspace(input[i]) && is_alpha == true) {
+    if (std::iswspace(input[i])) {
       if (is_space == false && i != 0) {
         result.push_back(L' ');
         is_space = true;
@@ -61,7 +60,6 @@ static std::wstring remove_spaces(const std::wstring& input) {
     } else {
       result.push_back(input[i]);
       is_space = false;
-      is_alpha = true;
     }
   }
 
