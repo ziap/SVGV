@@ -51,15 +51,17 @@ static std::wstring remove_spaces(const std::wstring& input) {
   std::wstring result = L"";
   bool is_space = false;  
 
+  bool is_alpha = false;
   for (size_t i = 0; i < input.size(); ++i) {
-    if (std::iswspace(input[i])) {
-      if (is_space == false) {
-        result += L' ';
+    if (std::iswspace(input[i]) && is_alpha == true) {
+      if (is_space == false && i != 0) {
+        result.push_back(L' ');
         is_space = true;
       }
     } else {
-      result += input[i];
+      result.push_back(input[i]);
       is_space = false;
+      is_alpha = true;
     }
   }
 
@@ -132,6 +134,9 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
     bool set_font_family = false;
     std::string_view tmp_font_family = text->font_family;
 
+    while(isspace(tmp_font_family[0])) tmp_font_family = tmp_font_family.substr(1);
+    while(isspace(tmp_font_family[tmp_font_family.size() - 1])) tmp_font_family = tmp_font_family.substr(0, tmp_font_family.size() - 2);
+    
     while (tmp_font_family.size() > 0) {
       size_t pos = (tmp_font_family).find(',');
       std::string_view font = tmp_font_family.substr(0, pos);
