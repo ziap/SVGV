@@ -50,10 +50,10 @@ static double det(Transform transform) {
 static std::wstring remove_spaces(const std::wstring& input) {
   std::wstring result = L"";
   bool is_space = true;
-    
+
   for (size_t i = 0; i < input.size(); ++i) {
     if (std::iswspace(input[i])) {
-      if (is_space == false && i != 0) {
+      if (is_space == false) {
         result.push_back(L' ');
         is_space = true;
       }
