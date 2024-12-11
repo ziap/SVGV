@@ -26,8 +26,7 @@
             </g>
         </g>
         <g fill="black" stroke="navy" font-family="times new roman" stroke-width="2.0">
-            <text x="655" y="350" font-size="30" text-anchor="middle" transform="rotate(25) translate(50,60)">
-                                     sleep all
+            <text x="655" y="350" font-size="30" text-anchor="middle" transform="rotate(25) translate(50,60)">sleep all
                 day</text>
         </g>
     </g>
