@@ -29,6 +29,8 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
         (BYTE)(paint.variants.rgb_paint.g * 255), 
         (BYTE)(paint.variants.rgb_paint.b * 255)
       });
+    case PAINT_URL:
+      return nullptr;
   }
 }
 

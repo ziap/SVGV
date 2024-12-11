@@ -27,6 +27,16 @@ Paint Paint::new_rgb(double r, double g, double b) {
   return paint;
 }
 
+Paint Paint::new_url(std::string_view value) {
+  Paint paint;
+  paint.type = PAINT_URL;
+
+  paint.variants.url_paint.data = value.data();
+  paint.variants.url_paint.len = value.size();
+
+  return paint;
+}
+
 constexpr std::string_view color_name[] = {
   "aliceblue",       "antiquewhite",      "aqua",                 "aquamarine",
   "azure",           "beige",             "bisque",               "black",
