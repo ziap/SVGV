@@ -195,9 +195,16 @@ static Paint read_RGB(std::string_view value) {
   return Paint::new_rgb(r, g, b);
 }
 
+static Paint read_URL(std::string_view value) {
+  value = value.substr(4);
+  value = value.substr(0, value.size() - 1);
+  return Paint::new_url(value);
+}
+
 Paint read_paint(std::string_view value) {
   if (value[0] == '#') return read_color_hex(value);
-  if (value[0] == 'r' && value[1] == 'g' && value[2] == 'b') return read_RGB(value);
+  if (value.substr(0, 3) == "rgb") return read_RGB(value);
+  if (value.substr(0, 3) == "url") return read_URL(value);
   if (value == "none") return Paint::new_transparent();
   return read_color_text(value);
 } 
