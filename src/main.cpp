@@ -9,7 +9,7 @@
 
 class GdiplusWindow {
 public:
-  GdiplusWindow(int width, int height, const char *title, HINSTANCE instance, std::string_view argument, INT cmd_show) :
+  GdiplusWindow(int width, int height, const char *title, HINSTANCE instance, const char *argument, INT cmd_show) :
     renderer{width, height} {
     // Initialize GDI+.
     Gdiplus::GdiplusStartupInput input;
@@ -45,11 +45,10 @@ public:
     ShowWindow(this->window, cmd_show);
     UpdateWindow(this->window);
 
-    if (argument.size() && !this->renderer.load_file(argument)) {
+    if (argument && argument[0] && !this->renderer.load_file(argument)) {
       char msg[64];
       snprintf(
-        msg, sizeof(msg), "Failed to open file `%.*s`",
-        (int)argument.size(), argument.data()
+        msg, sizeof(msg), "Failed to open file `%s`", argument
       );
       MessageBox(this->window, msg, "Error", MB_ICONWARNING | MB_OK);
     }
@@ -81,7 +80,7 @@ private:
 
   static LRESULT CALLBACK callback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     GdiplusRenderer *renderer = (GdiplusRenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-    switch (message) {
+    switch(message) {
       case WM_CREATE: {
         DragAcceptFiles(hWnd, TRUE);
       } break;
@@ -136,6 +135,10 @@ private:
           rc.bottom - rc.top
         );
         HBITMAP old_bitmap = (HBITMAP)SelectObject(hdc, bitmap);
+
+        HBRUSH background = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+        FillRect(hdc, &rc, background);
+        DeleteObject(background);
 
         Gdiplus::Graphics graphics {hdc};
         graphics.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
