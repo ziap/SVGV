@@ -77,7 +77,7 @@ enum StyleType {
 };
 
 constexpr std::string_view style_name[STYLE_COUNT] = {
-    "visibility",
+  "visibility",
   "fill",
   "stroke",
   "font-size",
