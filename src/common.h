@@ -2,6 +2,12 @@
 #define COMMON_H
 #include <string_view>
 
+class Attribute {
+public:
+  std::string_view key;
+  std::string_view value;
+};
+
 double convert_opacity(std::string_view value);
 
 std::string_view trim_start(std::string_view sv);

@@ -1,11 +1,11 @@
 #ifndef BASE_SHAPE_H
 #define BASE_SHAPE_H
 
+#include "common.h"
 #include "ArrayList.h"
 #include "utils.h"
 #include "Matrix.h"
 #include "Paint.h"
-#include "Attribute.h"
 
 enum StrokeLineJoin {
   LINE_JOIN_ARCS = 0,

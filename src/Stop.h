@@ -2,7 +2,7 @@
 #define STOP_H
 
 #include <string_view>
-#include "Attribute.h"
+#include "common.h"
 #include "Paint.h"
 
 struct Stop {

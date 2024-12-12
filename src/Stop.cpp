@@ -1,5 +1,4 @@
 #include "Stop.h"
-#include "Attribute.h"
 #include "InverseIndex.h"
 #include "common.h"
 #include "Paint.h"

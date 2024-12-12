@@ -1,18 +1,30 @@
 #ifndef BASEGRADIENT_H
 #define BASEGRADIENT_H
 
-#include "Attribute.h"
 #include "Paint.h"
 #include "Stop.h"
-#include "LinearGradient.h"
-#include "RadialGradient.h"
 #include "ArrayList.h"
+#include "Matrix.h"
 #include <string_view>
 
 enum GradientType {
   LINEAR_GRADIENT = 0,
   RADIAL_GRADIENT,
   GRADIENT_TYPE_COUNT,
+};
+
+struct RadialGradient {
+  Point c;
+  int r;
+  Point fc;
+  int fr;
+  Paint to_paint() const;
+};
+
+struct LinearGradient{
+  Point x;
+  Point y;
+  Paint to_paint();
 };
 
 struct Gradient {
