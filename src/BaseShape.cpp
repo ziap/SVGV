@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cctype>
 
+
 enum FontWeight {
   FONTWEIGHT_NORMAL = 0,
   FONTWEIGHT_BOLD,
@@ -53,31 +54,30 @@ constexpr std::string_view fontstyle_name[FONTSTYLE_COUNT] = {
 
 constexpr InverseIndex<FONTSTYLE_COUNT> inv_fontstyle{&fontstyle_name};
 
-enum AttributeType {
-  ATTRIBUTE_VISIBLE = 0,
-  ATTRIBUTE_FILL,
-  ATTRIBUTE_STROKE,
-  ATTRIBUTE_FONT_SIZE,
-  ATTRIBUTE_OPACITY,
-  ATTRIBUTE_FILL_OPACITY,
-  ATTRIBUTE_STROKE_OPACITY,
-  ATTRIBUTE_STROKE_WIDTH,
-  ATTRIBUTE_STROKE_DASH_OFFSET,
-  ATTRIBUTE_STROKE_DASH_ARRAY,
-  ATTRIBUTE_STROKE_LINE_JOIN,
-  ATTRIBUTE_STROKE_LINE_CAP,
-  ATTRIBUTE_MITER_LIMIT,
-  ATTRIBUTE_FILL_RULE,
-  ATTRIBUTE_TRANSFORM,
-  ATTRIBUTE_STYLE, 
-  ATTRIBUTE_FONT_STYLE,
-  ATTRIBUTE_FONT_WEIGHT,
-  ATTRIBUTE_FONT_FAMILY,
-  ATTRIBUTE_COUNT,
+
+enum StyleType {
+  STYLE_VISIBLE = 0,
+  STYLE_FILL,
+  STYLE_STROKE,
+  STYLE_FONT_SIZE,
+  STYLE_OPACITY,
+  STYLE_FILL_OPACITY,
+  STYLE_STROKE_OPACITY,
+  STYLE_STROKE_WIDTH,
+  STYLE_STROKE_DASH_OFFSET,
+  STYLE_STROKE_DASH_ARRAY,
+  STYLE_STROKE_LINE_JOIN,
+  STYLE_STROKE_LINE_CAP,
+  STYLE_MITER_LIMIT,
+  STYLE_FILL_RULE,
+  STYLE_FONT_STYLE,
+  STYLE_FONT_WEIGHT,
+  STYLE_FONT_FAMILY,
+  STYLE_COUNT,
 };
 
-constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
-  "visibility",
+constexpr std::string_view style_name[STYLE_COUNT] = {
+    "visibility",
   "fill",
   "stroke",
   "font-size",
@@ -91,11 +91,23 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "stroke-linecap",
   "stroke-miterlimit",
   "fill-rule",
-  "transform",
-  "style",
   "font-style",
   "font-weight",
   "font-family",
+};
+
+constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
+
+
+enum AttributeType {
+  ATTRIBUTE_TRANSFORM = 0,
+  ATTRIBUTE_STYLE, 
+  ATTRIBUTE_COUNT,
+};
+
+constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
+  "transform",
+  "style",
 };
 
 constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute{&attribute_name};
@@ -278,47 +290,170 @@ static Transform convert_transform(std::string_view value) {
   return transform;
 }
 
-enum StyleType {
-  STYLE_FILL = 0,
-  STYLE_STROKE,
-  STYLE_STROKE_WIDTH,
-  STYLE_FONT_SIZE,
-  STYLE_COUNT,
-};
+static std::string_view remove_spaces_end(std::string_view data) {
+  while (isspace(data[0])) data = data.substr(1);
+  while (isspace(data[data.size() - 1])) data = data.substr(0, data.size() - 1);
 
-constexpr std::string_view style_name[STYLE_COUNT] = {
-  "fill",
-  "stroke",
-  "stroke-width",
-};
-
-constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
-
-static void solve_style(std::string_view value, BaseShape *shape) {
-  size_t end = value.find(':');
-  std::string_view key = value.substr(0, end);
-
-  value = trim_start(value.substr(end + 1));
-
-  switch ((StyleType)inv_style[key]) {
-    case STYLE_FILL: {
-      shape->fill = read_paint(value);
-    } break;
-    case STYLE_STROKE: {
-      shape->stroke = read_paint(value);
-    } break;
-    case STYLE_FONT_SIZE: {
-      shape->font_size = strtod(value.data(), nullptr);
-    } break;
-    case STYLE_STROKE_WIDTH: {
-      shape->stroke_width = strtod(value.data(), nullptr);
-    } break;
-    case STYLE_COUNT: {
-      __builtin_unreachable();
-    } break;
-  }
+  return data;
 }
 
+static ArrayList<Attribute> process_style(std::string_view value) {
+  ArrayList<Attribute> arr;
+  while (value.size() > 0) {
+    value = trim_start(value);
+    size_t end = value.find(';');
+    if (end > value.size()) end = value.size(); 
+    std::string_view str = value.substr(0, end);
+    
+    size_t pos = str.find(':');
+    Attribute attr;
+    attr.key = str.substr(0, pos);
+    attr.key = remove_spaces_end(attr.key);
+
+    attr.value = str.substr(pos + 1);
+    attr.value = remove_spaces_end(attr.value);
+    arr.push(attr);
+
+    if (end != value.size()) value = value.substr(end + 1);
+    else value = value.substr(end);
+  }
+
+  return arr;
+}
+
+
+static void apply_style(BaseShape *shape, BaseShape *parent, Attribute *attrs, int attrs_count) {
+  for (int i = 0; i < attrs_count; i++) {
+    std::string_view key = attrs[i].key;
+    std::string_view value = attrs[i].value;
+
+    switch ((StyleType) inv_style[key]) {
+      case STYLE_VISIBLE: {
+        if (value != "visible") shape->visible = false;
+      } break;
+
+      case STYLE_FILL: {
+        shape->fill = read_paint(value);
+      } break;
+
+      case STYLE_STROKE: {
+        shape->stroke = read_paint(value);
+      } break;
+
+      case STYLE_FONT_SIZE: {
+        shape->font_size = strtod(value.data(), nullptr);
+      } break;
+
+      case STYLE_OPACITY: {
+        shape->opacity = convert_opacity(value);
+      } break;
+
+      case STYLE_FILL_OPACITY: {
+        shape->fill_opacity = convert_opacity(value);
+      } break;
+
+      case STYLE_STROKE_OPACITY: {
+        shape->stroke_opacity = convert_opacity(value);
+      } break;
+
+      case STYLE_STROKE_WIDTH: {
+        shape->stroke_width = strtod(value.data(), nullptr);
+      } break;
+
+      case STYLE_STROKE_DASH_OFFSET: {
+        shape->stroke_dash_offset = strtod(value.data(), nullptr);
+      } break;
+
+      case STYLE_STROKE_DASH_ARRAY: {
+        convert_array(value, shape->stroke_dash_array, &shape->stroke_dash_count);
+      } break;
+
+      case STYLE_STROKE_LINE_JOIN: {
+        int type = inv_linejoin[value];
+        if (type != -1) shape->stroke_line_join = (StrokeLineJoin) type;
+      } break;
+
+      case STYLE_STROKE_LINE_CAP: {
+        int type = inv_linecap[value];
+        if (type != -1) shape->stroke_line_cap = (StrokeLineCap)type;
+      } break;
+
+      case STYLE_MITER_LIMIT: {
+        shape->miter_limit = strtod(value.data(), nullptr);
+      } break;
+
+      case STYLE_FILL_RULE: {
+        int type = inv_fillrule[value];
+        if (type != -1) shape->fill_rule = (FillRule)type;
+      } break;
+
+      case STYLE_FONT_STYLE: {
+        shape->font_style = (FontStyle)inv_fontstyle[value];
+      } break;
+
+      case STYLE_FONT_WEIGHT: {
+        int type = inv_fontweight[value];
+        if (type == -1) {
+          shape->font_weight = strtod(value.data(), nullptr);
+        }  else {
+          switch ((FontWeight)type) {
+            case FONTWEIGHT_NORMAL: {
+              shape->font_weight = 400;
+            } break;
+            case FONTWEIGHT_BOLD: {
+              shape->font_weight = 700;
+            } break;
+            case FONTWEIGHT_BOLDER: {
+              if (parent == nullptr) {
+                shape->font_weight = 700;
+              } else {
+                if (parent->font_weight < 100) {
+                  shape->font_weight = 100;
+                } else if (parent->font_weight < 400) {
+                  shape->font_weight = 400;
+                } else if (parent->font_weight < 700) {
+                  shape->font_weight = 700;
+                } else if (parent->font_weight < 900){
+                  shape->font_weight = 900;
+                } else {
+                  shape->font_weight = parent->font_weight;
+                }
+              } 
+            } break;
+            case FONTWEIGHT_LIGHTER: {
+              if (parent == nullptr) {
+                shape->font_weight = 100;
+              } else {
+                if (parent->font_weight > 900) {
+                  shape->font_weight = 900;
+                } else if (parent->font_weight > 700) {
+                  shape->font_weight = 700;
+                } else if (parent->font_weight > 400) {
+                  shape->font_weight = 400;
+                } else if (parent->font_weight > 100){
+                  shape->font_weight = 100;
+                } else {
+                  shape->font_weight = parent->font_weight;
+                }
+              } 
+            } break;
+            case FONTWEIGHT_COUNT: {
+              __builtin_unreachable();
+            }
+          }
+        } 
+      } break;
+      
+      case STYLE_FONT_FAMILY: {
+        shape->font_family = value;
+      } break;
+
+      case STYLE_COUNT: {
+        __builtin_unreachable();
+      }
+    }
+  }
+}
 
 BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   if (parent == nullptr) {
@@ -364,142 +499,15 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
   for (int i = 0; i < attrs_count; i++) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
-    
+  
     switch ((AttributeType)inv_attribute[key]) {
-      case ATTRIBUTE_VISIBLE: {
-        if (value != "visible") this->visible = false;
-      } break;
-
-      case ATTRIBUTE_FILL: {
-        this->fill = read_paint(value);
-      } break;
-
-      case ATTRIBUTE_STROKE: {
-        this->stroke = read_paint(value);
-      } break;
-
-      case ATTRIBUTE_FONT_SIZE: {
-        this->font_size = strtod(value.data(), nullptr);
-      } break;
-
-      case ATTRIBUTE_OPACITY: {
-        this->opacity = convert_opacity(value);
-      } break;
-
-      case ATTRIBUTE_FILL_OPACITY: {
-        this->fill_opacity = convert_opacity(value);
-      } break;
-
-      case ATTRIBUTE_STROKE_OPACITY: {
-        this->stroke_opacity = convert_opacity(value);
-      } break;
-
-      case ATTRIBUTE_STROKE_WIDTH: {
-        this->stroke_width = strtod(value.data(), nullptr);
-      } break;
-
-      case ATTRIBUTE_STROKE_DASH_OFFSET: {
-        this->stroke_dash_offset = strtod(value.data(), nullptr);
-      } break;
-
-      case ATTRIBUTE_STROKE_DASH_ARRAY: {
-        convert_array(value, this->stroke_dash_array, &this->stroke_dash_count);
-      } break;
-
-      case ATTRIBUTE_STROKE_LINE_JOIN: {
-        int type = inv_linejoin[value];
-        if (type != -1) this->stroke_line_join = (StrokeLineJoin) type;
-      } break;
-
-      case ATTRIBUTE_STROKE_LINE_CAP: {
-        int type = inv_linecap[value];
-        if (type != -1) this->stroke_line_cap = (StrokeLineCap)type;
-      } break;
-
-      case ATTRIBUTE_MITER_LIMIT: {
-        this->miter_limit = strtod(value.data(), nullptr);
-      } break;
-
-      case ATTRIBUTE_FILL_RULE: {
-        int type = inv_fillrule[value];
-        if (type != -1) this->fill_rule = (FillRule)type;
-      } break;
-      
       case ATTRIBUTE_TRANSFORM: {
         this->transform = this->transform * convert_transform(value);
       } break;
 
       case ATTRIBUTE_STYLE: {
-        while (value.size() > 0) {
-          value = trim_start(value);
-          size_t end = value.find(';');
-          if (end > value.size()) end = value.size(); 
-          std::string_view str = value.substr(0, end);
-          solve_style(str, this);
-          if (end != value.size()) value = value.substr(end + 1);
-          else value = value.substr(end);
-        }
-      } break;
-
-      case ATTRIBUTE_FONT_STYLE: {
-        this->font_style = (FontStyle)inv_fontstyle[value];
-      } break;
-
-      case ATTRIBUTE_FONT_WEIGHT: {
-        int type = inv_fontweight[value];
-        if (type == -1) {
-          this->font_weight = strtod(value.data(), nullptr);
-        }  else {
-          switch ((FontWeight)type) {
-            case FONTWEIGHT_NORMAL: {
-              this->font_weight = 400;
-            } break;
-            case FONTWEIGHT_BOLD: {
-              this->font_weight = 700;
-            } break;
-            case FONTWEIGHT_BOLDER: {
-              if (parent == nullptr) {
-                this->font_weight = 700;
-              } else {
-                if (parent->font_weight < 100) {
-                  this->font_weight = 100;
-                } else if (parent->font_weight < 400) {
-                  this->font_weight = 400;
-                } else if (parent->font_weight < 700) {
-                  this->font_weight = 700;
-                } else if (parent->font_weight < 900){
-                  this->font_weight = 900;
-                } else {
-                  this->font_weight = parent->font_weight;
-                }
-              } 
-            } break;
-            case FONTWEIGHT_LIGHTER: {
-              if (parent == nullptr) {
-                this->font_weight = 100;
-              } else {
-                if (parent->font_weight > 900) {
-                  this->font_weight = 900;
-                } else if (parent->font_weight > 700) {
-                  this->font_weight = 700;
-                } else if (parent->font_weight > 400) {
-                  this->font_weight = 400;
-                } else if (parent->font_weight > 100){
-                  this->font_weight = 100;
-                } else {
-                  this->font_weight = parent->font_weight;
-                }
-              } 
-            } break;
-            case FONTWEIGHT_COUNT: {
-              __builtin_unreachable();
-            }
-          }
-        } 
-      } break;
-      
-      case ATTRIBUTE_FONT_FAMILY: {
-        this->font_family = value;
+        ArrayList<Attribute> attrs_style = process_style(value);
+        apply_style(this, parent, attrs_style.begin(), attrs_style.len());
       } break;
 
       case ATTRIBUTE_COUNT: {
@@ -507,6 +515,8 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
       }
     }
   }
+
+  apply_style(this, parent, attrs, attrs_count);
 }
 
 ArrayList<BezierCurve> BaseShape::get_beziers() const {

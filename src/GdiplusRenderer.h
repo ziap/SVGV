@@ -8,7 +8,7 @@ class GdiplusRenderer {
 public:
   GdiplusRenderer(int init_width, int init_height);
   
-  bool load_file(std::string_view filename);
+  bool load_file(const char *filename);
 
   void render(Gdiplus::Graphics *graphics);
 
@@ -22,7 +22,7 @@ public:
   void clear();
 private:
   std::deque<GdiplusFragment> shapes;
-  Gdiplus::SolidBrush background;
+  std::string svg_file;
 
   Point center;
   double scale;

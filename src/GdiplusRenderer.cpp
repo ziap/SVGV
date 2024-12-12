@@ -9,7 +9,6 @@
 
 GdiplusRenderer::GdiplusRenderer(int init_width, int init_height) :
   shapes{},
-  background{Gdiplus::Color {255, 255, 255, 255}},
   center{0, 0},
   scale{1},
   dragging{false},
@@ -18,7 +17,7 @@ GdiplusRenderer::GdiplusRenderer(int init_width, int init_height) :
   view_width{0}, 
   view_height{0} {}
 
-bool GdiplusRenderer::load_file(std::string_view filename) {
+bool GdiplusRenderer::load_file(const char *filename) {
   std::ifstream fin(filename);
 
   if (!fin.is_open()) {
@@ -27,9 +26,9 @@ bool GdiplusRenderer::load_file(std::string_view filename) {
 
   std::ostringstream ss;
   ss << fin.rdbuf();
-  std::string svg_file = ss.str();
+  this->svg_file = ss.str();
   this->clear();
-  ParseResult svg = parse_xml(svg_file);
+  ParseResult svg = parse_xml(this->svg_file);
 
   for (const BaseShape *shape = svg.shapes.get(); shape; shape = shape->next.get()) {
     this->shapes.emplace_back(shape);
@@ -58,7 +57,6 @@ bool GdiplusRenderer::load_file(std::string_view filename) {
 }
 
 void GdiplusRenderer::render(Gdiplus::Graphics *graphics) {
-  graphics->FillRectangle(&this->background, 0, 0, this->width, this->height);
   graphics->TranslateTransform(
     (Gdiplus::REAL)this->center[0],
     (Gdiplus::REAL)this->center[1]

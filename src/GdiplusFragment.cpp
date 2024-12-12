@@ -79,8 +79,8 @@ std::wstring string_to_wide_string(const std::string_view& string) {
 }
 
 GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
-  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity)},
-  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity)},
+  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity)},
+  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity)},
   pen{
     this->stroke_brush.get(),
     (Gdiplus::REAL)(shape->stroke_width * (sqrt(det(shape->transform)))),
@@ -133,13 +133,13 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
 
     bool set_font_family = false;
     std::string_view tmp_font_family = text->font_family;
-
-    while(isspace(tmp_font_family[0])) tmp_font_family = tmp_font_family.substr(1);
-    while(isspace(tmp_font_family[tmp_font_family.size() - 1])) tmp_font_family = tmp_font_family.substr(0, tmp_font_family.size() - 2);
     
     while (tmp_font_family.size() > 0) {
       size_t pos = (tmp_font_family).find(',');
       std::string_view font = tmp_font_family.substr(0, pos);
+
+      while(isspace(font[0])) font = font.substr(1);
+      while(isspace(font[font.size() - 1])) font = font.substr(0, font.size() - 2);
 
       if (pos != std::string_view::npos) tmp_font_family = tmp_font_family.substr(pos + 1);
       else tmp_font_family = "";
