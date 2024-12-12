@@ -1,13 +1,8 @@
 #include "Polyline.h"
+#include "common.h"
 
 using namespace SVGShapes;
 
-static std::string_view trim_start(std::string_view str) {
-  while (str.size() && (isspace(str[0]) || str[0] == ',')) {
-    str = str.substr(1);
-  }
-  return str;
-}
 
 static ArrayList<Point> read_point(std::string_view str) {
   ArrayList<Point> point_list;

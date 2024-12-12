@@ -35,7 +35,7 @@ Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent) :
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
 
-    switch((RectAttr)inv_rect_attribute[key]){
+    switch((RectAttr)inv_rect_attribute[key]) {
       case RECT_ATTR_X: {
         this->x = strtod(value.data(), nullptr);
       } break;

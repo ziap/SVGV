@@ -1,16 +1,11 @@
 #ifndef BASE_SHAPE_H
 #define BASE_SHAPE_H
 
+#include "common.h"
 #include "ArrayList.h"
 #include "utils.h"
 #include "Matrix.h"
 #include "Paint.h"
-
-class Attribute {
-public:
-  std::string_view key;
-  std::string_view value;
-};
 
 enum StrokeLineJoin {
   LINE_JOIN_ARCS = 0,
