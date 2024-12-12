@@ -2,22 +2,22 @@
 #include "InverseIndex.h"
 
 enum LinearGradientAttr {
-  LINEAR_GRADIENT_X1 = 0,
-  LINEAR_GRADIENT_X2,
-  LINEAR_GRADIENT_Y1,
-  LINEAR_GRADIENT_Y2,
-  LINEAR_GRADIENT_COUNT,
+  LINEAR_GRADIENT_ATTR_X1 = 0,
+  LINEAR_GRADIENT_ATTR_X2,
+  LINEAR_GRADIENT_ATTR_Y1,
+  LINEAR_GRADIENT_ATTR_Y2,
+  LINEAR_GRADIENT_ATTR_COUNT,
 };
 
 
-constexpr std::string_view linear_gradient_attr_name[LINEAR_GRADIENT_COUNT] {
+constexpr std::string_view linear_gradient_attr_name[LINEAR_GRADIENT_ATTR_COUNT] {
   "x1", 
   "x2",
   "y1",
   "y2",
 };
 
-constexpr InverseIndex<LINEAR_GRADIENT_COUNT> inv_linear_gradient_attribute = {&linear_gradient_attr_name};
+constexpr InverseIndex<LINEAR_GRADIENT_ATTR_COUNT> inv_linear_gradient_attribute = {&linear_gradient_attr_name};
 
 static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count) {
   LinearGradient result;
@@ -26,23 +26,23 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
     std::string_view value = attrs[i].value;
 
     switch((LinearGradientAttr)inv_linear_gradient_attribute[key]) {
-      case LINEAR_GRADIENT_X1: {
+      case LINEAR_GRADIENT_ATTR_X1: {
         result.x[0] = strtod(value.data(), nullptr);
       } break;
 
-      case LINEAR_GRADIENT_X2: {
+      case LINEAR_GRADIENT_ATTR_X2: {
         result.x[1] = strtod(value.data(), nullptr);
       }break;
 
-      case LINEAR_GRADIENT_Y1: {
+      case LINEAR_GRADIENT_ATTR_Y1: {
         result.y[0] = strtod(value.data(), nullptr);
       }break;
 
-      case LINEAR_GRADIENT_Y2: {
+      case LINEAR_GRADIENT_ATTR_Y2: {
         result.y[1] = strtod(value.data(), nullptr);
       }break;
 
-      case LINEAR_GRADIENT_COUNT: {
+      case LINEAR_GRADIENT_ATTR_COUNT: {
         __builtin_unreachable();
       }
     }
@@ -51,17 +51,17 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
 }
 
 enum RadialGradientAttr {
-  RADIAL_GRADIENT_CX = 0,
-  RADIAL_GRADIENT_CY,
-  RADIAL_GRADIENT_R,
-  RADIAL_GRADIENT_FX,
-  RADIAL_GRADIENT_FY,
-  RADIAL_GRADIENT_FR,
-  RADIAL_GRADIENT_COUNT,
+  RADIAL_GRADIENT_ATTR_CX = 0,
+  RADIAL_GRADIENT_ATTR_CY,
+  RADIAL_GRADIENT_ATTR_R,
+  RADIAL_GRADIENT_ATTR_FX,
+  RADIAL_GRADIENT_ATTR_FY,
+  RADIAL_GRADIENT_ATTR_FR,
+  RADIAL_GRADIENT_ATTR_COUNT,
 };
 
 
-constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_COUNT] {
+constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT] {
   "cx", 
   "cy",
   "r",
@@ -70,7 +70,7 @@ constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_COUNT] {
   "fr",
 };
 
-constexpr InverseIndex<RADIAL_GRADIENT_COUNT> inv_radial_gradient_attribute = {&radial_gradient_attr_name};
+constexpr InverseIndex<RADIAL_GRADIENT_ATTR_COUNT> inv_radial_gradient_attribute = {&radial_gradient_attr_name};
 
 static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count) {
   RadialGradient result;
@@ -79,30 +79,30 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
     std::string_view value = attrs[i].value;
 
     switch((RadialGradientAttr)inv_radial_gradient_attribute[key]) {
-      case RADIAL_GRADIENT_CX: {
+      case RADIAL_GRADIENT_ATTR_CX: {
         result.c[0] = strtod(value.data(), nullptr);
       } break;
 
-      case RADIAL_GRADIENT_CY: {
+      case RADIAL_GRADIENT_ATTR_CY: {
         result.c[1] = strtod(value.data(), nullptr);
       }break;
 
-      case RADIAL_GRADIENT_R: {
+      case RADIAL_GRADIENT_ATTR_R: {
         result.r = strtod(value.data(), nullptr);
       }break;
 
-      case RADIAL_GRADIENT_FX: {
+      case RADIAL_GRADIENT_ATTR_FX: {
         result.fc[1] = strtod(value.data(), nullptr);
       }break;
 
-      case RADIAL_GRADIENT_FY: {
+      case RADIAL_GRADIENT_ATTR_FY: {
         result.fc[1] = strtod(value.data(), nullptr);
       }break;
 
-      case RADIAL_GRADIENT_FR: {
+      case RADIAL_GRADIENT_ATTR_FR: {
         result.fr = strtod(value.data(), nullptr);
       }break;
-      case RADIAL_GRADIENT_COUNT: {
+      case RADIAL_GRADIENT_ATTR_COUNT: {
         __builtin_unreachable();
       }
     }
