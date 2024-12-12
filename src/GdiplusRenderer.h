@@ -22,7 +22,6 @@ public:
   void clear();
 private:
   std::deque<GdiplusFragment> shapes;
-  std::string svg_file;
 
   Point center;
   double scale;
