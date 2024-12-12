@@ -5,12 +5,7 @@
 #include "utils.h"
 #include "Matrix.h"
 #include "Paint.h"
-
-class Attribute {
-public:
-  std::string_view key;
-  std::string_view value;
-};
+#include "Attribute.h"
 
 enum StrokeLineJoin {
   LINE_JOIN_ARCS = 0,

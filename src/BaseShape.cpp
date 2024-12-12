@@ -2,6 +2,7 @@
 #include "InverseIndex.h"
 #include <cmath>
 #include <cctype>
+#include "common.h"
 
 enum FontWeight {
   FONTWEIGHT_NORMAL = 0,
@@ -100,29 +101,6 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
 
 constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute{&attribute_name};
 
-static std::string_view trim_start(std::string_view sv) {
-  while (sv.size() && (isspace(sv[0]) || sv[0] == ',')) sv = sv.substr(1);
-  return sv;
-}
-
-static double convert_opacity(std::string_view value) {
-  double opacity = strtod(value.data(), nullptr);
-  if (value[value.size() - 1] == '%') {
-    opacity /= 100;
-  }
-
-  return opacity;
-}
-
-static void convert_array(std::string_view value, double *a, int *count) {
-  while (value.size() > 0 && (*count) < 8) {
-    value = trim_start(value);
-    char *end;
-    a[*count] = strtod(value.data(), &end);
-    if (end != value.data()) ++*count;
-    value = value.substr(end - value.data());
-  }
-}
 
 enum TransformType {
   TRANSFORM_MATRIX = 0,

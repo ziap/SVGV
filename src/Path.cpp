@@ -1,25 +1,8 @@
 #include "Path.h"
 #include <cmath>
-
+#include "common.h"
 using namespace SVGShapes;
 
-static std::string_view trim_start(std::string_view str) {
-  while (str.size() && (isspace(str[0]) || str[0] == ',')) {
-    str = str.substr(1);
-  }
-  return str;
-}
-
-static double read_double(std::string_view *str) {
-  *str = trim_start(*str);
-
-  char *out;
-  double num = strtod(str->data(), &out);
-  *str = str->substr(out - str->data());
-
-  *str = trim_start(*str);
-  return num;
-}
 
 static double get_vector_angle(Point u, Point v){
   double ta = std::atan2(u[1], u[0]);
