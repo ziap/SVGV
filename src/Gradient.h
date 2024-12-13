@@ -15,7 +15,7 @@ enum GradientType {
 
 struct RadialGradient {
   Point c;
-  int r;
+  double r;
   Paint to_paint() const;
 };
 
