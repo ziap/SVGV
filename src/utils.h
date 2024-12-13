@@ -2,6 +2,7 @@
 #define ZDS_OPTIONAL_H
 
 #include <cstdint>
+#include <utility>
 
 constexpr double PI = 3.141592653589793;
 constexpr double KX = 0.00115151904402214;
@@ -10,11 +11,12 @@ constexpr double KY = 0.553336803557227;
 template<typename T>
 class Optional {
 public:
-  Optional(T value) : has_value{true}, data{value} {};
+  Optional(T value) : has_value{true}, data{std::move(value)} {};
   Optional() : has_value{false} {};
 
-  operator bool() const { return this->has_value; }
-  T operator*() const { return this->data; }
+  operator const T*() const {
+    return this->has_value ? &this->data : nullptr;
+  }
 
   T operator||(T fallback) const {
     return this->has_value ? this->data : fallback;
