@@ -54,9 +54,6 @@ enum RadialGradientAttr {
   RADIAL_GRADIENT_ATTR_CX = 0,
   RADIAL_GRADIENT_ATTR_CY,
   RADIAL_GRADIENT_ATTR_R,
-  RADIAL_GRADIENT_ATTR_FX,
-  RADIAL_GRADIENT_ATTR_FY,
-  RADIAL_GRADIENT_ATTR_FR,
   RADIAL_GRADIENT_ATTR_COUNT,
 };
 
@@ -65,9 +62,6 @@ constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT]
   "cx", 
   "cy",
   "r",
-  "fx",
-  "fy",
-  "fr",
 };
 
 constexpr InverseIndex<RADIAL_GRADIENT_ATTR_COUNT> inv_radial_gradient_attribute = {&radial_gradient_attr_name};
@@ -91,17 +85,6 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
         result.r = strtod(value.data(), nullptr);
       }break;
 
-      case RADIAL_GRADIENT_ATTR_FX: {
-        result.fc[1] = strtod(value.data(), nullptr);
-      }break;
-
-      case RADIAL_GRADIENT_ATTR_FY: {
-        result.fc[1] = strtod(value.data(), nullptr);
-      }break;
-
-      case RADIAL_GRADIENT_ATTR_FR: {
-        result.fr = strtod(value.data(), nullptr);
-      }break;
       case RADIAL_GRADIENT_ATTR_COUNT: {
         __builtin_unreachable();
       }
