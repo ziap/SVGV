@@ -39,9 +39,12 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
       if (url.size() <= 1 || url[0] != '#') return nullptr;
       url = url.substr(1);
 
-      if (gradient_map->find(url) != gradient_map->end()) {
-        std::cout << "Found gradient: " << url << '\n';
-      }
+      GradientMap::iterator it = gradient_map->find(url);
+      if (it == gradient_map->end()) return nullptr;
+
+      std::cout << "Found gradient: " << it->first << '\n';
+
+      // Gradient *gradient = &it->second;
       return nullptr;
     }
   }
