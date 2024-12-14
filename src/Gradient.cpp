@@ -112,10 +112,6 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
       }
     }
   }
-  
-  result.fx.data = result.fx || result.c[0];
-  result.fy.data = result.fy || result.c[1];
-
 
   return result;
 }
