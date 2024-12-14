@@ -96,13 +96,11 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
 
 static std::string_view read_id(Attribute *attrs, int attribute_count) {
   for (int i = 0; i < attribute_count; ++i) {
-    std::string_view key = attrs[i].key;
-    std::string_view value = attrs[i].value;
-    if (key == "id") {
-      return value.data();  
+    if (attrs[i].key == "id") {
+      return attrs[i].value;
     }
   }
-  return {};
+  return "";
 }
 
 

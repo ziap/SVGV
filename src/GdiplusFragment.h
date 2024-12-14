@@ -6,11 +6,12 @@
 
 #include <memory>
 
+#include "parser.h"
 #include "BaseShape.h"
 
 class GdiplusFragment {
 public:
-  GdiplusFragment(const BaseShape *shape);
+  GdiplusFragment(const BaseShape *shape, GradientMap *gradient_map);
 
   void render(Gdiplus::Graphics *graphics);
 private:

@@ -9,10 +9,14 @@ constexpr double KX = 0.00115151904402214;
 constexpr double KY = 0.553336803557227;
 
 template<typename T>
-class Optional {
-public:
-  Optional(T value) : has_value{true}, data{std::move(value)} {};
-  Optional() : has_value{false} {};
+struct Optional {
+  static Optional some(T value) {
+    return Optional { true, std::move(value) };
+  }
+
+  static Optional none() {
+    return Optional { false };
+  }
 
   operator const T*() const {
     return this->has_value ? &this->data : nullptr;
@@ -22,7 +26,6 @@ public:
     return this->has_value ? this->data : fallback;
   }
 
-private:
   bool has_value;
   T data;
 };

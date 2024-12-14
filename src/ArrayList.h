@@ -31,8 +31,8 @@ public:
 
   // Removes an element from the end of the list, return the removed value
   Optional<T> pop() { 
-    if (this->size > 0) return this->data[--this->size];
-    return {};
+    if (this->size > 0) return Optional<T>::some(this->data[--this->size]);
+    return Optional<T>::none();
   }
 
   // Reserves capacity for at least `additional` more elements to be inserted

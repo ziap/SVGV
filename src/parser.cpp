@@ -13,25 +13,29 @@
 
 #include <iostream>
 
-enum SVGTags {
-  TAG_G = 0,
-  TAG_PATH,
-  TAG_RECT,
-  TAG_CIRCLE,
-  TAG_ELLIPSE,
-  TAG_LINE,
-  TAG_POLYLINE,
-  TAG_POLYGON,
-  TAG_TEXT,
-  TAG_SVG,
-  TAG_LINEAR_GRADIENT,
-  TAG_RADIAL_GRADIENT,
-  TAG_STOP,
-  TAG_DEFS,
-  TAG_COUNT
+enum ShapeTags {
+  SHAPE_TAG_G = 0,
+  SHAPE_TAG_PATH,
+  SHAPE_TAG_RECT,
+  SHAPE_TAG_CIRCLE,
+  SHAPE_TAG_ELLIPSE,
+  SHAPE_TAG_LINE,
+  SHAPE_TAG_POLYLINE,
+  SHAPE_TAG_POLYGON,
+  SHAPE_TAG_TEXT,
+  SHAPE_TAG_SVG,
+  SHAPE_TAG_COUNT
 };
 
-constexpr std::string_view tags_str[TAG_COUNT] = {
+enum OtherTags {
+  OTHER_TAG_DEFS = 0,
+  OTHER_TAG_LINEAR_GRADIENT,
+  OTHER_TAG_RADIAL_GRADIENT,
+  OTHER_TAG_STOP,
+  OTHER_TAG_COUNT
+};
+
+constexpr std::string_view shape_tags_str[SHAPE_TAG_COUNT] = {
   "g",
   "path",
   "rect",
@@ -42,13 +46,17 @@ constexpr std::string_view tags_str[TAG_COUNT] = {
   "polygon",
   "text",
   "svg",
+};
+
+constexpr std::string_view other_tags_str[OTHER_TAG_COUNT] = {
+  "defs",
   "linearGradient",
   "radialGradient",
   "stop",
-  "defs"
 };
 
-constexpr InverseIndex<TAG_COUNT> inv_tags = {&tags_str};
+constexpr InverseIndex<SHAPE_TAG_COUNT> inv_shape_tags {&shape_tags_str};
+constexpr InverseIndex<OTHER_TAG_COUNT> inv_other_tags {&other_tags_str};
 
 ParseResult parse_xml(std::string_view content) {
   int cursor = 0;
@@ -59,6 +67,10 @@ ParseResult parse_xml(std::string_view content) {
 
   std::unique_ptr<BaseShape> head;
   std::unique_ptr<BaseShape> *tail = &head;
+
+  GradientMap gradient_map;
+
+  std::string_view current_gradient = "";
 
   // TODO: Add states
   // - Parsing element
@@ -90,7 +102,14 @@ ParseResult parse_xml(std::string_view content) {
 
       std::string_view tag_name = tag_content.substr(0, name_end);
       if (tag_name[0] == '/') {
-        if (inv_tags[tag_name.substr(1)] == -1) continue;
+        tag_name = tag_name.substr(1);
+        if (inv_shape_tags[tag_name] == -1) {
+          if (tag_name == other_tags_str[LINEAR_GRADIENT] ||
+              tag_name == other_tags_str[RADIAL_GRADIENT]) {
+            current_gradient = "";
+          }
+          continue;
+        }
         if (stack) {
           std::unique_ptr<BaseShape> node = std::move(stack);
           stack = std::move(node->next);
@@ -98,7 +117,11 @@ ParseResult parse_xml(std::string_view content) {
           *tail = std::move(node);
           if (stack.get() == nullptr) {
             if (SVGShapes::SVG *svg = dynamic_cast<SVGShapes::SVG*>(tail->get())) {
-              return ParseResult { std::move(head), svg };
+              return ParseResult {
+                std::move(head),
+                std::move(gradient_map),
+                svg
+              };
             }
           }
 
@@ -133,54 +156,69 @@ ParseResult parse_xml(std::string_view content) {
       std::unique_ptr<BaseShape> new_shape;
  
 
-      switch ((SVGTags)inv_tags[tag_name]) {
-        case TAG_G: {
+      switch ((ShapeTags)inv_shape_tags[tag_name]) {
+        case SHAPE_TAG_G: {
           new_shape = std::make_unique<SVGShapes::Group>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_PATH: {
+        case SHAPE_TAG_PATH: {
           new_shape = std::make_unique<SVGShapes::Path>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_RECT: {
+        case SHAPE_TAG_RECT: {
           new_shape = std::make_unique<SVGShapes::Rect>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_CIRCLE: {
+        case SHAPE_TAG_CIRCLE: {
           new_shape = std::make_unique<SVGShapes::Circle>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_ELLIPSE: {
+        case SHAPE_TAG_ELLIPSE: {
           new_shape = std::make_unique<SVGShapes::Ellipse>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_LINE: {
+        case SHAPE_TAG_LINE: {
           new_shape = std::make_unique<SVGShapes::Line>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_POLYLINE: {
+        case SHAPE_TAG_POLYLINE: {
           new_shape = std::make_unique<SVGShapes::Polyline>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_POLYGON: {
+        case SHAPE_TAG_POLYGON: {
           new_shape = std::make_unique<SVGShapes::Polygon>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_TEXT: {
+        case SHAPE_TAG_TEXT: {
           new_shape = std::make_unique<SVGShapes::Text>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_SVG: {
+        case SHAPE_TAG_SVG: {
           new_shape = std::make_unique<SVGShapes::SVG>(attrs.begin(), attrs.len(), stack.get());
         } break;
-        case TAG_LINEAR_GRADIENT: {
-          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
-          std::cout << "ERROR: Gradient not supported\n";
+        case SHAPE_TAG_COUNT: {
+          __builtin_unreachable();
+        }
+      }
+
+      switch ((OtherTags)inv_other_tags[tag_name]) {
+        case OTHER_TAG_LINEAR_GRADIENT: {
+          if (current_gradient == "") {
+            Gradient gradient = read_gradient(LINEAR_GRADIENT, attrs.begin(), attrs.len());
+            if (gradient.id != "") {
+              gradient_map.emplace(gradient.id, std::move(gradient));
+              current_gradient = gradient.id;
+            }
+          }
         } break;
-        case TAG_RADIAL_GRADIENT: {
-          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
-          std::cout << "ERROR: Gradient not supported\n";
+        case OTHER_TAG_RADIAL_GRADIENT: {
+          if (current_gradient == "") {
+            Gradient gradient = read_gradient(RADIAL_GRADIENT, attrs.begin(), attrs.len());
+            if (gradient.id != "") {
+              gradient_map.emplace(gradient.id, std::move(gradient));
+              current_gradient = gradient.id;
+            }
+          }
         } break;
-        case TAG_STOP: {
-          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
-          std::cout << "ERROR: Gradient not supported\n";
+        case OTHER_TAG_STOP: {
+          if (current_gradient != "") {
+            gradient_map[current_gradient].stops.push(read_stop(attrs.begin(), attrs.len()));
+          }
         } break;
-        case TAG_DEFS: {
-          new_shape = std::make_unique<BaseShape>(attrs.begin(), attrs.len(), stack.get());
-          std::cout << "ERROR: Gradient not supported\n";
+        case OTHER_TAG_DEFS: {
         } break;
-        case TAG_COUNT: {
+        case OTHER_TAG_COUNT: {
           __builtin_unreachable();
         } break;
       }
@@ -199,5 +237,9 @@ ParseResult parse_xml(std::string_view content) {
     }
   }
 
-  return ParseResult { std::move(head), nullptr };
+  return ParseResult {
+    std::move(head),
+    std::move(gradient_map),
+    nullptr
+  };
 }

@@ -2,6 +2,8 @@
 #include "Text.h"
 
 #include <string>
+#include <string_view>
+#include <iostream>
 
 enum GenericFont {
   GENERIC_FONT_SERIF = 0,
@@ -18,7 +20,7 @@ constexpr std::string_view genericfont_name[GENERIC_FONT_COUNT] = {
 
 constexpr InverseIndex<GENERIC_FONT_COUNT> inv_genericfont{&genericfont_name};
 
-static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity) {
+static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, GradientMap *gradient_map) {
   switch (paint.type) {
     case PAINT_TRANSPARENT:
       return nullptr;
@@ -29,8 +31,19 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
         (BYTE)(paint.variants.rgb_paint.g * 255), 
         (BYTE)(paint.variants.rgb_paint.b * 255)
       });
-    case PAINT_URL:
+    case PAINT_URL: {
+      std::string_view url {
+        paint.variants.url_paint.data,
+        (size_t)paint.variants.url_paint.len
+      };
+      if (url.size() <= 1 || url[0] != '#') return nullptr;
+      url = url.substr(1);
+
+      if (gradient_map->find(url) != gradient_map->end()) {
+        std::cout << "Found gradient: " << url << '\n';
+      }
       return nullptr;
+    }
   }
 }
 
@@ -68,7 +81,7 @@ static std::wstring remove_spaces(const std::wstring& input) {
   return result;
 }
 
-std::wstring string_to_wide_string(const std::string_view& string) {
+std::wstring string_to_wide_string(std::string_view string) {
   if (string.empty()) return L"";
 
   const size_t size_needed = MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)string.size(), nullptr, 0);
@@ -78,9 +91,9 @@ std::wstring string_to_wide_string(const std::string_view& string) {
   return result;
 }
 
-GdiplusFragment::GdiplusFragment(const BaseShape *shape) :
-  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity)},
-  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity)},
+GdiplusFragment::GdiplusFragment(const BaseShape *shape, GradientMap *gradient_map) :
+  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity, gradient_map)},
+  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity, gradient_map)},
   pen{
     this->stroke_brush.get(),
     (Gdiplus::REAL)(shape->stroke_width * (sqrt(det(shape->transform)))),
