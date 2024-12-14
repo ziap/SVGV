@@ -6,16 +6,21 @@
 #include "ArrayList.h"
 #include "Matrix.h"
 #include <string_view>
+#include "utils.h"
 
 enum GradientType {
-  LINEAR_GRADIENT = 0,
-  RADIAL_GRADIENT,
+  GRADIENT_TYPE_LINEAR= 0,
+  GRADIENT_TYPE_RADIAL,
   GRADIENT_TYPE_COUNT,
 };
+
 
 struct RadialGradient {
   Point c;
   double r;
+  Optional<double> fx; 
+  Optional<double> fy; 
+  double fr;
   Paint to_paint() const;
 };
 
