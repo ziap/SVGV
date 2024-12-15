@@ -81,7 +81,11 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
         case GRADIENT_TYPE_LINEAR: {
           ArrayList<BezierCurve> beziers = shape->get_beziers();
 
-          double x_min = beziers[0].start[0], y_min = beziers[0].start[1], x_max = beziers[0].end[0], y_max = beziers[0].end[0];
+          double x_min = std::min(beziers[0].start[0], beziers[0].end[0]);
+          double y_min = std::min(beziers[0].start[1], beziers[0].end[1]);
+          double x_max = std::max(beziers[0].start[0], beziers[0].end[0]);
+          double y_max = std::max(beziers[0].start[1], beziers[0].end[1]);
+          
           for (size_t i = 0; i < beziers.len(); i++) {
             double p0 = beziers[i].start[0];
             double p1 = beziers[i].control_start[0];
