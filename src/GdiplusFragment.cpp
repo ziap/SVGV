@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <iostream>
+#include <math.h>
 
 enum GenericFont {
   GENERIC_FONT_SERIF = 0,
@@ -20,6 +21,30 @@ constexpr std::string_view genericfont_name[GENERIC_FONT_COUNT] = {
 };
 
 constexpr InverseIndex<GENERIC_FONT_COUNT> inv_genericfont{&genericfont_name};
+
+static void solve_quadratic_equations (double p0, double p1, double p2, double p3, double *t1, double *t2) {
+  double a = 9 * (p1 - p2) + 3 * (p3 - p0);
+  double b =  6 * (p0 + p2 - 2 * p1);
+  double c = 3 * (p1 - p0);
+        
+  double delta= b * b - 4 * a * c;
+
+  if (a == 0) {
+    if (b != 0) {
+      *t1 = -c / b; 
+      *t2 = -2;   
+    } else {
+      *t1 = *t2 = -2;
+    }
+  } else {
+    if (delta < 0) {
+      *t1 = *t2 = -2;
+    } else {
+      *t1 = (-b + sqrt(delta)) / (2 * a);
+      *t2 = (-b - sqrt(delta)) / (2 * a);
+    }
+  }
+}
 
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, GradientMap *gradient_map, const BaseShape *shape) {
   switch (paint.type) {
@@ -52,30 +77,71 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
 
       Gradient *gradient = &it->second;
 
-      ArrayList<BezierCurve> beziers = shape->get_beziers();
-
-      
-      double start_x = INT_MAX, start_y = INT_MAX, end_x = INT_MIN, end_y = INT_MIN;
-      for (size_t i = 0; i < beziers.len(); i++) {
-        start_x = std::min(start_x, beziers[i].start[0]);
-        start_y = std::min(start_y, beziers[i].start[1]);
-        end_x = std::max(end_x, beziers[i].end[0]);
-        end_y = std::max(end_y, beziers[i].end[1]);
-      }
-
-      double width = end_x - start_x;
-      double height = end_y - start_y;
-
       switch (gradient->type) {
         case GRADIENT_TYPE_LINEAR: {
+          ArrayList<BezierCurve> beziers = shape->get_beziers();
+
+          double x_min = beziers[0].start[0], y_min = beziers[0].start[1], x_max = beziers[0].end[0], y_max = beziers[0].end[0];
+          for (size_t i = 0; i < beziers.len(); i++) {
+            double p0 = beziers[i].start[0];
+            double p1 = beziers[i].control_start[0];
+            double p2 = beziers[i].control_end[0];
+            double p3 = beziers[i].end[0];
+
+            double t1, t2;
+            solve_quadratic_equations(p0, p1, p2, p3, &t1, &t2);
+
+            if (t1 <= 1 && t1 >= -1) {
+              double x1 = p0 + 3 * (p1 - p0) * t1 + 3 * (p0 + p2 - 2 * p1) * t1 * t1 
+                          + (3 * (p1 - p2) + p3 - p0) * t1 * t1 * t1;
+              x_min = std::min(x_min, x1);
+              x_max = std::max(x_max, x1);
+
+            }
+
+            if (t2 <= 1 && t2 >= -1) {
+              double x2 = p0 + 3 * (p1 - p0) * t2 + 3 * (p0 + p2 - 2 * p1) * t2 * t2 
+                          + (3 * (p1 - p2) + p3 - p0) * t2 * t2 * t2;
+
+              x_min = std::min(x_min, x2);
+              x_max = std::max(x_max, x2);
+            }
+        
+            p0 = beziers[i].start[1];
+            p1 = beziers[i].control_start[1];
+            p2 = beziers[i].control_end[1];
+            p3 = beziers[i].end[1];
+
+            solve_quadratic_equations(p0, p1, p2, p3, &t1, &t2);
+
+            if (t1 <= 1 && t1 >= -1) {
+              double y1 =  p0 + 3 * (p1 - p0) * t1 + 3 * (p0 + p2 - 2 * p1) * t1 * t1 
+                          + (3 * (p1 - p2) + p3 - p0) * t1 * t1 * t1;
+
+              y_min = std::min(y_min, y1);
+              y_max = std::max(y_max, y1);
+            }
+
+            if (t2 <= 1 && t2 >= -1) {
+              double y2 = p0 + 3 * (p1 - p0) * t2 + 3 * (p0 + p2 - 2 * p1) * t2 * t2 
+                        + (3 * (p1 - p2) + p3 - p0) * t2 * t2 * t2;
+
+              y_min = std::min(y_min, y2);
+              y_max = std::max(y_max, y2);
+            }
+          }
+
+          double width = x_max - x_min;
+          double height = y_max - y_min;
+
           Gdiplus::PointF start = {
-            (Gdiplus::REAL) (start_x + gradient->variants.linear.x[0] * width),
-            (Gdiplus::REAL) (start_y + gradient->variants.linear.y[0] * height),
+            (Gdiplus::REAL) (x_min + gradient->variants.linear.x[0] * width),
+            (Gdiplus::REAL) (y_min + gradient->variants.linear.y[0] * height),
           };
 
           Gdiplus::PointF end = {
-            (Gdiplus::REAL) (start_x + gradient->variants.linear.x[1] * width),
-            (Gdiplus::REAL) (start_y + gradient->variants.linear.y[1] * height),
+            (Gdiplus::REAL) (x_min + gradient->variants.linear.x[1] * width),
+            (Gdiplus::REAL) (y_min + gradient->variants.linear.y[1] * height),
           };
           
           size_t stop_count = gradient->stops.len();
