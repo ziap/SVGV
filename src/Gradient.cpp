@@ -28,18 +28,22 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
     switch ((LinearGradientAttr)inv_linear_gradient_attribute[key]) {
       case LINEAR_GRADIENT_ATTR_X1: {
         result.x[0] = strtod(value.data(), nullptr);
+        if (value[value.size() - 1] == '%') result.x[0] /= 100;
       } break;
 
       case LINEAR_GRADIENT_ATTR_X2: {
         result.x[1] = strtod(value.data(), nullptr);
+        if (value[value.size() - 1] == '%') result.x[1] /= 100;
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y1: {
         result.y[0] = strtod(value.data(), nullptr);
+        if (value[value.size() - 1] == '%') result.y[0] /= 100;
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y2: {
         result.y[1] = strtod(value.data(), nullptr);
+        if (value[value.size() - 1] == '%') result.y[1] /= 100;
       } break;
 
       case LINEAR_GRADIENT_ATTR_COUNT: {
@@ -110,10 +114,10 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
   result.id = read_id(attrs, attribute_count);
 
   switch (type) {
-    case LINEAR_GRADIENT: {
+    case GRADIENT_TYPE_LINEAR: {
       result.variants.linear = read_linear_gradient(attrs, attribute_count);
     } break;
-    case RADIAL_GRADIENT: {
+    case GRADIENT_TYPE_RADIAL: {
       result.variants.radial = read_radial_gradient(attrs, attribute_count);
     } break;
     case GRADIENT_TYPE_COUNT: {

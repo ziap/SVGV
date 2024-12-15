@@ -104,8 +104,8 @@ ParseResult parse_xml(std::string_view content) {
       if (tag_name[0] == '/') {
         tag_name = tag_name.substr(1);
         if (inv_shape_tags[tag_name] == -1) {
-          if (tag_name == other_tags_str[LINEAR_GRADIENT] ||
-              tag_name == other_tags_str[RADIAL_GRADIENT]) {
+          if (tag_name == other_tags_str[GRADIENT_TYPE_LINEAR] ||
+              tag_name == other_tags_str[GRADIENT_TYPE_RADIAL]) {
             current_gradient = "";
           }
           continue;
@@ -195,7 +195,7 @@ ParseResult parse_xml(std::string_view content) {
       switch ((OtherTags)inv_other_tags[tag_name]) {
         case OTHER_TAG_LINEAR_GRADIENT: {
           if (current_gradient == "") {
-            Gradient gradient = read_gradient(LINEAR_GRADIENT, attrs.begin(), attrs.len());
+            Gradient gradient = read_gradient(GRADIENT_TYPE_LINEAR, attrs.begin(), attrs.len());
             if (gradient.id != "") {
               gradient_map.emplace(gradient.id, std::move(gradient));
               current_gradient = gradient.id;
@@ -204,7 +204,7 @@ ParseResult parse_xml(std::string_view content) {
         } break;
         case OTHER_TAG_RADIAL_GRADIENT: {
           if (current_gradient == "") {
-            Gradient gradient = read_gradient(RADIAL_GRADIENT, attrs.begin(), attrs.len());
+            Gradient gradient = read_gradient(GRADIENT_TYPE_RADIAL, attrs.begin(), attrs.len());
             if (gradient.id != "") {
               gradient_map.emplace(gradient.id, std::move(gradient));
               current_gradient = gradient.id;

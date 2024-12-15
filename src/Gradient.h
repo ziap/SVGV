@@ -8,8 +8,8 @@
 #include <string_view>
 
 enum GradientType {
-  LINEAR_GRADIENT = 0,
-  RADIAL_GRADIENT,
+  GRADIENT_TYPE_LINEAR = 0,
+  GRADIENT_TYPE_RADIAL,
   GRADIENT_TYPE_COUNT,
 };
 

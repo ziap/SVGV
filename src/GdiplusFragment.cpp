@@ -1,5 +1,6 @@
 #include "GdiplusFragment.h"
 #include "Text.h"
+#include "Gradient.h"
 
 #include <string>
 #include <string_view>
@@ -20,7 +21,7 @@ constexpr std::string_view genericfont_name[GENERIC_FONT_COUNT] = {
 
 constexpr InverseIndex<GENERIC_FONT_COUNT> inv_genericfont{&genericfont_name};
 
-static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, GradientMap *gradient_map) {
+static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, GradientMap *gradient_map, const BaseShape *shape) {
   switch (paint.type) {
     case PAINT_TRANSPARENT:
       return nullptr;
@@ -36,15 +37,82 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
         paint.variants.url_paint.data,
         (size_t)paint.variants.url_paint.len
       };
+
+      while (url.size() > 1 && url[0] != '#') {
+        url = url.substr(1, url.size() - 2);
+      }
+      
       if (url.size() <= 1 || url[0] != '#') return nullptr;
       url = url.substr(1);
 
       GradientMap::iterator it = gradient_map->find(url);
       if (it == gradient_map->end()) return nullptr;
 
-      std::cout << "Found gradient: " << it->first << '\n';
+      // std::cout << "Found gradient: " << it->first << '\n';
 
-      // Gradient *gradient = &it->second;
+      Gradient *gradient = &it->second;
+
+      ArrayList<BezierCurve> beziers = shape->get_beziers();
+
+      
+      double start_x = INT_MAX, start_y = INT_MAX, end_x = INT_MIN, end_y = INT_MIN;
+      for (size_t i = 0; i < beziers.len(); i++) {
+        start_x = std::min(start_x, beziers[i].start[0]);
+        start_y = std::min(start_y, beziers[i].start[1]);
+        end_x = std::max(end_x, beziers[i].end[0]);
+        end_y = std::max(end_y, beziers[i].end[1]);
+      }
+
+      double width = end_x - start_x;
+      double height = end_y - start_y;
+
+      switch (gradient->type) {
+        case GRADIENT_TYPE_LINEAR: {
+          Gdiplus::PointF start = {
+            (Gdiplus::REAL) (start_x + gradient->variants.linear.x[0] * width),
+            (Gdiplus::REAL) (start_y + gradient->variants.linear.y[0] * height),
+          };
+
+          Gdiplus::PointF end = {
+            (Gdiplus::REAL) (start_x + gradient->variants.linear.x[1] * width),
+            (Gdiplus::REAL) (start_y + gradient->variants.linear.y[1] * height),
+          };
+          
+          size_t stop_count = gradient->stops.len();
+
+          std::unique_ptr<Gdiplus::Color[]> colors = std::make_unique<Gdiplus::Color[]>(stop_count);
+          std::unique_ptr<Gdiplus::REAL[]> blendPositions = std::make_unique<Gdiplus::REAL[]>(stop_count);
+
+          for (size_t i = 0; i < gradient->stops.len(); i++) {
+            colors[i] = Gdiplus::Color{
+                          (BYTE)(gradient->stops[i].stop_opacity * opacity * 255),      
+                          (BYTE)(gradient->stops[i].stop_color.r * 255),            
+                          (BYTE)(gradient->stops[i].stop_color.g * 255),             
+                          (BYTE)(gradient->stops[i].stop_color.b * 255),         
+                        };
+            blendPositions[i] = (Gdiplus::REAL)(gradient->stops[i].offset);
+          }
+          
+          std::unique_ptr<Gdiplus::LinearGradientBrush> brush = 
+            std::make_unique<Gdiplus::LinearGradientBrush>(
+              start,
+              end,
+              colors[0], 
+              colors[stop_count - 1]
+            );
+
+          brush->SetInterpolationColors(colors.get(), blendPositions.get(), (INT)stop_count);
+
+          return brush;
+
+        } break;
+        case GRADIENT_TYPE_RADIAL: {
+
+        } break;
+        case GRADIENT_TYPE_COUNT: {
+
+        } break;
+      }
       return nullptr;
     }
   }
@@ -95,8 +163,8 @@ std::wstring string_to_wide_string(std::string_view string) {
 }
 
 GdiplusFragment::GdiplusFragment(const BaseShape *shape, GradientMap *gradient_map) :
-  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity, gradient_map)},
-  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity, gradient_map)},
+  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity, gradient_map, shape)},
+  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity, gradient_map, shape)},
   pen{
     this->stroke_brush.get(),
     (Gdiplus::REAL)(shape->stroke_width * (sqrt(det(shape->transform)))),
