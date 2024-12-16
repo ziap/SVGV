@@ -14,6 +14,12 @@ enum GradientType {
   GRADIENT_TYPE_COUNT,
 };
 
+enum GradientUnit {
+  GRADIENT_UNIT_USER = 0,
+  GRADIENT_UNIT_OBJECT,
+  GRADIENT_UNIT_COUNT,
+};
+
 struct RadialGradient {
   Point c;
   double r;
@@ -35,6 +41,7 @@ struct Gradient {
  
   std::string_view id;
   ArrayList<Stop> stops;
+  GradientUnit unit;
 };
 Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count);
 #endif

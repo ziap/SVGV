@@ -57,21 +57,44 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
 
       switch (gradient->type) {
         case GRADIENT_TYPE_LINEAR: {
+          Gdiplus::PointF start;
+          Gdiplus::PointF end;
           AABB size = shape->cal_width_height();
 
-          double width = size.max[0] - size.min[0];
-          double height = size.max[1] - size.min[1];
+          double width = (size.max[0] - size.min[0]);
+          double height = (size.max[1] - size.min[1]);  
+          switch (gradient->unit) {
+            case GRADIENT_UNIT_USER: {
+              start = Gdiplus::PointF {
+                (Gdiplus::REAL) (gradient->variants.linear.x[0]),
+                (Gdiplus::REAL) (gradient->variants.linear.y[0]),
+              };
+              end = Gdiplus::PointF {
+                (Gdiplus::REAL) (gradient->variants.linear.x[1]),
+                (Gdiplus::REAL) (gradient->variants.linear.y[1]) ,
+              };
 
-          Gdiplus::PointF start = {
-            (Gdiplus::REAL) (size.min[0] + gradient->variants.linear.x[0] * width),
-            (Gdiplus::REAL) (size.min[1] + gradient->variants.linear.y[0] * height),
-          };
+            } break;
 
-          Gdiplus::PointF end = {
-            (Gdiplus::REAL) (size.min[0] + gradient->variants.linear.x[1] * width),
-            (Gdiplus::REAL) (size.min[1] + gradient->variants.linear.y[1] * height),
-          };
-          
+            case GRADIENT_UNIT_OBJECT: {
+              
+
+              start = Gdiplus::PointF {
+                (Gdiplus::REAL) (size.min[0] + gradient->variants.linear.x[0] * width), 
+                (Gdiplus::REAL) (size.min[1] + gradient->variants.linear.y[0] * height),
+              };
+              end = Gdiplus::PointF {
+                (Gdiplus::REAL) (size.min[0] + gradient->variants.linear.x[1] * width),
+                (Gdiplus::REAL) (size.min[1] + gradient->variants.linear.y[1] * height),
+              };
+
+            } break;
+
+            case GRADIENT_UNIT_COUNT: {
+              __builtin_unreachable();
+            }
+          }
+
           size_t stop_count = gradient->stops.len();
 
           std::unique_ptr<Gdiplus::Color[]> colors = std::make_unique<Gdiplus::Color[]>(stop_count);
@@ -96,6 +119,8 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
             );
 
           brush->SetInterpolationColors(colors.get(), blendPositions.get(), (INT)stop_count);
+
+          brush->SetWrapMode(Gdiplus::WrapModeClamp);
 
           return brush;
 

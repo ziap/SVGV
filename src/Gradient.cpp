@@ -110,6 +110,8 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
   result.type = type;
   result.id = read_id(attrs, attribute_count);
 
+  result.unit = GRADIENT_UNIT_USER;
+
   switch (type) {
     case GRADIENT_TYPE_LINEAR: {
       result.variants.linear = read_linear_gradient(attrs, attribute_count);
@@ -117,6 +119,8 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
     case GRADIENT_TYPE_RADIAL: {
       result.variants.radial = read_radial_gradient(attrs, attribute_count);
     } break;
+    
+
     case GRADIENT_TYPE_COUNT: {
       __builtin_unreachable();
     };
