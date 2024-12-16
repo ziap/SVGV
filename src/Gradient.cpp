@@ -28,19 +28,19 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
 
     switch ((LinearGradientAttr)inv_linear_gradient_attribute[key]) {
       case LINEAR_GRADIENT_ATTR_X1: {
-        result.x[0] = convert_percent(value.data());
+        result.x[0] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_X2: {
-        result.x[1] = convert_percent(value.data());
+        result.x[1] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y1: {
-        result.y[0] = convert_percent(value.data());
+        result.y[0] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y2: {
-        result.y[1] = convert_percent(value.data());
+        result.y[1] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_COUNT: {
@@ -75,15 +75,15 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
 
     switch ((RadialGradientAttr)inv_radial_gradient_attribute[key]) {
       case RADIAL_GRADIENT_ATTR_CX: {
-        result.c[0] = convert_percent(value.data());
+        result.c[0] = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_CY: {
-        result.c[1] = convert_percent(value.data());
+        result.c[1] = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_R: {
-        result.r = convert_percent(value.data());
+        result.r = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_COUNT: {

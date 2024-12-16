@@ -4,6 +4,95 @@
 #include <cctype>
 #include "common.h"
 
+struct QuadraticRoots {
+  double roots[2];
+  int roots_len;
+};
+
+static QuadraticRoots find_solution_quadratic(double p0, double p1, double p2, double p3) {
+  QuadraticRoots result;
+
+  double a = 9 * (p1 - p2) + 3 * (p3 - p0);
+  double b =  6 * (p0 + p2 - 2 * p1);
+  double c = 3 * (p1 - p0);
+        
+  double delta= b * b - 4 * a * c;
+
+  if (a == 0) {
+    if (b != 0) {
+      result.roots[0] = -c / b;
+      result.roots_len = 1; 
+    } else {
+      if (c == 0) {
+        result.roots_len = -1;
+      } else {
+        result.roots_len = 0;
+      }
+    }
+  } else {
+    if (delta < 0) {
+      result.roots_len = 0;
+    } else if (delta == 0){
+      result.roots[0] = (-b + std::sqrt(delta)) / (2 * a);
+      result.roots_len = 1; 
+    } else {
+      result.roots[0] = (-b + std::sqrt(delta)) / (2 * a);
+      result.roots[0] = (-b - std::sqrt(delta)) / (2 * a);
+      result.roots_len = 2; 
+    }
+  }
+
+  return result;
+}
+
+AABB BaseShape::cal_width_height() const {
+  ArrayList<BezierCurve> beziers = this->get_beziers();
+
+  AABB size;
+  size.min[0] = INT_MAX;
+  size.min[1] = INT_MAX;
+  size.max[0] = INT_MIN;
+  size.max[1] = INT_MIN;
+          
+  for (size_t i = 0; i < beziers.len(); i++) {
+    for (int j = 0; j < 2; j++) {
+
+      size.min[j] = std::min(size.min[j], std::min(beziers[i].start[j], beziers[i].end[j]));
+      size.max[j] = std::max(size.max[j], std::max(beziers[i].start[j], beziers[i].end[j]));
+
+      double p0 = beziers[i].start[j];
+      double p1 = beziers[i].control_start[j];
+      double p2 = beziers[i].control_end[j];
+      double p3 = beziers[i].end[j];
+
+      QuadraticRoots result = find_solution_quadratic(p0, p1, p2, p3);
+      if (result.roots_len == -1) { 
+        double t = 0.5;
+        if (t <= 1 && t >= -1) {
+          double ans = p0 + 3 * (p1 - p0) * t + 3 * (p0 + p2 - 2 * p1) * t * t
+                      + (3 * (p1 - p2) + p3 - p0) * t * t * t;
+
+          size.min[j] = std::min(size.min[j], ans);
+          size.max[j] = std::max(size.max[j], ans);
+        }
+      }
+
+      for (int k = 0; k < result.roots_len; k++) {
+        double t = result.roots[k];
+          if (t <= 1 && t >= -1) {
+            double ans = p0 + 3 * (p1 - p0) * t + 3 * (p0 + p2 - 2 * p1) * t * t
+                        + (3 * (p1 - p2) + p3 - p0) * t * t * t;
+
+            size.min[j] = std::min(size.min[j], ans);
+            size.max[j] = std::max(size.max[j], ans);
+          }
+      }
+    }
+  }
+
+  return size;
+}
+    
 
 enum FontWeight {
   FONTWEIGHT_NORMAL = 0,

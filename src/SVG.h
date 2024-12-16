@@ -33,6 +33,8 @@ public:
   AxisAlignType align_y;
 
   SVG(Attribute *attrs, int attrs_count, BaseShape *parent);
+
+  // AABB cal_width_height() override;
 };
 
 };
