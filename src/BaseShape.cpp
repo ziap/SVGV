@@ -49,10 +49,10 @@ AABB BaseShape::cal_width_height() const {
   ArrayList<BezierCurve> beziers = this->get_beziers();
 
   AABB size;
-  size.min[0] = INT_MAX;
-  size.min[1] = INT_MAX;
-  size.max[0] = INT_MIN;
-  size.max[1] = INT_MIN;
+  size.min[0] = std::numeric_limits<double>::max();
+  size.min[1] = std::numeric_limits<double>::max();
+  size.max[0] = std::numeric_limits<double>::min();
+  size.max[1] = std::numeric_limits<double>::min();
           
   for (size_t i = 0; i < beziers.len(); i++) {
     for (int j = 0; j < 2; j++) {
