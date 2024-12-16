@@ -15,7 +15,7 @@ struct Optional {
   }
 
   static Optional none() {
-    return Optional { false };
+    return Optional { false, T{} };
   }
 
   operator const T*() const {

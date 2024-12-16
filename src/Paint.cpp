@@ -142,7 +142,15 @@ constexpr RGBPaint hex_color[COLOR_COUNT] = {
 
 static Paint read_color_hex(std::string_view value) {
   value = value.substr(1);
-  uint32_t p = strtoul(value.data(), nullptr, 16);
+
+  char result[color_max_size + 1];
+  int len = std::min((int)value.size(), color_max_size + 1);
+  for (int i = 0; i < len; i++) {
+    result[i] = tolower(value[i]);
+  }
+  result[len] = '\0';
+  
+  uint32_t p = strtoul(result, nullptr, 16);
 
   if (value.size() == 3) {
     uint32_t b = p & 0xf;

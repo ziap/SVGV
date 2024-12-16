@@ -1,6 +1,6 @@
 #include "Gradient.h"
 #include "InverseIndex.h"
-#include "common.h"
+#include <iostream>
 
 enum LinearGradientAttr {
   LINEAR_GRADIENT_ATTR_X1 = 0,
@@ -28,19 +28,19 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
 
     switch ((LinearGradientAttr)inv_linear_gradient_attribute[key]) {
       case LINEAR_GRADIENT_ATTR_X1: {
-        result.x[0] = convert_percent(value);
+        result.x[0] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_X2: {
-        result.x[1] = convert_percent(value);
+        result.x[1] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y1: {
-        result.y[0] = convert_percent(value);
+        result.y[0] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y2: {
-        result.y[1] = convert_percent(value);
+        result.y[1] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_COUNT: {
@@ -55,6 +55,9 @@ enum RadialGradientAttr {
   RADIAL_GRADIENT_ATTR_CX = 0,
   RADIAL_GRADIENT_ATTR_CY,
   RADIAL_GRADIENT_ATTR_R,
+  RADIAL_GRADIENT_ATTR_FX,
+  RADIAL_GRADIENT_ATTR_FY,
+  RADIAL_GRADIENT_ATTR_FR,
   RADIAL_GRADIENT_ATTR_COUNT,
 };
 
@@ -63,35 +66,53 @@ constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT]
   "cx", 
   "cy",
   "r",
+  "fx",
+  "fy",
+  "fr",
 };
 
 constexpr InverseIndex<RADIAL_GRADIENT_ATTR_COUNT> inv_radial_gradient_attribute = {&radial_gradient_attr_name};
 
 static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count) {
   RadialGradient result;
+
+  result.fx = Optional<double>::none();
+  result.fy = Optional<double>::none();
+  result.fr = 0.0;
   for (int i = 0; i < attribute_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
 
     switch ((RadialGradientAttr)inv_radial_gradient_attribute[key]) {
       case RADIAL_GRADIENT_ATTR_CX: {
-        result.c[0] = convert_percent(value);
+        result.c[0] = strtod(value.data(), nullptr);
       } break;
 
       case RADIAL_GRADIENT_ATTR_CY: {
-        result.c[1] = convert_percent(value);
+        result.c[1] = strtod(value.data(), nullptr);
       } break;
 
       case RADIAL_GRADIENT_ATTR_R: {
-        result.r = convert_percent(value);
+        result.r = strtod(value.data(), nullptr);
       } break;
 
+      case RADIAL_GRADIENT_ATTR_FX: {
+        result.fx.data = strtod(value.data(), nullptr);
+      } break;
+
+      case RADIAL_GRADIENT_ATTR_FY: {
+        result.fy.data = strtod(value.data(), nullptr);
+      } break;
+
+      case RADIAL_GRADIENT_ATTR_FR: {
+        result.fr = strtod(value.data(), nullptr);
+      } break;
       case RADIAL_GRADIENT_ATTR_COUNT: {
         __builtin_unreachable();
       }
     }
-    return result;
   }
+
   return result;
 }
 
@@ -104,13 +125,37 @@ static std::string_view read_id(Attribute *attrs, int attribute_count) {
   return "";
 }
 
+static GradientUnits read_gradient_unit(Attribute *attrs, int attribute_count) {
+  for (int i = 0; i < attribute_count; ++i) {
+    if (attrs[i].key == "gradientUnits") {
+      if (attrs[i].value == "userSpaceOnUse") {
+        return GRADIENT_UNIT_USER_SPACE_ON_USE;
+      } else if (attrs[i].value == "objectBoundingBox") {
+        return GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
+      }
+    }
+  }
+  
+  return GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
+}
+
+static Transform read_transform(Attribute* attrs, int attribute_count){
+  Transform result = Transform::identity();
+  for (int i = 0; i < attribute_count; ++i) {
+    if (attrs[i].key == "gradientTransform") {
+      result = convert_transform(attrs[i].value);
+    }
+  }
+  return result;
+}
+
 
 Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count) {
   Gradient result;
   result.type = type;
   result.id = read_id(attrs, attribute_count);
-
-  result.unit = GRADIENT_UNIT_USER;
+  result.gradient_units = read_gradient_unit(attrs, attribute_count);
+  result.transform = read_transform(attrs, attribute_count);
 
   switch (type) {
     case GRADIENT_TYPE_LINEAR: {
@@ -119,8 +164,6 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
     case GRADIENT_TYPE_RADIAL: {
       result.variants.radial = read_radial_gradient(attrs, attribute_count);
     } break;
-    
-
     case GRADIENT_TYPE_COUNT: {
       __builtin_unreachable();
     };
@@ -128,5 +171,4 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
 
   return result;
 }
-
 

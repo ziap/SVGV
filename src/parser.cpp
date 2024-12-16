@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "Gradient.h"
 #include "InverseIndex.h"
 
 #include "Path.h"
