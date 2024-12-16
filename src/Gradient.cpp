@@ -140,7 +140,11 @@ static GradientUnits read_gradient_unit(Attribute *attrs, int attribute_count) {
 }
 
 static Transform read_transform(Attribute* attrs, int attribute_count){
+<<<<<<< HEAD
   Transform result = Transform::identity();
+=======
+  Transform result;
+>>>>>>> 9b96703d96e03c2ad8ac18dd93892a7610fec99c
   for (int i = 0; i < attribute_count; ++i) {
     if (attrs[i].key == "gradientTransform") {
       result = convert_transform(attrs[i].value);
