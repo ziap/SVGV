@@ -5,6 +5,11 @@
 #include <cctype>
 #include "InverseIndex.h"
 
+struct Array {
+  double a[6];
+  int n;
+};
+
 Array split_number(std::string_view inf) {
   Array arr;
   arr.n = 0;
