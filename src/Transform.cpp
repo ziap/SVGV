@@ -122,7 +122,7 @@ static Transform skewY(Array arr) {
   return transform;
 }
 
-Transform (*transform_fns[TRANSFORM_COUNT])(Array arr) = {
+static Transform (*transform_fns[TRANSFORM_COUNT])(Array arr) = {
   matrix,
   translate,
   scale,
