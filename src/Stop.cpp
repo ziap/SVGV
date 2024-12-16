@@ -21,7 +21,7 @@ constexpr InverseIndex<STOP_COUNT> inv_stop_attr = {&stop_attr_name};
 Stop read_stop(Attribute *attrs, int attribute_count) {
   Stop result; 
   result.stop_opacity = 1.0;
-  result.stop_color = (Paint::new_rgb(0, 0, 0)).variants.rgb_paint;
+  result.stop_color = RGBPaint{0, 0, 0};
 
   for (int i = 0; i < attribute_count; ++i) {
     std::string_view key = attrs[i].key;

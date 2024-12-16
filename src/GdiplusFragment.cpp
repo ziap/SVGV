@@ -62,8 +62,6 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           double width = size.max[0] - size.min[0];
           double height = size.max[1] - size.min[1];
 
-          std::cout << height << " " << width << "\n";
-
           Gdiplus::PointF start = {
             (Gdiplus::REAL) (size.min[0] + gradient->variants.linear.x[0] * width),
             (Gdiplus::REAL) (size.min[1] + gradient->variants.linear.y[0] * height),
