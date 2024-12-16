@@ -10,7 +10,7 @@ struct Array {
   int n;
 };
 
-Array split_number(std::string_view inf) {
+static Array split_number(std::string_view inf) {
   Array arr;
   arr.n = 0;
   while (inf.size() > 0) {
@@ -25,7 +25,7 @@ Array split_number(std::string_view inf) {
   return arr;
 } 
 
-Transform translate(Array arr) {
+static Transform translate(Array arr) {
   Transform transform = Transform::identity();
   if (arr.n == 2) {
     transform.d[0] = arr.a[0];
@@ -58,7 +58,7 @@ constexpr std::string_view transform_name[TRANSFORM_COUNT] = {
 
 constexpr InverseIndex<TRANSFORM_COUNT> inv_transform = {&transform_name};
 
-Transform matrix(Array arr) {
+static Transform matrix(Array arr) {
   Transform transform;
   transform.m[0][0] = arr.a[0]; 
   transform.m[1][0] = arr.a[1]; 
@@ -70,7 +70,7 @@ Transform matrix(Array arr) {
   return transform;
 }
 
-Transform scale(Array arr) {
+static Transform scale(Array arr) {
   Transform transform = Transform::zeros();
   if (arr.n == 2) {
     transform.m[0][0] = arr.a[0];
@@ -83,7 +83,7 @@ Transform scale(Array arr) {
   return transform;
 }
 
-Transform rotate(Array arr) {
+static Transform rotate(Array arr) {
   Transform transform;
   double angle = arr.a[0] * PI / 180;
   transform.m[0][0] = std::cos(angle); 
@@ -108,14 +108,14 @@ Transform rotate(Array arr) {
   return transform;
 }
 
-Transform skewX(Array arr) {
+static Transform skewX(Array arr) {
   Transform transform = Transform::identity();
   transform.m[0][1] = std::tan(arr.a[0] * PI / 180);
 
   return transform;  
 }
 
-Transform skewY(Array arr) {
+static Transform skewY(Array arr) {
   Transform transform = Transform::identity();
   transform.m[1][0] = std::tan(arr.a[0] * PI / 180);
 
@@ -131,7 +131,7 @@ Transform (*transform_fns[TRANSFORM_COUNT])(Array arr) = {
   skewY,
 };
 
-Transform solve_transform(std::string_view inf) {
+static Transform solve_transform(std::string_view inf) {
   int end = inf.find('(');
   std::string_view str_type = inf.substr(0, end);
 
