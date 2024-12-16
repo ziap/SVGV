@@ -37,7 +37,7 @@ static QuadraticRoots find_solution_quadratic(double p0, double p1, double p2, d
       result.roots_len = 1; 
     } else {
       result.roots[0] = (-b + std::sqrt(delta)) / (2 * a);
-      result.roots[0] = (-b - std::sqrt(delta)) / (2 * a);
+      result.roots[1] = (-b - std::sqrt(delta)) / (2 * a);
       result.roots_len = 2; 
     }
   }
