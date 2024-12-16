@@ -129,10 +129,8 @@ static GradientUnits read_gradient_unit(Attribute *attrs, int attribute_count) {
   for (int i = 0; i < attribute_count; ++i) {
     if (attrs[i].key == "gradientUnits") {
       if (attrs[i].value == "userSpaceOnUse") {
-        std::cout << "\n User \n";
         return GRADIENT_UNIT_USER_SPACE_ON_USE;
       } else if (attrs[i].value == "objectBoundingBox") {
-        std::cout << "\n BOUNDING \n";
         return GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
       }
     }
@@ -141,20 +139,13 @@ static GradientUnits read_gradient_unit(Attribute *attrs, int attribute_count) {
   return GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
 }
 
-Transform read_transform(Attribute* attrs, int attribute_count){
+static Transform read_transform(Attribute* attrs, int attribute_count){
   Transform result;
   for (int i = 0; i < attribute_count; ++i) {
     if (attrs[i].key == "gradientTransform") {
       result = convert_transform(attrs[i].value);
     }
   }
-  for (int i = 0; i < 2; ++i) {
-    for (int j = 0; j < 2; ++j) {
-      std::cout << result.m[i][j] << ' ';
-    }
-    std::cout << '\n';
-  }
-  std::cout << result.d[0] << " | " << result.d[1] << '\n';
   return result;
 }
 
