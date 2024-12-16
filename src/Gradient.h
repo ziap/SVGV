@@ -7,6 +7,7 @@
 #include "Matrix.h"
 #include <string_view>
 #include "utils.h"
+#include "Transform.h"
 
 enum GradientType {
   GRADIENT_TYPE_LINEAR= 0,
@@ -14,6 +15,11 @@ enum GradientType {
   GRADIENT_TYPE_COUNT,
 };
 
+enum GradientUnits {
+  GRADIENT_UNIT_USER_SPACE_ON_USE = 0,
+  GRADIENT_UNIT_OBJECT_BOUNDING_BOX,
+  GRADIENT_UNIT_COUNT,
+};
 
 struct RadialGradient {
   Point c;
@@ -37,6 +43,8 @@ struct Gradient {
     RadialGradient radial;
   } variants;
  
+  Transform transform;
+  GradientUnits gradient_units;
   std::string_view id;
   ArrayList<Stop> stops;
 };
