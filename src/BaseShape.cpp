@@ -203,11 +203,6 @@ constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
 
 constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute{&attribute_name};
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 9b96703d96e03c2ad8ac18dd93892a7610fec99c
 static std::string_view remove_spaces_end(std::string_view data) {
   while (isspace(data[0])) data = data.substr(1);
   while (isspace(data[data.size() - 1])) data = data.substr(0, data.size() - 1);
