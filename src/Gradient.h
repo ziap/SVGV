@@ -6,16 +6,27 @@
 #include "ArrayList.h"
 #include "Matrix.h"
 #include <string_view>
+#include "utils.h"
+#include "Transform.h"
 
 enum GradientType {
-  LINEAR_GRADIENT = 0,
-  RADIAL_GRADIENT,
+  GRADIENT_TYPE_LINEAR= 0,
+  GRADIENT_TYPE_RADIAL,
   GRADIENT_TYPE_COUNT,
+};
+
+enum GradientUnits {
+  GRADIENT_UNIT_USER_SPACE_ON_USE = 0,
+  GRADIENT_UNIT_OBJECT_BOUNDING_BOX,
+  GRADIENT_UNIT_COUNT,
 };
 
 struct RadialGradient {
   Point c;
   double r;
+  Optional<double> fx; 
+  Optional<double> fy; 
+  double fr;
   Paint to_paint() const;
 };
 
@@ -32,6 +43,8 @@ struct Gradient {
     RadialGradient radial;
   } variants;
  
+  Transform transform;
+  GradientUnits gradient_units;
   std::string_view id;
   ArrayList<Stop> stops;
 };
