@@ -8,7 +8,7 @@ public:
   std::string_view value;
 };
 
-double convert_opacity(std::string_view value);
+double convert_percent(std::string_view value);
 
 std::string_view trim_start(std::string_view sv);
 

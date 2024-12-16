@@ -323,15 +323,15 @@ static void apply_style(BaseShape *shape, BaseShape *parent, Attribute *attrs, i
       } break;
 
       case STYLE_OPACITY: {
-        shape->opacity = convert_opacity(value);
+        shape->opacity = convert_percent(value);
       } break;
 
       case STYLE_FILL_OPACITY: {
-        shape->fill_opacity = convert_opacity(value);
+        shape->fill_opacity = convert_percent(value);
       } break;
 
       case STYLE_STROKE_OPACITY: {
-        shape->stroke_opacity = convert_opacity(value);
+        shape->stroke_opacity = convert_percent(value);
       } break;
 
       case STYLE_STROKE_WIDTH: {

@@ -2,7 +2,7 @@
 #include <cctype>
 #include <cmath>
 
-double convert_opacity(std::string_view value) {
+double convert_percent(std::string_view value) {
   double opacity = strtod(value.data(), nullptr);
   if (value[value.size() - 1] == '%') {
     opacity /= 100;

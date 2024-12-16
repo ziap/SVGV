@@ -5,6 +5,7 @@
 #include "Stop.h"
 #include "ArrayList.h"
 #include "Matrix.h"
+
 #include <string_view>
 
 enum GradientType {
