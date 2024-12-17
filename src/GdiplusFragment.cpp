@@ -57,102 +57,93 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
 
       switch (gradient->type) {
         case GRADIENT_TYPE_LINEAR: {
-          Gdiplus::PointF start;
-          Gdiplus::PointF end;
           AABB size = shape->cal_width_height();
 
           double width = (size.max[0] - size.min[0]);
-          double height = (size.max[1] - size.min[1]);  
-          switch ((GradientUnits)gradient->gradient_units) {
+          double height = (size.max[1] - size.min[1]);
+          
+          double x1, y1, x2, y2;
+          switch(gradient->gradient_units) {
             case GRADIENT_UNIT_USER_SPACE_ON_USE: {
-              double x1 = gradient->variants.linear.x[0];
-              double y1 = gradient->variants.linear.y[0];
+              x1 = gradient->variants.linear.x[0];
+              y1 = gradient->variants.linear.y[0];
 
-              double x2 = gradient->variants.linear.x[1];
-              double y2 = gradient->variants.linear.y[1];
-              
-              double gap = std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-              
-              double z = width + height;
-              double x_min = x1 - z * ((x2 - x1) / gap);
-              double y_min = y1 - z * ((y2 - y1) / gap);
-
-              double x_max = x2 + z * ((x2 - x1) / gap);
-              double y_max = y2 + z * ((y2 - y1) / gap);
-
-              double new_gap = std::sqrt((x_max - x_min) * (x_max - x_min)
-                                + (y_max - y_min) * (y_max - y_min));
-
-              ArrayList<Stop> new_stops;
-
-              Stop new_stop;
-              new_stop.stop_color = gradient->stops[0].stop_color;
-              new_stop.stop_opacity = gradient->stops[0].stop_opacity;
-              new_stop.offset = 0;
-
-              new_stops.push(new_stop);
-
-              for (size_t i = 0; i < gradient->stops.len(); i++) {
-                new_stop.stop_color = gradient->stops[i].stop_color;
-                new_stop.stop_opacity = gradient->stops[i].stop_opacity;
-                new_stop.offset = (gradient->stops[i].offset * gap + 2 * width) / new_gap;
-                new_stops.push(new_stop);
-              }
-              new_stop.stop_color = gradient->stops[gradient->stops.len() - 1].stop_color;
-              new_stop.stop_opacity = gradient->stops[gradient->stops.len() - 1].stop_opacity;
-              new_stop.offset = 1;
-              new_stops.push(new_stop);
-
-              for (size_t i = 0; i < new_stops.len(); i++) {
-                if (i < gradient->stops.len()) gradient->stops[i] = (new_stops[i]);
-                else gradient->stops.push(new_stops[i]);
-              }
-
-              start = Gdiplus::PointF {
-                (Gdiplus::REAL) (x_min),
-                (Gdiplus::REAL) (y_min),
-              };
-              end = Gdiplus::PointF {
-                (Gdiplus::REAL) (x_max),
-                (Gdiplus::REAL) (y_max) ,
-              };
+              x2 = gradient->variants.linear.x[1];
+              y2 = gradient->variants.linear.y[1];
 
             } break;
-
             case GRADIENT_UNIT_OBJECT_BOUNDING_BOX: {
-              start = Gdiplus::PointF {
-                (Gdiplus::REAL) (size.min[0] + gradient->variants.linear.x[0] * width), 
-                (Gdiplus::REAL) (size.min[1] + gradient->variants.linear.y[0] * height),
-              };
-              end = Gdiplus::PointF {
-                (Gdiplus::REAL) (size.min[0] + gradient->variants.linear.x[1] * width),
-                (Gdiplus::REAL) (size.min[1] + gradient->variants.linear.y[1] * height),
-              };
-
+              x1 = (size.min[0] + gradient->variants.linear.x[0] * width); 
+              y1 =(size.min[1] + gradient->variants.linear.y[0] * height);
+              
+              x2 = (size.min[0] + gradient->variants.linear.x[1] * width);
+              y2 =(size.min[1] + gradient->variants.linear.y[1] * height);
             } break;
-
             case GRADIENT_UNIT_COUNT: {
               __builtin_unreachable();
             }
           }
+
+          double dx = x2 - x1;
+          double dy = y2 - y1;
+              
+          double gap = std::sqrt(dx * dx + dy * dy);
+              
+
+          double z = width + height;
+          double x_min = x1 - z * (dx / gap);
+          double y_min = y1 - z * (dy / gap);
+
+          double x_max = x2 + z * (dx / gap);
+          double y_max = y2 + z * (dy / gap);
+
+          double new_gap = gap + 2 * z;
+
+          Gdiplus::PointF start {
+            (Gdiplus::REAL) (x_min),
+            (Gdiplus::REAL) (y_min),
+          };
+          
+          Gdiplus::PointF end {
+            (Gdiplus::REAL) (x_max),
+            (Gdiplus::REAL) (y_max) ,
+          };
+
+            
           size_t stop_count = gradient->stops.len();
 
-          std::unique_ptr<Gdiplus::Color[]> colors = std::make_unique<Gdiplus::Color[]>(stop_count);
-          std::unique_ptr<Gdiplus::REAL[]> blendPositions = std::make_unique<Gdiplus::REAL[]>(stop_count);
+          std::unique_ptr<Gdiplus::Color[]> colors = std::make_unique<Gdiplus::Color[]>(stop_count + 2);
+          std::unique_ptr<Gdiplus::REAL[]> blendPositions = std::make_unique<Gdiplus::REAL[]>(stop_count + 2);
 
-          for (size_t i = 0; i < gradient->stops.len(); i++) {
-            colors[i] = Gdiplus::Color{
+          colors[0] = Gdiplus::Color {
+                          (BYTE)(gradient->stops[0].stop_opacity * opacity * 255),      
+                          (BYTE)(gradient->stops[0].stop_color.r * 255),            
+                          (BYTE)(gradient->stops[0].stop_color.g * 255),             
+                          (BYTE)(gradient->stops[0].stop_color.b * 255),         
+                        };
+          blendPositions[0] = 0.0f;
+
+          for (size_t i = 0; i < stop_count; i++) {
+            colors[i + 1] = Gdiplus::Color{
                           (BYTE)(gradient->stops[i].stop_opacity * opacity * 255),      
                           (BYTE)(gradient->stops[i].stop_color.r * 255),            
                           (BYTE)(gradient->stops[i].stop_color.g * 255),             
                           (BYTE)(gradient->stops[i].stop_color.b * 255),         
                         };
-            blendPositions[i] = (Gdiplus::REAL)(gradient->stops[i].offset);
+            blendPositions[i + 1] = (Gdiplus::REAL)((gradient->stops[i].offset * gap + z) / new_gap);
           }
-          
+
+          colors[stop_count + 1] =  Gdiplus::Color{
+                          (BYTE)(gradient->stops[stop_count - 1].stop_opacity * opacity * 255),      
+                          (BYTE)(gradient->stops[stop_count - 1].stop_color.r * 255),            
+                          (BYTE)(gradient->stops[stop_count - 1].stop_color.g * 255),             
+                          (BYTE)(gradient->stops[stop_count - 1].stop_color.b * 255),         
+                        };
+          blendPositions[stop_count + 1] = 1.0f;
          
-          
-           std::unique_ptr<Gdiplus::LinearGradientBrush> brush = 
+          stop_count += 2;
+
+          std::unique_ptr<Gdiplus::LinearGradientBrush> brush = 
             std::make_unique<Gdiplus::LinearGradientBrush>(
               start,
               end,
@@ -163,6 +154,7 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           brush->SetInterpolationColors(colors.get(), blendPositions.get(), (INT)stop_count);
 
           brush->SetWrapMode(Gdiplus::WrapModeClamp);
+
           return brush;
 
         } break;
