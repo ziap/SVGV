@@ -1,5 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
+#include "ArrayList.h"
+
 #include <string_view>
 
 class Attribute {
@@ -15,5 +17,9 @@ std::string_view trim_start(std::string_view sv);
 void convert_array(std::string_view value, double *a, int *count);
 
 double read_double(std::string_view *str);
+
+std::string_view remove_spaces_end(std::string_view data);
+
+ArrayList<Attribute> process_style(std::string_view value);
 
 #endif

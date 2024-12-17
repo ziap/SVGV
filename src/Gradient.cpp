@@ -28,19 +28,19 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
 
     switch ((LinearGradientAttr)inv_linear_gradient_attribute[key]) {
       case LINEAR_GRADIENT_ATTR_X1: {
-        result.x[0] = strtod(value.data(), nullptr);
+        result.x[0] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_X2: {
-        result.x[1] = strtod(value.data(), nullptr);
+        result.x[1] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y1: {
-        result.y[0] = strtod(value.data(), nullptr);
+        result.y[0] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y2: {
-        result.y[1] = strtod(value.data(), nullptr);
+        result.y[1] = convert_percent(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_COUNT: {
@@ -85,27 +85,27 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
 
     switch ((RadialGradientAttr)inv_radial_gradient_attribute[key]) {
       case RADIAL_GRADIENT_ATTR_CX: {
-        result.c[0] = strtod(value.data(), nullptr);
+        result.c[0] = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_CY: {
-        result.c[1] = strtod(value.data(), nullptr);
+        result.c[1] = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_R: {
-        result.r = strtod(value.data(), nullptr);
+        result.r = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_FX: {
-        result.fx.data = strtod(value.data(), nullptr);
+        result.fx.data = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_FY: {
-        result.fy.data = strtod(value.data(), nullptr);
+        result.fy.data = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_FR: {
-        result.fr = strtod(value.data(), nullptr);
+        result.fr = convert_percent(value);
       } break;
       case RADIAL_GRADIENT_ATTR_COUNT: {
         __builtin_unreachable();
