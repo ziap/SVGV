@@ -4,6 +4,7 @@
 
 using namespace SVGShapes;
 
+
 enum AttributeType {
   ATTRIBUTE_WIDTH = 0,
   ATTRIBUTE_HEIGHT,

@@ -44,6 +44,12 @@ public:
   Point control_end;
 };
 
+
+struct AABB {
+  double min[2];
+  double max[2];
+};
+
 class BaseShape {
 public:
   BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
@@ -78,6 +84,8 @@ public:
   std::unique_ptr<BaseShape> next;
 
   virtual ArrayList<BezierCurve> get_beziers() const;
+
+  AABB get_bounding() const;
 };
 
 
