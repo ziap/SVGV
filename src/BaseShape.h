@@ -85,7 +85,7 @@ public:
 
   virtual ArrayList<BezierCurve> get_beziers() const;
 
-  virtual AABB cal_width_height() const;
+  AABB get_bounding() const;
 };
 
 

@@ -14,7 +14,7 @@ static QuadraticRoots find_solution_quadratic(double p0, double p1, double p2, d
   QuadraticRoots result;
 
   double a = 9 * (p1 - p2) + 3 * (p3 - p0);
-  double b =  6 * (p0 + p2 - 2 * p1);
+  double b = 6 * (p0 + p2 - 2 * p1);
   double c = 3 * (p1 - p0);
         
   double delta= b * b - 4 * a * c;
@@ -46,7 +46,7 @@ static QuadraticRoots find_solution_quadratic(double p0, double p1, double p2, d
   return result;
 }
 
-AABB BaseShape::cal_width_height() const {
+AABB BaseShape::get_bounding() const {
   ArrayList<BezierCurve> beziers = this->get_beziers();
 
   AABB size;
@@ -80,13 +80,13 @@ AABB BaseShape::cal_width_height() const {
 
       for (int k = 0; k < result.roots_len; k++) {
         double t = result.roots[k];
-          if (t <= 1 && t >= -1) {
-            double ans = p0 + 3 * (p1 - p0) * t + 3 * (p0 + p2 - 2 * p1) * t * t
-                        + (3 * (p1 - p2) + p3 - p0) * t * t * t;
+        if (t <= 1 && t >= -1) {
+          double ans = p0 + 3 * (p1 - p0) * t + 3 * (p0 + p2 - 2 * p1) * t * t
+                      + (3 * (p1 - p2) + p3 - p0) * t * t * t;
 
-            size.min[j] = std::min(size.min[j], ans);
-            size.max[j] = std::max(size.max[j], ans);
-          }
+          size.min[j] = std::min(size.min[j], ans);
+          size.max[j] = std::max(size.max[j], ans);
+        }
       }
     }
   }

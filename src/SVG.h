@@ -34,7 +34,7 @@ public:
 
   SVG(Attribute *attrs, int attrs_count, BaseShape *parent);
 
-  // AABB cal_width_height() override;
+  // AABB get_bounding() override;
 };
 
 };
