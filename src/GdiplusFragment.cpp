@@ -143,7 +143,7 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
          
           stop_count += 2;
 
-          std::unique_ptr<Gdiplus::LinearGradientBrush> brush = 
+           std::unique_ptr<Gdiplus::LinearGradientBrush> brush = 
             std::make_unique<Gdiplus::LinearGradientBrush>(
               start,
               end,
@@ -151,6 +151,43 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
               colors[stop_count - 1]
             );
 
+          Gdiplus::Matrix default_matrix;
+          brush->GetTransform(&default_matrix);
+
+          Gdiplus::Matrix matrix_gradient {
+            (Gdiplus::REAL)gradient->transform.m[0][0],
+            (Gdiplus::REAL)gradient->transform.m[1][0],
+            (Gdiplus::REAL)gradient->transform.m[0][1],
+            (Gdiplus::REAL)gradient->transform.m[1][1],
+            (Gdiplus::REAL)gradient->transform.d[0],
+            (Gdiplus::REAL)gradient->transform.d[1]
+          };
+
+
+          Gdiplus::Matrix matrix_shape{
+            (Gdiplus::REAL)shape->transform.m[0][0],
+            (Gdiplus::REAL)shape->transform.m[1][0],
+            (Gdiplus::REAL)shape->transform.m[0][1],
+            (Gdiplus::REAL)shape->transform.m[1][1],
+            (Gdiplus::REAL)shape->transform.d[0],
+            (Gdiplus::REAL)shape->transform.d[1]
+          };
+
+          //dung usergradient
+          switch(gradient->gradient_units) {
+            case GRADIENT_UNIT_USER_SPACE_ON_USE: {
+              default_matrix.Multiply(&matrix_gradient, Gdiplus::MatrixOrder::MatrixOrderAppend);
+              default_matrix.Multiply(&matrix_shape, Gdiplus::MatrixOrder::MatrixOrderAppend);
+              brush->SetTransform(&default_matrix);
+            } break;
+            case GRADIENT_UNIT_OBJECT_BOUNDING_BOX: {
+              std::cout << "ERROR: not implemented\n";
+            } break;
+            case GRADIENT_UNIT_COUNT: {
+              __builtin_unreachable();
+            }
+          }
+          
           brush->SetInterpolationColors(colors.get(), blendPositions.get(), (INT)stop_count);
 
           brush->SetWrapMode(Gdiplus::WrapModeClamp);
