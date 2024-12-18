@@ -131,6 +131,10 @@ struct AffineMatrix {
       this->m * other.d + this->d,
     };
   }
+
+  constexpr Matrix<T, N, 1> operator*(Matrix<T, N, 1> other) const {
+    return this->m * other + this->d;
+  }
 };
 
 using Transform = AffineMatrix<double, 2>;

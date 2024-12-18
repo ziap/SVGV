@@ -79,42 +79,48 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           double width = (size.max[0] - size.min[0]);
           double height = (size.max[1] - size.min[1]);
 
-          double x1 = apply_percent(gradient->variants.linear.x1.val, gradient->variants.linear.x1.percent, svg->root->width, gradient->gradient_units);
-          double y1 = apply_percent(gradient->variants.linear.y1.val, gradient->variants.linear.y1.percent, svg->root->height, gradient->gradient_units);
+          Point p0 = {
+            apply_percent(gradient->variants.linear.x1.val, gradient->variants.linear.x1.percent, svg->root->width, gradient->gradient_units),
+            apply_percent(gradient->variants.linear.y1.val, gradient->variants.linear.y1.percent, svg->root->height, gradient->gradient_units),
+          };
 
-          double x2 = apply_percent(gradient->variants.linear.x2.val, gradient->variants.linear.x2.percent, svg->root->width, gradient->gradient_units);
-          double y2 = apply_percent(gradient->variants.linear.y2.val, gradient->variants.linear.y2.percent, svg->root->height, gradient->gradient_units);
+          Point p1 = {
+            apply_percent(gradient->variants.linear.x2.val, gradient->variants.linear.x2.percent, svg->root->width, gradient->gradient_units),
+            apply_percent(gradient->variants.linear.y2.val, gradient->variants.linear.y2.percent, svg->root->height, gradient->gradient_units),
+          };
+
+          p0 = gradient->transform * p0;
+          p1 = gradient->transform * p1;
 
           if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
-            x1 = (size.min[0] + x1 * width);
-            y1 = (size.min[1] + y1 * height);
+            p0[0] = (size.min[0] + p0[0] * width);
+            p0[1] = (size.min[1] + p0[1] * height);
 
-            x2 = (size.min[0] + x2 * width);
-            y2 = (size.min[1] + y2 * height);
+            p1[0] = (size.min[0] + p1[0] * width);
+            p1[1] = (size.min[1] + p1[1] * height);
           }
 
-          double dx = x2 - x1;
-          double dy = y2 - y1;
+          p0 = shape->transform * p0;
+          p1 = shape->transform * p1;
 
-          double gap = std::sqrt(dx * dx + dy * dy);
+          Point d = p1 - p0;
+
+          double gap = std::sqrt(d[0] * d[0] + d[1] * d[1]);
 
           double z = 1e6;
-          double x_min = x1 - z * (dx / gap);
-          double y_min = y1 - z * (dy / gap);
-
-          double x_max = x2 + z * (dx / gap);
-          double y_max = y2 + z * (dy / gap);
+          Point min = p0 - z * d / gap;
+          Point max = p1 + z * d / gap;
 
           double new_gap = gap + 2 * z;
 
           Gdiplus::PointF start {
-            (Gdiplus::REAL)x_min,
-            (Gdiplus::REAL)y_min,
+            (Gdiplus::REAL)min[0],
+            (Gdiplus::REAL)min[1],
           };
 
           Gdiplus::PointF end {
-            (Gdiplus::REAL)x_max,
-            (Gdiplus::REAL)y_max,
+            (Gdiplus::REAL)max[0],
+            (Gdiplus::REAL)max[1],
           };
 
           size_t stop_count = gradient->stops.len();
@@ -132,10 +138,10 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
 
           for (size_t i = 0; i < stop_count; i++) {
             colors[i + 1] = Gdiplus::Color{
-              (BYTE)(gradient->stops[i].stop_opacity * opacity * 255),      
-              (BYTE)(gradient->stops[i].stop_color.r * 255),            
-              (BYTE)(gradient->stops[i].stop_color.g * 255),             
-              (BYTE)(gradient->stops[i].stop_color.b * 255),         
+              (BYTE)(gradient->stops[i].stop_opacity * opacity * 255),
+              (BYTE)(gradient->stops[i].stop_color.r * 255),
+              (BYTE)(gradient->stops[i].stop_color.g * 255),
+              (BYTE)(gradient->stops[i].stop_color.b * 255),
             };
             blendPositions[i + 1] = (Gdiplus::REAL)((gradient->stops[i].offset * gap + z) / new_gap);
           }
@@ -157,34 +163,7 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
             colors[stop_count - 1]
           );
 
-          Gdiplus::Matrix matrix_gradient {
-            (Gdiplus::REAL)gradient->transform.m[0][0],
-            (Gdiplus::REAL)gradient->transform.m[1][0],
-            (Gdiplus::REAL)gradient->transform.m[0][1],
-            (Gdiplus::REAL)gradient->transform.m[1][1],
-            (Gdiplus::REAL)gradient->transform.d[0],
-            (Gdiplus::REAL)gradient->transform.d[1]
-          };
-
-          Gdiplus::Matrix matrix_shape{
-            (Gdiplus::REAL)shape->transform.m[0][0],
-            (Gdiplus::REAL)shape->transform.m[1][0],
-            (Gdiplus::REAL)shape->transform.m[0][1],
-            (Gdiplus::REAL)shape->transform.m[1][1],
-            (Gdiplus::REAL)shape->transform.d[0],
-            (Gdiplus::REAL)shape->transform.d[1]
-          };
-
-          if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
-            std::cout << "ERROR: not implemented\n";
-          }
-
-          brush->MultiplyTransform(&matrix_gradient, Gdiplus::MatrixOrderAppend);
-          brush->MultiplyTransform(&matrix_shape, Gdiplus::MatrixOrderAppend);
-
           brush->SetInterpolationColors(colors.get(), blendPositions.get(), (INT)stop_count);
-          brush->SetWrapMode(Gdiplus::WrapModeClamp);
-
           return brush;
         } break;
         case GRADIENT_TYPE_RADIAL: {
@@ -243,7 +222,26 @@ std::wstring string_to_wide_string(std::string_view string) {
   return result;
 }
 
-GdiplusFragment::GdiplusFragment(const BaseShape *shape,  ParseResult *svg) :
+static void add_bezier_transformed(Gdiplus::GraphicsPath *path, BezierCurve curve, Transform matrix) {
+  Point start = matrix * curve.start;
+  Point end = matrix * curve.end;
+
+  Point control_start = matrix * curve.control_start;
+  Point control_end = matrix * curve.control_end;
+
+  path->AddBezier(
+    (Gdiplus::REAL)start[0],
+    (Gdiplus::REAL)start[1],
+    (Gdiplus::REAL)control_start[0],
+    (Gdiplus::REAL)control_start[1],
+    (Gdiplus::REAL)control_end[0],
+    (Gdiplus::REAL)control_end[1],
+    (Gdiplus::REAL)end[0],
+    (Gdiplus::REAL)end[1]
+  );
+}
+
+GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
   fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity, svg, shape)},
   stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity, svg, shape)},
   pen{
@@ -371,16 +369,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape,  ParseResult *svg) :
     ArrayList<BezierCurve> beziers = shape->get_beziers();
 
     if (beziers.len()) {
-      this->path.AddBezier(
-        (Gdiplus::REAL)beziers[0].start[0],
-        (Gdiplus::REAL)beziers[0].start[1],
-        (Gdiplus::REAL)beziers[0].control_start[0],
-        (Gdiplus::REAL)beziers[0].control_start[1],
-        (Gdiplus::REAL)beziers[0].control_end[0],
-        (Gdiplus::REAL)beziers[0].control_end[1],
-        (Gdiplus::REAL)beziers[0].end[0],
-        (Gdiplus::REAL)beziers[0].end[1]
-      );
+      add_bezier_transformed(&this->path, beziers[0], shape->transform);
 
       Point first_point = beziers[0].start;
       Point last_point = beziers[0].end;
@@ -393,16 +382,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape,  ParseResult *svg) :
           this->path.StartFigure();
         }
 
-        this->path.AddBezier(
-          (Gdiplus::REAL)curve.start[0],
-          (Gdiplus::REAL)curve.start[1],
-          (Gdiplus::REAL)curve.control_start[0],
-          (Gdiplus::REAL)curve.control_start[1],
-          (Gdiplus::REAL)curve.control_end[0],
-          (Gdiplus::REAL)curve.control_end[1],
-          (Gdiplus::REAL)curve.end[0],
-          (Gdiplus::REAL)curve.end[1]
-        );
+        add_bezier_transformed(&this->path, curve, shape->transform);
 
         last_point = curve.end;
       }
@@ -419,31 +399,10 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape,  ParseResult *svg) :
           this->path.StartFigure();
         }
 
-        this->path.AddBezier(
-          (Gdiplus::REAL)curve.start[0],
-          (Gdiplus::REAL)curve.start[1],
-          (Gdiplus::REAL)curve.control_start[0],
-          (Gdiplus::REAL)curve.control_start[1],
-          (Gdiplus::REAL)curve.control_end[0],
-          (Gdiplus::REAL)curve.control_end[1],
-          (Gdiplus::REAL)curve.end[0],
-          (Gdiplus::REAL)curve.end[1]
-        );
+        add_bezier_transformed(&this->path, curve, shape->transform);
       }
     }
   }
-
-  Gdiplus::Matrix matrix {
-    (Gdiplus::REAL)shape->transform.m[0][0],
-    (Gdiplus::REAL)shape->transform.m[1][0],
-    (Gdiplus::REAL)shape->transform.m[0][1],
-    (Gdiplus::REAL)shape->transform.m[1][1],
-    (Gdiplus::REAL)shape->transform.d[0],
-    (Gdiplus::REAL)shape->transform.d[1]
-  };
-
-
-  this->path.Transform(&matrix);
 
   switch ((StrokeLineJoin)shape->stroke_line_join) {
     case LINE_JOIN_ARCS: {
