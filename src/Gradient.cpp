@@ -147,6 +147,9 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
     };
   }
 
+  result.transform = Transform::identity();
+  result.gradient_units = GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
+
   for (int i = 0; i < attribute_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
@@ -158,7 +161,7 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
       case GRADIENT_ATTR_UNITS: {
         if (value == "userSpaceOnUse") {
           result.gradient_units = GRADIENT_UNIT_USER_SPACE_ON_USE;
-        } else if (attrs[i].value == "objectBoundingBox") {
+        } else {
           result.gradient_units = GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
         }
       } break;
