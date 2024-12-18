@@ -22,7 +22,28 @@ constexpr std::string_view genericfont_name[GENERIC_FONT_COUNT] = {
 
 constexpr InverseIndex<GENERIC_FONT_COUNT> inv_genericfont{&genericfont_name};
 
-static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, GradientMap *gradient_map, const BaseShape *shape) {
+static double apply_percent(double val, bool percent, double max_val, GradientUnits gradient_units) {
+  switch(gradient_units) {
+    case GRADIENT_UNIT_USER_SPACE_ON_USE: {
+      if (percent == true) {
+        return max_val / 100 * val;
+      }
+      return val;
+    } break;
+    case GRADIENT_UNIT_OBJECT_BOUNDING_BOX: {
+      if (percent == true) {
+        return val / 100;
+      }
+      return val;
+    }
+    case GRADIENT_UNIT_COUNT: {
+      __builtin_unreachable();
+    }
+  }
+}
+
+static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, ParseResult *svg, const BaseShape *shape) {
+  GradientMap *gradient_map = &svg->gradient_map;
   switch (paint.type) {
     case PAINT_TRANSPARENT:
       return nullptr;
@@ -58,11 +79,11 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           double width = (size.max[0] - size.min[0]);
           double height = (size.max[1] - size.min[1]);
 
-          double x1 = gradient->variants.linear.p0[0];
-          double y1 = gradient->variants.linear.p0[1];
+          double x1 = apply_percent(gradient->variants.linear.x1.val, gradient->variants.linear.x1.percent, svg->root->width, gradient->gradient_units);
+          double y1 = apply_percent(gradient->variants.linear.y1.val, gradient->variants.linear.y1.percent, svg->root->height, gradient->gradient_units);
 
-          double x2 = gradient->variants.linear.p1[0];
-          double y2 = gradient->variants.linear.p1[1];
+          double x2 = apply_percent(gradient->variants.linear.x2.val, gradient->variants.linear.x2.percent, svg->root->width, gradient->gradient_units);
+          double y2 = apply_percent(gradient->variants.linear.y2.val, gradient->variants.linear.y2.percent, svg->root->height, gradient->gradient_units);
 
           if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
             x1 = (size.min[0] + x1 * width);
@@ -77,7 +98,7 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
 
           double gap = std::sqrt(dx * dx + dy * dy);
 
-          double z = width + height;
+          double z = 1e6;
           double x_min = x1 - z * (dx / gap);
           double y_min = y1 - z * (dy / gap);
 
@@ -222,9 +243,9 @@ std::wstring string_to_wide_string(std::string_view string) {
   return result;
 }
 
-GdiplusFragment::GdiplusFragment(const BaseShape *shape, GradientMap *gradient_map) :
-  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity, gradient_map, shape)},
-  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity, gradient_map, shape)},
+GdiplusFragment::GdiplusFragment(const BaseShape *shape,  ParseResult *svg) :
+  fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity, svg, shape)},
+  stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity, svg, shape)},
   pen{
     this->stroke_brush.get(),
     (Gdiplus::REAL)(shape->stroke_width * (std::sqrt(det(shape->transform)))),

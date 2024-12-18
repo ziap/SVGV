@@ -107,3 +107,25 @@ SVG::SVG(Attribute *attrs, int attrs_count, BaseShape *parent) :
     }
   }
 }
+
+AABB SVG::get_bounding() const {
+  if (this->height != 0 || this->width != 0) {
+    return AABB {
+      Point{0, 0},
+      Point{this->width, this->height},
+    };
+  }
+
+  if (this->view_height != 0 || this->view_width != 0) {
+    return AABB {
+      view_min,
+      view_min + Point{this->view_width, this->view_height},
+    };
+  }
+
+  return AABB {
+    Point{0, 0},
+    Point{300, 300},
+  };
+
+}

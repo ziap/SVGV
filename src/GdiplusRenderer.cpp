@@ -31,7 +31,7 @@ bool GdiplusRenderer::load_file(const char *filename) {
   ParseResult svg = parse_xml(svg_file);
 
   for (const BaseShape *shape = svg.shapes.get(); shape; shape = shape->next.get()) {
-    this->shapes.emplace_back(shape, &svg.gradient_map);
+    this->shapes.emplace_back(shape, &svg);
   }
 
   if (svg.root) {

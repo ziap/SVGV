@@ -10,6 +10,12 @@ public:
   std::string_view value;
 };
 
+struct PercentUnit{
+  double val;
+  bool percent;
+};
+
+
 double convert_percent(std::string_view value);
 
 std::string_view trim_start(std::string_view sv);
@@ -21,5 +27,7 @@ double read_double(std::string_view *str);
 std::string_view remove_spaces_end(std::string_view data);
 
 ArrayList<Attribute> process_style(std::string_view value);
+
+PercentUnit read_percent_unit(std::string_view value);
 
 #endif

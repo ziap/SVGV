@@ -46,8 +46,8 @@ public:
 
 
 struct AABB {
-  double min[2];
-  double max[2];
+  Point min;
+  Point max;
 };
 
 class BaseShape {
@@ -85,7 +85,7 @@ public:
 
   virtual ArrayList<BezierCurve> get_beziers() const;
 
-  AABB get_bounding() const;
+  virtual AABB get_bounding() const;
 };
 
 
