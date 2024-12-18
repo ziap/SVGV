@@ -36,3 +36,34 @@ double read_double(std::string_view *str) {
   *str = trim_start(*str);
   return num;
 }
+
+std::string_view remove_spaces_end(std::string_view data) {
+  while (isspace(data[0])) data = data.substr(1);
+  while (isspace(data[data.size() - 1])) data = data.substr(0, data.size() - 1);
+
+  return data;
+}
+
+ArrayList<Attribute> process_style(std::string_view value) {
+  ArrayList<Attribute> arr;
+  while (value.size() > 0) {
+    value = trim_start(value);
+    size_t end = value.find(';');
+    if (end > value.size()) end = value.size(); 
+    std::string_view str = value.substr(0, end);
+    
+    size_t pos = str.find(':');
+    Attribute attr;
+    attr.key = str.substr(0, pos);
+    attr.key = remove_spaces_end(attr.key);
+
+    attr.value = str.substr(pos + 1);
+    attr.value = remove_spaces_end(attr.value);
+    arr.push(attr);
+
+    if (end != value.size()) value = value.substr(end + 1);
+    else value = value.substr(end);
+  }
+
+  return arr;
+}

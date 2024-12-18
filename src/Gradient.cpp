@@ -84,27 +84,27 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
 
     switch ((RadialGradientAttr)inv_radial_gradient_attribute[key]) {
       case RADIAL_GRADIENT_ATTR_CX: {
-        result.c[0] = strtod(value.data(), nullptr);
+        result.c[0] = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_CY: {
-        result.c[1] = strtod(value.data(), nullptr);
+        result.c[1] = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_R: {
-        result.r = strtod(value.data(), nullptr);
+        result.r = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_FX: {
-        result.fx.data = strtod(value.data(), nullptr);
+        result.fx.data = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_FY: {
-        result.fy.data = strtod(value.data(), nullptr);
+        result.fy.data = convert_percent(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_FR: {
-        result.fr = strtod(value.data(), nullptr);
+        result.fr = convert_percent(value);
       } break;
       case RADIAL_GRADIENT_ATTR_COUNT: {
         __builtin_unreachable();
