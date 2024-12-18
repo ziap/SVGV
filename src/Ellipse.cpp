@@ -11,14 +11,14 @@ enum EllipseAttr {
   ELLIPSE_ATTR_COUNT,
 };
 
-constexpr std::string_view ellipse_attr_name[ELLIPSE_ATTR_COUNT] {
+constexpr std::string_view ellipse_attr_name[ELLIPSE_ATTR_COUNT] = {
   "cx", 
   "cy",
   "rx",
   "ry",
 };
 
-constexpr InverseIndex<ELLIPSE_ATTR_COUNT> inv_ellipse_attribute= {&ellipse_attr_name};
+constexpr InverseIndex<ELLIPSE_ATTR_COUNT> inv_ellipse_attribute {&ellipse_attr_name};
 
 Ellipse::Ellipse(Attribute *attrs, int attrs_count, BaseShape *parent) :
   BaseShape(attrs, attrs_count, parent),

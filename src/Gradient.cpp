@@ -10,14 +10,14 @@ enum LinearGradientAttr {
 };
 
 
-constexpr std::string_view linear_gradient_attr_name[LINEAR_GRADIENT_ATTR_COUNT] {
+constexpr std::string_view linear_gradient_attr_name[LINEAR_GRADIENT_ATTR_COUNT] = {
   "x1", 
   "x2",
   "y1",
   "y2",
 };
 
-constexpr InverseIndex<LINEAR_GRADIENT_ATTR_COUNT> inv_linear_gradient_attribute = {&linear_gradient_attr_name};
+constexpr InverseIndex<LINEAR_GRADIENT_ATTR_COUNT> inv_linear_gradient_attribute {&linear_gradient_attr_name};
 
 static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count) {
   LinearGradient result;
@@ -61,7 +61,7 @@ enum RadialGradientAttr {
 };
 
 
-constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT] {
+constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT] = {
   "cx", 
   "cy",
   "r",
@@ -70,7 +70,22 @@ constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT]
   "fr",
 };
 
-constexpr InverseIndex<RADIAL_GRADIENT_ATTR_COUNT> inv_radial_gradient_attribute = {&radial_gradient_attr_name};
+constexpr InverseIndex<RADIAL_GRADIENT_ATTR_COUNT> inv_radial_gradient_attribute {&radial_gradient_attr_name};
+
+enum GradientAttribute {
+  GRADIENT_ATTR_ID = 0,
+  GRADIENT_ATTR_UNITS,
+  GRADIENT_ATTR_TRANSFORM,
+  GRADIENT_ATTR_COUNT,
+};
+
+constexpr std::string_view gradient_attrs_name[GRADIENT_ATTR_COUNT] = {
+  "id", 
+  "gradientUnits",
+  "gradientTransform",
+};
+
+constexpr InverseIndex<GRADIENT_ATTR_COUNT> inv_gradient_attribute {&gradient_attrs_name};
 
 static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count) {
   RadialGradient result;
@@ -78,6 +93,8 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
   result.fx = Optional<double>::none();
   result.fy = Optional<double>::none();
   result.fr = 0.0;
+  result.c[0] = 0.5;
+  result.c[1] = 0.5;
   for (int i = 0; i < attribute_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
@@ -115,47 +132,10 @@ static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count
   return result;
 }
 
-static std::string_view read_id(Attribute *attrs, int attribute_count) {
-  for (int i = 0; i < attribute_count; ++i) {
-    if (attrs[i].key == "id") {
-      return attrs[i].value;
-    }
-  }
-  return "";
-}
-
-static GradientUnits read_gradient_unit(Attribute *attrs, int attribute_count) {
-  for (int i = 0; i < attribute_count; ++i) {
-    if (attrs[i].key == "gradientUnits") {
-      if (attrs[i].value == "userSpaceOnUse") {
-        return GRADIENT_UNIT_USER_SPACE_ON_USE;
-      } else if (attrs[i].value == "objectBoundingBox") {
-        return GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
-      }
-    }
-  }
-  
-  return GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
-}
-
-static Transform read_transform(Attribute* attrs, int attribute_count){
-  Transform result = Transform::identity();
-  for (int i = 0; i < attribute_count; ++i) {
-    if (attrs[i].key == "gradientTransform") {
-      result = convert_transform(attrs[i].value);
-    }
-  }
-  return result;
-}
-
 
 Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count) {
   Gradient result;
   result.type = type;
-  result.id = read_id(attrs, attribute_count);
-  result.gradient_units = read_gradient_unit(attrs, attribute_count);
-  result.transform = read_transform(attrs, attribute_count);
-
   switch (type) {
     case GRADIENT_TYPE_LINEAR: {
       result.variants.linear = read_linear_gradient(attrs, attribute_count);
@@ -168,6 +148,34 @@ Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count)
     };
   }
 
+  result.transform = Transform::identity();
+  result.gradient_units = GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
+
+  for (int i = 0; i < attribute_count; ++i) {
+    std::string_view key = attrs[i].key;
+    std::string_view value = attrs[i].value;
+    switch ((GradientAttribute)inv_gradient_attribute[key]) {
+      case GRADIENT_ATTR_ID: {
+        result.id = value; 
+      } break;
+
+      case GRADIENT_ATTR_UNITS: {
+        if (value == "userSpaceOnUse") {
+          result.gradient_units = GRADIENT_UNIT_USER_SPACE_ON_USE;
+        } else {
+          result.gradient_units = GRADIENT_UNIT_OBJECT_BOUNDING_BOX;
+        }
+      } break;
+
+      case GRADIENT_ATTR_TRANSFORM: {
+        result.transform = convert_transform(attrs[i].value);
+      } break;
+
+      case GRADIENT_ATTR_COUNT: {
+        __builtin_unreachable();
+      } break;
+    }
+  }
   return result;
 }
 

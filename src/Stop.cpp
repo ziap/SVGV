@@ -25,12 +25,12 @@ enum StopAttribute {
   STOP_COUNT,
 };
 
-constexpr std::string_view stop_attr_name[STOP_COUNT] {
+constexpr std::string_view stop_attr_name[STOP_COUNT] = {
   "offset", 
   "style",
 };
 
-constexpr InverseIndex<STOP_COUNT> inv_stop_attr = {&stop_attr_name};
+constexpr InverseIndex<STOP_COUNT> inv_stop_attr {&stop_attr_name};
 
 
 static void apply_style_gradient(Stop *result, Attribute *attrs, int attrs_count) {
