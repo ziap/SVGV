@@ -49,4 +49,5 @@ struct Gradient {
   ArrayList<Stop> stops;
 };
 Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count);
+
 #endif

@@ -13,7 +13,7 @@ enum RectAttr {
   RECT_ATTR_COUNT,
 };
 
-constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] {
+constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] = {
   "x", 
   "y",
   "rx",
@@ -22,7 +22,7 @@ constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] {
   "height",
 };
 
-constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute = {&rect_attr_name};
+constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute {&rect_attr_name};
 
 Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent) : 
   BaseShape(attrs, attrs_count, parent),

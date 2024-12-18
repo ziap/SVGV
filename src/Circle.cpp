@@ -10,13 +10,13 @@ enum CircleAttr {
   CIRCLE_ATTR_COUNT,
 };
 
-constexpr std::string_view circle_attr_name[CIRCLE_ATTR_COUNT] {
+constexpr std::string_view circle_attr_name[CIRCLE_ATTR_COUNT] = {
   "cx", 
   "cy",
   "r",
 };
 
-constexpr InverseIndex<CIRCLE_ATTR_COUNT> inv_circle_attribute= {&circle_attr_name};
+constexpr InverseIndex<CIRCLE_ATTR_COUNT> inv_circle_attribute {&circle_attr_name};
 
 Circle::Circle(Attribute *attrs, int attrs_count, BaseShape *parent) :
   BaseShape(attrs, attrs_count, parent),

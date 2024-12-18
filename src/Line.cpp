@@ -11,14 +11,14 @@ enum LineAttr {
   LINE_ATTR_COUNT,
 };
 
-constexpr std::string_view line_attr_name[LINE_ATTR_COUNT] {
+constexpr std::string_view line_attr_name[LINE_ATTR_COUNT] = {
   "x1", 
   "y1",
   "x2",
   "y2",
 };
 
-constexpr InverseIndex<LINE_ATTR_COUNT> inv_line_attribute= {&line_attr_name};
+constexpr InverseIndex<LINE_ATTR_COUNT> inv_line_attribute {&line_attr_name};
 
 Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent) :
   BaseShape(attrs, attrs_count, parent) {

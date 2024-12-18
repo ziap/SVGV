@@ -11,14 +11,14 @@ enum LinearGradientAttr {
 };
 
 
-constexpr std::string_view linear_gradient_attr_name[LINEAR_GRADIENT_ATTR_COUNT] {
+constexpr std::string_view linear_gradient_attr_name[LINEAR_GRADIENT_ATTR_COUNT] = {
   "x1", 
   "x2",
   "y1",
   "y2",
 };
 
-constexpr InverseIndex<LINEAR_GRADIENT_ATTR_COUNT> inv_linear_gradient_attribute = {&linear_gradient_attr_name};
+constexpr InverseIndex<LINEAR_GRADIENT_ATTR_COUNT> inv_linear_gradient_attribute {&linear_gradient_attr_name};
 
 static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count) {
   LinearGradient result;
@@ -62,7 +62,7 @@ enum RadialGradientAttr {
 };
 
 
-constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT] {
+constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT] = {
   "cx", 
   "cy",
   "r",
@@ -78,13 +78,13 @@ enum GradientAttribute {
   GRADIENT_ATTR_COUNT,
 };
 
-constexpr std::string_view gradient_attrs_name[GRADIENT_ATTR_COUNT] {
+constexpr std::string_view gradient_attrs_name[GRADIENT_ATTR_COUNT] = {
   "id", 
   "gradientUnits",
   "gradientTransform",
 };
 
-constexpr InverseIndex<GRADIENT_ATTR_COUNT> inv_gradient_attribute = {&gradient_attrs_name};
+constexpr InverseIndex<GRADIENT_ATTR_COUNT> inv_gradient_attribute {&gradient_attrs_name};
 
 static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count) {
   RadialGradient result;
