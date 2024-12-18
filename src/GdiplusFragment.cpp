@@ -22,8 +22,6 @@ constexpr std::string_view genericfont_name[GENERIC_FONT_COUNT] = {
 
 constexpr InverseIndex<GENERIC_FONT_COUNT> inv_genericfont{&genericfont_name};
 
-
-
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, GradientMap *gradient_map, const BaseShape *shape) {
   switch (paint.type) {
     case PAINT_TRANSPARENT:
@@ -51,8 +49,6 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
       GradientMap::iterator it = gradient_map->find(url);
       if (it == gradient_map->end()) return nullptr;
 
-      // std::cout << "Found gradient: " << it->first << '\n';
-
       Gradient *gradient = &it->second;
 
       switch (gradient->type) {
@@ -61,34 +57,25 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
 
           double width = (size.max[0] - size.min[0]);
           double height = (size.max[1] - size.min[1]);
-          
-          double x1, y1, x2, y2;
-          switch(gradient->gradient_units) {
-            case GRADIENT_UNIT_USER_SPACE_ON_USE: {
-              x1 = gradient->variants.linear.x[0];
-              y1 = gradient->variants.linear.y[0];
 
-              x2 = gradient->variants.linear.x[1];
-              y2 = gradient->variants.linear.y[1];
+          double x1 = gradient->variants.linear.p0[0];
+          double y1 = gradient->variants.linear.p0[1];
 
-            } break;
-            case GRADIENT_UNIT_OBJECT_BOUNDING_BOX: {
-              x1 = (size.min[0] + gradient->variants.linear.x[0] * width); 
-              y1 =(size.min[1] + gradient->variants.linear.y[0] * height);
-              
-              x2 = (size.min[0] + gradient->variants.linear.x[1] * width);
-              y2 =(size.min[1] + gradient->variants.linear.y[1] * height);
-            } break;
-            case GRADIENT_UNIT_COUNT: {
-              __builtin_unreachable();
-            }
+          double x2 = gradient->variants.linear.p1[0];
+          double y2 = gradient->variants.linear.p1[1];
+
+          if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
+            x1 = (size.min[0] + x1 * width);
+            y1 = (size.min[1] + y1 * height);
+
+            x2 = (size.min[0] + x2 * width);
+            y2 = (size.min[1] + y2 * height);
           }
 
           double dx = x2 - x1;
           double dy = y2 - y1;
-              
+
           double gap = std::sqrt(dx * dx + dy * dy);
-              
 
           double z = width + height;
           double x_min = x1 - z * (dx / gap);
@@ -100,13 +87,13 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           double new_gap = gap + 2 * z;
 
           Gdiplus::PointF start {
-            (Gdiplus::REAL) (x_min),
-            (Gdiplus::REAL) (y_min),
+            (Gdiplus::REAL)x_min,
+            (Gdiplus::REAL)y_min,
           };
-          
+
           Gdiplus::PointF end {
-            (Gdiplus::REAL) (x_max),
-            (Gdiplus::REAL) (y_max) ,
+            (Gdiplus::REAL)x_max,
+            (Gdiplus::REAL)y_max,
           };
 
           size_t stop_count = gradient->stops.len();
@@ -132,23 +119,22 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
             blendPositions[i + 1] = (Gdiplus::REAL)((gradient->stops[i].offset * gap + z) / new_gap);
           }
 
-          colors[stop_count + 1] =  Gdiplus::Color{
-            (BYTE)(gradient->stops[stop_count - 1].stop_opacity * opacity * 255),      
-            (BYTE)(gradient->stops[stop_count - 1].stop_color.r * 255),            
-            (BYTE)(gradient->stops[stop_count - 1].stop_color.g * 255),             
-            (BYTE)(gradient->stops[stop_count - 1].stop_color.b * 255),         
+          colors[stop_count + 1] = Gdiplus::Color{
+            (BYTE)(gradient->stops[stop_count - 1].stop_opacity * opacity * 255),
+            (BYTE)(gradient->stops[stop_count - 1].stop_color.r * 255),
+            (BYTE)(gradient->stops[stop_count - 1].stop_color.g * 255),
+            (BYTE)(gradient->stops[stop_count - 1].stop_color.b * 255),
           };
           blendPositions[stop_count + 1] = 1.0f;
-         
+
           stop_count += 2;
 
-          std::unique_ptr<Gdiplus::LinearGradientBrush> brush = 
-            std::make_unique<Gdiplus::LinearGradientBrush>(
-              start,
-              end,
-              colors[0], 
-              colors[stop_count - 1]
-            );
+          std::unique_ptr<Gdiplus::LinearGradientBrush> brush = std::make_unique<Gdiplus::LinearGradientBrush>(
+            start,
+            end,
+            colors[0], 
+            colors[stop_count - 1]
+          );
 
           Gdiplus::Matrix matrix_gradient {
             (Gdiplus::REAL)gradient->transform.m[0][0],
@@ -159,7 +145,6 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
             (Gdiplus::REAL)gradient->transform.d[1]
           };
 
-
           Gdiplus::Matrix matrix_shape{
             (Gdiplus::REAL)shape->transform.m[0][0],
             (Gdiplus::REAL)shape->transform.m[1][0],
@@ -169,32 +154,23 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
             (Gdiplus::REAL)shape->transform.d[1]
           };
 
-          //dung usergradient
-          switch(gradient->gradient_units) {
-            case GRADIENT_UNIT_USER_SPACE_ON_USE: {
-              brush->MultiplyTransform(&matrix_gradient, Gdiplus::MatrixOrderAppend);
-              brush->MultiplyTransform(&matrix_shape, Gdiplus::MatrixOrderAppend);
-            } break;
-            case GRADIENT_UNIT_OBJECT_BOUNDING_BOX: {
-              std::cout << "ERROR: not implemented\n";
-            } break;
-            case GRADIENT_UNIT_COUNT: {
-              __builtin_unreachable();
-            }
+          if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
+            std::cout << "ERROR: not implemented\n";
           }
-          
-          brush->SetInterpolationColors(colors.get(), blendPositions.get(), (INT)stop_count);
 
+          brush->MultiplyTransform(&matrix_gradient, Gdiplus::MatrixOrderAppend);
+          brush->MultiplyTransform(&matrix_shape, Gdiplus::MatrixOrderAppend);
+
+          brush->SetInterpolationColors(colors.get(), blendPositions.get(), (INT)stop_count);
           brush->SetWrapMode(Gdiplus::WrapModeClamp);
 
           return brush;
-
         } break;
         case GRADIENT_TYPE_RADIAL: {
 
         } break;
         case GRADIENT_TYPE_COUNT: {
-
+          __builtin_unreachable();
         } break;
       }
       return nullptr;
