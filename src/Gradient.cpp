@@ -71,6 +71,8 @@ constexpr std::string_view radial_gradient_attr_name[RADIAL_GRADIENT_ATTR_COUNT]
   "fr",
 };
 
+constexpr InverseIndex<RADIAL_GRADIENT_ATTR_COUNT> inv_radial_gradient_attribute {&radial_gradient_attr_name};
+
 enum GradientAttribute {
   GRADIENT_ATTR_ID = 0,
   GRADIENT_ATTR_UNITS,
