@@ -27,19 +27,19 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
 
     switch ((LinearGradientAttr)inv_linear_gradient_attribute[key]) {
       case LINEAR_GRADIENT_ATTR_X1: {
-        result.p0[0] = strtod(value.data(), nullptr);
+        result.x1 = read_percent_unit(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_X2: {
-        result.p1[0] = strtod(value.data(), nullptr);
+        result.x2 = read_percent_unit(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y1: {
-        result.p0[1] = strtod(value.data(), nullptr);
+        result.y1 = read_percent_unit(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y2: {
-        result.p1[1] = strtod(value.data(), nullptr);
+        result.y2 = read_percent_unit(value);
       } break;
 
       case LINEAR_GRADIENT_ATTR_COUNT: {
@@ -90,38 +90,43 @@ constexpr InverseIndex<GRADIENT_ATTR_COUNT> inv_gradient_attribute {&gradient_at
 static RadialGradient read_radial_gradient(Attribute *attrs, int attribute_count) {
   RadialGradient result;
 
-  result.fx = Optional<double>::none();
-  result.fy = Optional<double>::none();
-  result.fr = 0.0;
-  result.c[0] = 0.5;
-  result.c[1] = 0.5;
+  result.fx = Optional<PercentUnit>::none();
+  result.fy = Optional<PercentUnit>::none();
+  result.fr.val = 0;
+  result.fr.percent = false;
+  result.cx.val = 50;
+  result.cx.percent = true;
+  result.cy.val = 50;
+  result.cy.percent = true;
+
+  
   for (int i = 0; i < attribute_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
 
     switch ((RadialGradientAttr)inv_radial_gradient_attribute[key]) {
       case RADIAL_GRADIENT_ATTR_CX: {
-        result.c[0] = convert_percent(value);
+        result.cx = read_percent_unit(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_CY: {
-        result.c[1] = convert_percent(value);
+        result.cy = read_percent_unit(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_R: {
-        result.r = convert_percent(value);
+        result.r = read_percent_unit(value);
       } break;
 
       case RADIAL_GRADIENT_ATTR_FX: {
-        result.fx.data = convert_percent(value);
+        result.fx = Optional<PercentUnit>::some(read_percent_unit(value));
       } break;
 
       case RADIAL_GRADIENT_ATTR_FY: {
-        result.fy.data = convert_percent(value);
+        result.fy = Optional<PercentUnit>::some(read_percent_unit(value));
       } break;
 
       case RADIAL_GRADIENT_ATTR_FR: {
-        result.fr = convert_percent(value);
+        result.fr = read_percent_unit(value);
       } break;
       case RADIAL_GRADIENT_ATTR_COUNT: {
         __builtin_unreachable();

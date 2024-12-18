@@ -22,19 +22,24 @@ enum GradientUnits {
   GRADIENT_UNIT_COUNT,
 };
 
-struct RadialGradient {
-  Point c;
-  double r;
-  Optional<double> fx; 
-  Optional<double> fy; 
-  double fr;
-  Paint to_paint() const;
+struct LinearGradient{
+  PercentUnit x1;
+  PercentUnit x2;
+  PercentUnit y1;
+  PercentUnit y2;
+
+  Paint to_paint();
 };
 
-struct LinearGradient{
-  Point p0;
-  Point p1;
-  Paint to_paint();
+struct RadialGradient {
+  PercentUnit cx;
+  PercentUnit cy;
+  PercentUnit r;
+  Optional<PercentUnit> fx; 
+  Optional<PercentUnit> fy; 
+  PercentUnit fr;
+
+  Paint to_paint() const;
 };
 
 struct Gradient {

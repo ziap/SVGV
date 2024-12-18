@@ -5,6 +5,7 @@
 #include "common.h"
 #include "Transform.h"
 
+
 struct QuadraticRoots {
   double roots[2];
   int roots_len;

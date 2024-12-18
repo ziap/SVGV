@@ -67,3 +67,15 @@ ArrayList<Attribute> process_style(std::string_view value) {
 
   return arr;
 }
+
+
+PercentUnit read_percent_unit(std::string_view value) {
+  PercentUnit result;
+  result.val = strtod(value.data(), nullptr);
+  result.percent = false;
+  if (value[value.size() - 1] == '%') {
+    result.percent = true;
+  }
+
+  return result;
+}

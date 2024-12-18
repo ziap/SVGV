@@ -11,7 +11,7 @@
 
 class GdiplusFragment {
 public:
-  GdiplusFragment(const BaseShape *shape, GradientMap *gradient_map);
+  GdiplusFragment(const BaseShape *shape, ParseResult *svg);
 
   void render(Gdiplus::Graphics *graphics);
 private:
