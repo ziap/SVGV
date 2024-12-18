@@ -1,6 +1,5 @@
 #include "Gradient.h"
 #include "InverseIndex.h"
-#include <iostream>
 
 enum LinearGradientAttr {
   LINEAR_GRADIENT_ATTR_X1 = 0,
@@ -28,19 +27,19 @@ static LinearGradient read_linear_gradient(Attribute *attrs, int attribute_count
 
     switch ((LinearGradientAttr)inv_linear_gradient_attribute[key]) {
       case LINEAR_GRADIENT_ATTR_X1: {
-        result.x[0] = convert_percent(value);
+        result.p0[0] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_X2: {
-        result.x[1] = convert_percent(value);
+        result.p1[0] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y1: {
-        result.y[0] = convert_percent(value);
+        result.p0[1] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_Y2: {
-        result.y[1] = convert_percent(value);
+        result.p1[1] = strtod(value.data(), nullptr);
       } break;
 
       case LINEAR_GRADIENT_ATTR_COUNT: {

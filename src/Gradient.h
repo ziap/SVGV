@@ -1,11 +1,12 @@
 #ifndef BASEGRADIENT_H
 #define BASEGRADIENT_H
 
+#include <string_view>
+
 #include "Paint.h"
 #include "Stop.h"
 #include "ArrayList.h"
 #include "Matrix.h"
-#include <string_view>
 #include "utils.h"
 #include "Transform.h"
 
@@ -31,8 +32,8 @@ struct RadialGradient {
 };
 
 struct LinearGradient{
-  Point x;
-  Point y;
+  Point p0;
+  Point p1;
   Paint to_paint();
 };
 
@@ -48,5 +49,7 @@ struct Gradient {
   std::string_view id;
   ArrayList<Stop> stops;
 };
+
 Gradient read_gradient(GradientType type, Attribute *attrs, int attribute_count);
+
 #endif
