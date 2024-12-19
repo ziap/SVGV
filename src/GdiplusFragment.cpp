@@ -103,15 +103,33 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           p0 = shape->transform * p0;
           p1 = shape->transform * p1;
 
+          Point vertices[4] = {
+            shape->transform * Point {size.min[0], size.min[1]},
+            shape->transform * Point {size.min[0], size.max[1]},
+            shape->transform * Point {size.max[0], size.min[1]},
+            shape->transform * Point {size.max[0], size.max[1]},
+          };
+
+          Point tmax = vertices[0];
+          Point tmin = vertices[0];
+
+          for (int i = 1; i < 4; ++i) {
+            tmin[0] = std::min(tmin[0], vertices[i][0]);
+            tmax[0] = std::max(tmax[0], vertices[i][0]);
+            tmin[1] = std::min(tmin[1], vertices[i][1]);
+            tmax[1] = std::max(tmax[1], vertices[i][1]);
+          }
+
+          double pad = tmax[0] - tmin[0] + tmax[1] - tmin[1];
+
           Point d = p1 - p0;
 
           double gap = std::sqrt(d[0] * d[0] + d[1] * d[1]);
 
-          double z = 1e6;
-          Point min = p0 - z * d / gap;
-          Point max = p1 + z * d / gap;
+          Point min = p0 - pad * d / gap;
+          Point max = p1 + pad * d / gap;
 
-          double new_gap = gap + 2 * z;
+          double new_gap = gap + 2 * pad;
 
           Gdiplus::PointF start {
             (Gdiplus::REAL)min[0],
@@ -143,7 +161,7 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
               (BYTE)(gradient->stops[i].stop_color.g * 255),
               (BYTE)(gradient->stops[i].stop_color.b * 255),
             };
-            blendPositions[i + 1] = (Gdiplus::REAL)((gradient->stops[i].offset * gap + z) / new_gap);
+            blendPositions[i + 1] = (Gdiplus::REAL)((gradient->stops[i].offset * gap + pad) / new_gap);
           }
 
           colors[stop_count + 1] = Gdiplus::Color{
