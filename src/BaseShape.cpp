@@ -247,7 +247,8 @@ static void apply_style(BaseShape *shape, BaseShape *parent, Attribute *attrs, i
       } break;
 
       case STYLE_STROKE_DASH_ARRAY: {
-        convert_array(value, shape->stroke_dash_array, &shape->stroke_dash_count);
+        if (value != "none")
+          convert_array(value, shape->stroke_dash_array, &shape->stroke_dash_count);
       } break;
 
       case STYLE_STROKE_LINE_JOIN: {

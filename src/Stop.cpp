@@ -33,11 +33,11 @@ constexpr std::string_view stop_attr_name[STOP_COUNT] = {
 constexpr InverseIndex<STOP_COUNT> inv_stop_attr {&stop_attr_name};
 
 
-static void apply_style_gradient(Stop *result, Attribute *attrs, int attrs_count) {
+static void apply_style(Stop *result, Attribute *attrs, int attrs_count) {
   for (int i = 0; i < attrs_count; i++) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
-
+    
     switch ((StyleGradientType)inv_stylegradient[key]) {
       case STYLE_GRADIENT_COLOR: {
         Paint paint = read_paint(value);
@@ -70,7 +70,7 @@ Stop read_stop(Attribute *attrs, int attribute_count) {
       } break;
       case STOP_STYLE: {
         ArrayList<Attribute> attrs_style = process_style(value);
-        apply_style_gradient(&result, attrs_style.begin(), attrs_style.len());
+        apply_style(&result, attrs_style.begin(), attrs_style.len());
       } break;
       case STOP_COUNT: {
         __builtin_unreachable();
@@ -78,7 +78,7 @@ Stop read_stop(Attribute *attrs, int attribute_count) {
     }
   }
 
-  apply_style_gradient(&result, attrs, attribute_count);
+  apply_style(&result, attrs, attribute_count);
   
   return result;
 }
