@@ -7,7 +7,7 @@ namespace SVGShapes {
 
 class Line final : public BaseShape {
 public:
-  Line(Attribute *attrs, int attrs_count, BaseShape *parent);
+  Line(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles);
 
   ArrayList<BezierCurve> get_beziers() const override;
 private:

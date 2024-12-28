@@ -34,8 +34,8 @@ constexpr std::string_view text_attr_name[TEXT_ATTR_COUNT] {
 constexpr InverseIndex<TEXT_ATTR_COUNT> inv_text_attribute {&text_attr_name};
 
 
-Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent) :
-  BaseShape(attrs, attrs_count, parent),
+Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles) :
+  BaseShape(attrs, attrs_count, parent, styles),
   content{""},
   pos{0, 0},
   d{0, 0} {

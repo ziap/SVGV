@@ -148,8 +148,8 @@ static bool is_next_command(char chr) {
   }
 }
 
-Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent)
-  : BaseShape(attrs, attrs_count, parent) {
+Path::Path(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles)
+  : BaseShape(attrs, attrs_count, parent, styles) {
 
   for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;

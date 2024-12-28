@@ -33,6 +33,7 @@ enum OtherTags {
   OTHER_TAG_LINEAR_GRADIENT,
   OTHER_TAG_RADIAL_GRADIENT,
   OTHER_TAG_STOP,
+  OTHER_TAG_STYLE,
   OTHER_TAG_COUNT
 };
 
@@ -54,10 +55,15 @@ constexpr std::string_view other_tags_str[OTHER_TAG_COUNT] = {
   "linearGradient",
   "radialGradient",
   "stop",
+  "style",
 };
 
 constexpr InverseIndex<SHAPE_TAG_COUNT> inv_shape_tags {&shape_tags_str};
 constexpr InverseIndex<OTHER_TAG_COUNT> inv_other_tags {&other_tags_str};
+
+void parse_stylesheet(std::string_view data, StyleSheet *) {
+  std::cout << data << '\n';
+}
 
 ParseResult parse_xml(std::string_view content) {
   int cursor = 0;
@@ -70,8 +76,11 @@ ParseResult parse_xml(std::string_view content) {
   std::unique_ptr<BaseShape> *tail = &head;
 
   GradientMap gradient_map;
+  StyleSheet stylesheet;
 
   std::string_view current_gradient = "";
+
+  bool reading_style = false;
 
   // TODO: Add states
   // - Parsing element
@@ -83,6 +92,11 @@ ParseResult parse_xml(std::string_view content) {
     if (!is_parsing_tag && content[cursor] == '<') {
       if (SVGShapes::Text* text = dynamic_cast<SVGShapes::Text*>(stack.get())) {
         text->set_text(content.substr(mark, cursor - mark));
+      }
+
+      if (reading_style) {
+        reading_style = false;
+        parse_stylesheet(content.substr(mark, cursor - mark), &stylesheet);
       }
       ++cursor;
       mark = cursor;
@@ -121,6 +135,7 @@ ParseResult parse_xml(std::string_view content) {
               return ParseResult {
                 std::move(head),
                 std::move(gradient_map),
+                std::move(stylesheet),
                 svg
               };
             }
@@ -161,34 +176,34 @@ ParseResult parse_xml(std::string_view content) {
 
       switch ((ShapeTags)inv_shape_tags[tag_name]) {
         case SHAPE_TAG_G: {
-          new_shape = std::make_unique<SVGShapes::Group>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Group>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_PATH: {
-          new_shape = std::make_unique<SVGShapes::Path>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Path>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_RECT: {
-          new_shape = std::make_unique<SVGShapes::Rect>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Rect>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_CIRCLE: {
-          new_shape = std::make_unique<SVGShapes::Circle>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Circle>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_ELLIPSE: {
-          new_shape = std::make_unique<SVGShapes::Ellipse>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Ellipse>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_LINE: {
-          new_shape = std::make_unique<SVGShapes::Line>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Line>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_POLYLINE: {
-          new_shape = std::make_unique<SVGShapes::Polyline>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Polyline>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_POLYGON: {
-          new_shape = std::make_unique<SVGShapes::Polygon>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Polygon>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_TEXT: {
-          new_shape = std::make_unique<SVGShapes::Text>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::Text>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_SVG: {
-          new_shape = std::make_unique<SVGShapes::SVG>(attrs.begin(), attrs.len(), stack.get());
+          new_shape = std::make_unique<SVGShapes::SVG>(attrs.begin(), attrs.len(), stack.get(), &stylesheet);
         } break;
         case SHAPE_TAG_COUNT: {
           __builtin_unreachable();
@@ -221,6 +236,9 @@ ParseResult parse_xml(std::string_view content) {
         } break;
         case OTHER_TAG_DEFS: {
         } break;
+        case OTHER_TAG_STYLE: {
+          reading_style = true;
+        } break;
         case OTHER_TAG_COUNT: {
           __builtin_unreachable();
         } break;
@@ -243,6 +261,7 @@ ParseResult parse_xml(std::string_view content) {
   return ParseResult {
     std::move(head),
     std::move(gradient_map),
+    std::move(stylesheet),
     nullptr
   };
 }

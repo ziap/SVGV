@@ -32,7 +32,7 @@ public:
   AxisAlignType align_x;
   AxisAlignType align_y;
 
-  SVG(Attribute *attrs, int attrs_count, BaseShape *parent);
+  SVG(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles);
 
   AABB get_bounding() const override;
 };

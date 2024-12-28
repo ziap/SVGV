@@ -52,7 +52,7 @@ struct AABB {
 
 class BaseShape {
 public:
-  BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent);
+  BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles);
   virtual ~BaseShape() = default;
 
   bool visible;

@@ -20,8 +20,8 @@ constexpr std::string_view line_attr_name[LINE_ATTR_COUNT] = {
 
 constexpr InverseIndex<LINE_ATTR_COUNT> inv_line_attribute {&line_attr_name};
 
-Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent) :
-  BaseShape(attrs, attrs_count, parent) {
+Line::Line(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles) :
+  BaseShape(attrs, attrs_count, parent, styles) {
   for(int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;

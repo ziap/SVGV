@@ -7,7 +7,7 @@ namespace SVGShapes {
 
 class Path: public BaseShape{
 public:
-  Path(Attribute *attrs, int attrs_countt, BaseShape *parent);
+  Path(Attribute *attrs, int attrs_countt, BaseShape *parent, StyleSheet *styles);
 
   ArrayList<BezierCurve> get_beziers() const override;
 private:
