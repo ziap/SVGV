@@ -61,8 +61,25 @@ constexpr std::string_view other_tags_str[OTHER_TAG_COUNT] = {
 constexpr InverseIndex<SHAPE_TAG_COUNT> inv_shape_tags {&shape_tags_str};
 constexpr InverseIndex<OTHER_TAG_COUNT> inv_other_tags {&other_tags_str};
 
-void parse_stylesheet(std::string_view data, StyleSheet *) {
-  std::cout << data << '\n';
+void parse_stylesheet(std::string_view data, StyleSheet *styles) {
+  while (true) {
+    size_t pos_start = data.find('{');
+    if (pos_start > data.size()) break;
+
+    data = data.substr(1);
+    std::string_view key = data.substr(0, pos_start - 1);
+
+    data = data.substr(pos_start);
+    size_t pos_end = data.find('}');
+    std::string_view value = data.substr(0, pos_end - 1);
+
+    ArrayList<Attribute> attrs = process_style(value);
+   
+    data = data.substr(pos_end + 1);
+
+    styles->emplace(std::make_pair(key, std::move(attrs)));
+  }
+
 }
 
 ParseResult parse_xml(std::string_view content) {

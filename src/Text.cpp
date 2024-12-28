@@ -44,8 +44,6 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *sty
   double width = size.max[0] - size.min[0];
   double height = size.max[1] - size.min[1];
 
-  std::cout << width << " " << height << "\n";
-
   for (int i = 0; i < attrs_count; ++i) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
@@ -108,7 +106,7 @@ static std::string remove_spaces(std::string_view input) {
 }
 
 void Text::set_text(std::string_view text) {
-  if (this->xml_space == 0) this->content = remove_spaces(text);
+  if (this->xml_space == true) this->content = remove_spaces(text);
   else this->content = text;
   convert_spaces(&this->content);
 }

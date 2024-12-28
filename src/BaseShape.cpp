@@ -340,7 +340,7 @@ static void apply_style(BaseShape *shape, BaseShape *parent, Attribute *attrs, i
   }
 }
 
-BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *) {
+BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles) {
   if (parent == nullptr) {
     this->visible = true;
     this->fill = Paint::new_rgb(0, 0, 0);
@@ -360,7 +360,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, Style
     this->font_style = FontStyle::FONTSTYLE_NORMAL;
     this->font_weight = 400;
     this->font_family = "serif";
-    this->xml_space = 0;
+    this->xml_space = true;
   } else {
     this->visible = parent->visible;
     this->fill = parent->fill;
@@ -386,6 +386,22 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, Style
   for (int i = 0; i < attrs_count; i++) {
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;
+
+    if (key == "class") {
+      value = trim_start(value);
+      value = trim_end(value);
+
+      StyleSheet::iterator it = styles->find(value);
+      if (it != styles->end()) {
+        ArrayList<Attribute> *attr = &it->second;
+        apply_style(this, parent, attr->begin(), attr->len());
+      }
+    }
+  }
+
+  for (int i = 0; i < attrs_count; i++) {
+    std::string_view key = attrs[i].key;
+    std::string_view value = attrs[i].value;
   
     switch ((AttributeType)inv_attribute[key]) {
       case ATTRIBUTE_TRANSFORM: {
@@ -398,7 +414,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, Style
       } break;
 
       case ATTRIBUTE_XML_SPACE: {
-        if(value == "preserve") this->xml_space = 1;
+        if(value == "preserve") this->xml_space = false;
       } break;
 
       case ATTRIBUTE_COUNT: {
