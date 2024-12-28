@@ -465,6 +465,7 @@ void GdiplusFragment::render(Gdiplus::Graphics *graphics) {
   if (this->fill_brush) {
     graphics->FillPath(this->fill_brush.get(), &this->path);
   }
-
-  graphics->DrawPath(&this->pen, &this->path);
+  // std::cout << this->pen.GetWidth() << "\n";
+  if (this->pen.GetWidth() > 0)
+    graphics->DrawPath(&this->pen, &this->path);
 }

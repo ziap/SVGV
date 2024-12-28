@@ -8,6 +8,9 @@ namespace SVGShapes {
 class Group final : public BaseShape {
 public:
   Group(Attribute *attrs, int attrs_count, BaseShape *parent);
+  AABB get_bounding() const override;
+private:
+  BaseShape *parent;
 };
 
 };
