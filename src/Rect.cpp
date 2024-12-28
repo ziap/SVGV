@@ -24,8 +24,8 @@ constexpr std::string_view rect_attr_name[RECT_ATTR_COUNT] = {
 
 constexpr InverseIndex<RECT_ATTR_COUNT> inv_rect_attribute {&rect_attr_name};
 
-Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent) : 
-  BaseShape(attrs, attrs_count, parent),
+Rect::Rect(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles) :
+  BaseShape(attrs, attrs_count, parent, styles),
   x{0}, y{0}, 
   rx{0}, ry{0},
   width{0}, height{0} {

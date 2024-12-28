@@ -25,8 +25,8 @@ static ArrayList<Point> read_point(std::string_view str) {
 }
 
 
-Polyline::Polyline(Attribute *attrs, int attrs_count, BaseShape *parent) :
-  BaseShape(attrs, attrs_count, parent) {
+Polyline::Polyline(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles) :
+  BaseShape(attrs, attrs_count, parent, styles) {
   for (int i = 0; i < attrs_count; ++i){
     std::string_view key = attrs[i].key;
     std::string_view value = attrs[i].value;

@@ -5,9 +5,9 @@
 
 namespace SVGShapes {
 
-class Rect final : public BaseShape{
+class Rect final : public BaseShape {
 public:  
-  Rect(Attribute *attrs, int attrs_count, BaseShape *parent);
+  Rect(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles);
 
   ArrayList<BezierCurve> get_beziers() const override;
 private:

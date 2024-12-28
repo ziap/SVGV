@@ -7,7 +7,7 @@ namespace SVGShapes {
 
 class Polyline final : public BaseShape {
 public:
-  Polyline(Attribute *attrs, int attrs_count, BaseShape *parent);
+  Polyline(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles);
 
   ArrayList<BezierCurve> get_beziers() const override;
 private:

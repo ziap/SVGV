@@ -338,7 +338,7 @@ static void apply_style(BaseShape *shape, BaseShape *parent, Attribute *attrs, i
   }
 }
 
-BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent) {
+BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *) {
   if (parent == nullptr) {
     this->visible = true;
     this->fill = Paint::new_rgb(0, 0, 0);

@@ -7,7 +7,7 @@ namespace SVGShapes {
 
 class Polygon final : public BaseShape{
 public:
-  Polygon(Attribute *attrs, int attrs_count, BaseShape *parent);
+  Polygon(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles);
 
   virtual ArrayList<BezierCurve> get_beziers() const override;
 private:

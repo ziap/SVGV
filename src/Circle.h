@@ -7,7 +7,7 @@ namespace SVGShapes {
 
 class Circle final : public BaseShape {
 public:
-  Circle(Attribute *attrs, int attrs_count, BaseShape *parent);
+  Circle(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *styles);
 
   ArrayList<BezierCurve> get_beziers() const override;
 private:

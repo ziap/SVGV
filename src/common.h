@@ -3,12 +3,15 @@
 #include "ArrayList.h"
 
 #include <string_view>
+#include <unordered_map>
 
 class Attribute {
 public:
   std::string_view key;
   std::string_view value;
 };
+
+using StyleSheet = std::unordered_map<std::string_view, ArrayList<Attribute>>;
 
 struct PercentUnit{
   double val;
