@@ -69,3 +69,33 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent) :
 AABB Text::get_bounding() const {
   return { pos, pos + Point{1e6 + 1e6} };
 }
+
+void convert_spaces(std::string *input) {
+  for (size_t i = 0; i < input->size(); ++i)
+    if (isspace((*input)[i])) (*input)[i] = ' ';
+}
+
+static std::string remove_spaces(std::string_view input) {
+  std::string result = "";
+  bool is_space = true;
+
+  for (size_t i = 0; i < input.size(); ++i) {
+    if (std::isspace(input[i])) {
+      if (is_space == false) {
+        result.push_back(' ');
+        is_space = true;
+      }
+    } else {
+      result.push_back(input[i]);
+      is_space = false;
+    }
+  }
+
+  return result;
+}
+
+void Text::set_text(std::string_view text) {
+  if (this->xml_space == 0) this->content = remove_spaces(text);
+  else this->content = text;
+  convert_spaces(&this->content);
+}

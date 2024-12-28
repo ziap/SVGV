@@ -211,24 +211,24 @@ static double det(Transform transform) {
   return transform.m[0][0] * transform.m[1][1] - transform.m[0][1] * transform.m[1][0];
 }
 
-static std::wstring remove_spaces(const std::wstring& input) {
-  std::wstring result = L"";
-  bool is_space = true;
+// static std::wstring remove_spaces(const std::wstring& input) {
+//   std::wstring result = L"";
+//   bool is_space = true;
 
-  for (size_t i = 0; i < input.size(); ++i) {
-    if (std::iswspace(input[i])) {
-      if (is_space == false) {
-        result.push_back(L' ');
-        is_space = true;
-      }
-    } else {
-      result.push_back(input[i]);
-      is_space = false;
-    }
-  }
+//   for (size_t i = 0; i < input.size(); ++i) {
+//     if (std::iswspace(input[i])) {
+//       if (is_space == false) {
+//         result.push_back(L' ');
+//         is_space = true;
+//       }
+//     } else {
+//       result.push_back(input[i]);
+//       is_space = false;
+//     }
+//   }
 
-  return result;
-}
+//   return result;
+// }
 
 std::wstring string_to_wide_string(std::string_view string) {
   if (string.empty()) return L"";
@@ -269,7 +269,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
   path {get_gdiplus_fillmode(shape->fill_rule)} {
   if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
     std::wstring str = string_to_wide_string(text->content);
-    str = remove_spaces(str);
+    // str = remove_spaces(str);
 
     int font_style;
     switch (text->font_style) {

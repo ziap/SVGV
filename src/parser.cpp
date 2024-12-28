@@ -82,7 +82,7 @@ ParseResult parse_xml(std::string_view content) {
   while (cursor < end) {
     if (!is_parsing_tag && content[cursor] == '<') {
       if (SVGShapes::Text* text = dynamic_cast<SVGShapes::Text*>(stack.get())) {
-        text->content = content.substr(mark, cursor - mark);
+        text->set_text(content.substr(mark, cursor - mark));
       }
       ++cursor;
       mark = cursor;
