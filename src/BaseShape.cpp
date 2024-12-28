@@ -194,12 +194,14 @@ constexpr InverseIndex<STYLE_COUNT> inv_style = {&style_name};
 enum AttributeType {
   ATTRIBUTE_TRANSFORM = 0,
   ATTRIBUTE_STYLE, 
+  ATTRIBUTE_XML_SPACE,
   ATTRIBUTE_COUNT,
 };
 
 constexpr std::string_view attribute_name[ATTRIBUTE_COUNT] = {
   "transform",
   "style",
+  "xml:space",
 };
 
 constexpr InverseIndex<ATTRIBUTE_COUNT> inv_attribute{&attribute_name};
@@ -358,6 +360,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, Style
     this->font_style = FontStyle::FONTSTYLE_NORMAL;
     this->font_weight = 400;
     this->font_family = "serif";
+    this->xml_space = 0;
   } else {
     this->visible = parent->visible;
     this->fill = parent->fill;
@@ -377,6 +380,7 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, Style
     this->font_style = parent->font_style;
     this->font_weight = parent->font_weight;
     this->font_family = parent->font_family;
+    this->xml_space = parent->xml_space;
   }
 
   for (int i = 0; i < attrs_count; i++) {
@@ -391,6 +395,10 @@ BaseShape::BaseShape(Attribute *attrs, int attrs_count, BaseShape *parent, Style
       case ATTRIBUTE_STYLE: {
         ArrayList<Attribute> attrs_style = process_style(value);
         apply_style(this, parent, attrs_style.begin(), attrs_style.len());
+      } break;
+
+      case ATTRIBUTE_XML_SPACE: {
+        if(value == "preserve") this->xml_space = 1;
       } break;
 
       case ATTRIBUTE_COUNT: {

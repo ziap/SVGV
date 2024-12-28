@@ -80,6 +80,8 @@ public:
   double miter_limit;
   FillRule fill_rule;
 
+  bool xml_space;
+
   Transform transform;
   std::unique_ptr<BaseShape> next;
 
