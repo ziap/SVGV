@@ -39,7 +39,7 @@ double read_double(std::string_view *str) {
 
 std::string_view trim_end(std::string_view data) {
   while (isspace(data[0])) data = data.substr(1);
-  while (isspace(data[data.size() - 1])) data = data.substr(0, data.size() - 1);
+  while (data.size() && isspace(data[data.size() - 1])) data = data.substr(0, data.size() - 1);
 
   return data;
 }
@@ -73,7 +73,7 @@ PercentUnit read_percent_unit(std::string_view value) {
   PercentUnit result;
   result.val = strtod(value.data(), nullptr);
   result.percent = false;
-  if (value[value.size() - 1] == '%') {
+  if (value.size() && value[value.size() - 1] == '%') {
     result.percent = true;
   }
 

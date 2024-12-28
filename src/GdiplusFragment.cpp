@@ -250,7 +250,6 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
   path {get_gdiplus_fillmode(shape->fill_rule)} {
   if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
     std::wstring str = string_to_wide_string(text->content);
-    // str = remove_spaces(str);
 
     int font_style;
     switch (text->font_style) {
@@ -301,9 +300,9 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
       std::string_view font = tmp_font_family.substr(0, pos);
 
       while(isspace(font[0])) font = font.substr(1);
-      while(isspace(font[font.size() - 1])) font = font.substr(0, font.size() - 2);
+      while(font.size() && isspace(font[font.size() - 1])) font = font.substr(0, font.size() - 2);
 
-      if (pos != std::string_view::npos) tmp_font_family = tmp_font_family.substr(pos + 1);
+      if (pos < tmp_font_family.size()) tmp_font_family = tmp_font_family.substr(pos + 1);
       else tmp_font_family = "";
       
       int type = inv_genericfont[font];
