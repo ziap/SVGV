@@ -24,7 +24,7 @@ void convert_array(std::string_view value, double *a, int *count);
 
 double read_double(std::string_view *str);
 
-std::string_view remove_spaces_end(std::string_view data);
+std::string_view trim_end(std::string_view data);
 
 ArrayList<Attribute> process_style(std::string_view value);
 

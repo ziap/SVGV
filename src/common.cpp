@@ -37,7 +37,7 @@ double read_double(std::string_view *str) {
   return num;
 }
 
-std::string_view remove_spaces_end(std::string_view data) {
+std::string_view trim_end(std::string_view data) {
   while (isspace(data[0])) data = data.substr(1);
   while (isspace(data[data.size() - 1])) data = data.substr(0, data.size() - 1);
 
@@ -55,10 +55,10 @@ ArrayList<Attribute> process_style(std::string_view value) {
     size_t pos = str.find(':');
     Attribute attr;
     attr.key = str.substr(0, pos);
-    attr.key = remove_spaces_end(attr.key);
+    attr.key = trim_end(attr.key);
 
     attr.value = str.substr(pos + 1);
-    attr.value = remove_spaces_end(attr.value);
+    attr.value = trim_end(attr.value);
     arr.push(attr);
 
     if (end != value.size()) value = value.substr(end + 1);

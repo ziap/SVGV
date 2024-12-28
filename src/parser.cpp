@@ -151,7 +151,9 @@ ParseResult parse_xml(std::string_view content) {
         if (quote_end == tag_content.npos) break;
         std::string_view attr_value = tag_content.substr(0, quote_end);
         tag_content = tag_content.substr(quote_end + 1);
-        attrs.push({attr_key, attr_value});
+        attr_key = trim_start(attr_key);
+        attr_key = trim_end(attr_key);
+        attrs.push(Attribute {attr_key, attr_value});
       }
 
       std::unique_ptr<BaseShape> new_shape;

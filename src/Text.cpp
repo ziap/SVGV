@@ -65,3 +65,7 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent) :
     }
   }
 }
+
+AABB Text::get_bounding() const {
+  return { pos, pos + Point{1e6 + 1e6} };
+}

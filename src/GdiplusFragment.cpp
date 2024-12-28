@@ -383,6 +383,16 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
         &format
       );
     }
+
+    Gdiplus::Matrix matrix {
+      (Gdiplus::REAL)shape->transform.m[0][0],
+      (Gdiplus::REAL)shape->transform.m[1][0],
+      (Gdiplus::REAL)shape->transform.m[0][1],
+      (Gdiplus::REAL)shape->transform.m[1][1],
+      (Gdiplus::REAL)shape->transform.d[0],
+      (Gdiplus::REAL)shape->transform.d[1]
+    };
+    this->path.Transform(&matrix);
   } else {
     ArrayList<BezierCurve> beziers = shape->get_beziers();
 

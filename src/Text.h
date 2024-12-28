@@ -21,6 +21,7 @@ public:
   TextAnchor text_anchor;
 
   Text(Attribute *attrs, int attrs_count, BaseShape *parent);
+  AABB get_bounding() const override;
 };
 
 };
