@@ -2240,6 +2240,9 @@ unsigned char entities_utf8[][7] = {
 };
 
 void Text::set_text(std::string_view text) {
+  if (this->xml_space == true) this->content = remove_spaces(text);
+  else this->content = text;
+  convert_spaces(&this->content);
   std::string tmp;
   if (this->xml_space == true) tmp = remove_spaces(text);
   else tmp = text;
