@@ -38,7 +38,8 @@ Text::Text(Attribute *attrs, int attrs_count, BaseShape *parent, StyleSheet *sty
   BaseShape(attrs, attrs_count, parent, styles),
   content{""},
   pos{0, 0},
-  d{0, 0} {
+  d{0, 0},
+  text_anchor{TEXTANCHOR_START} {
   
   AABB size = parent->get_bounding();
   double width = size.max[0] - size.min[0];
@@ -2269,5 +2270,5 @@ void Text::set_text(std::string_view text) {
     }
   }
 
-  this->content = text_with_entities;
+  this->content = std::move(text_with_entities);
 }
