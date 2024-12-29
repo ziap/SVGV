@@ -273,7 +273,8 @@ static void apply_style(BaseShape *shape, BaseShape *parent, Attribute *attrs, i
       } break;
 
       case STYLE_FONT_STYLE: {
-        shape->font_style = (FontStyle)inv_fontstyle[value];
+        int type = inv_fontstyle[value];
+        if (type != - 1) shape->font_style = (FontStyle)type;
       } break;
 
       case STYLE_FONT_WEIGHT: {
