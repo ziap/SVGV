@@ -221,7 +221,7 @@ static void apply_style(BaseShape *shape, BaseShape *parent, Attribute *attrs, i
       } break;
 
       case STYLE_STROKE: {
-        shape->stroke = read_paint(value);
+        if (value != "") shape->stroke = read_paint(value);
       } break;
 
       case STYLE_FONT_SIZE: {
