@@ -378,7 +378,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
     (Gdiplus::REAL)(shape->stroke_width * (std::sqrt(det(shape->transform)))),
   },
   path {get_gdiplus_fillmode(shape->fill_rule)} {
-    if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
+  if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
     std::wstring str = string_to_wide_string(text->content);
 
     int font_style;
