@@ -52,6 +52,7 @@ struct Gradient {
   Transform transform;
   GradientUnits gradient_units;
   std::string_view id;
+  std::string_view href;
   ArrayList<Stop> stops;
 };
 

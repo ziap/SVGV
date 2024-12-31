@@ -12,8 +12,6 @@
 #include "Text.h"
 #include "Group.h"
 
-#include <iostream>
-
 enum ShapeTags {
   SHAPE_TAG_G = 0,
   SHAPE_TAG_PATH,
@@ -77,9 +75,22 @@ void parse_stylesheet(std::string_view data, StyleSheet *styles) {
    
     data = data.substr(pos_end + 1);
 
-    styles->emplace(std::make_pair(key, std::move(attrs)));
+    styles->emplace(key, std::move(attrs));
+  }
+}
+
+GradientMap link_gradients(GradientMap gradients) {
+  for (GradientMap::iterator it = gradients.begin(); it != gradients.end(); ++it) {
+    std::string_view href = it->second.href;
+    if (href.size() == 0 || href[0] != '#') continue;
+    href = href.substr(1);
+    GradientMap::iterator found = gradients.find(href);
+    if (found != gradients.end()) {
+      it->second.stops.append(found->second.stops);
+    }
   }
 
+  return gradients;
 }
 
 ParseResult parse_xml(std::string_view content) {
@@ -136,8 +147,8 @@ ParseResult parse_xml(std::string_view content) {
       if (tag_name[0] == '/') {
         tag_name = tag_name.substr(1);
         if (inv_shape_tags[tag_name] == -1) {
-          if (tag_name == other_tags_str[GRADIENT_TYPE_LINEAR] ||
-              tag_name == other_tags_str[GRADIENT_TYPE_RADIAL]) {
+          if (tag_name == other_tags_str[OTHER_TAG_LINEAR_GRADIENT] ||
+              tag_name == other_tags_str[OTHER_TAG_RADIAL_GRADIENT]) {
             current_gradient = "";
           }
           continue;
@@ -151,7 +162,7 @@ ParseResult parse_xml(std::string_view content) {
             if (SVGShapes::SVG *svg = dynamic_cast<SVGShapes::SVG*>(tail->get())) {
               return ParseResult {
                 std::move(head),
-                std::move(gradient_map),
+                link_gradients(std::move(gradient_map)),
                 std::move(stylesheet),
                 svg
               };
@@ -261,13 +272,19 @@ ParseResult parse_xml(std::string_view content) {
         } break;
       }
 
+      bool inline_end = tag_content.size() && tag_content[0] == '/';
       if (new_shape) {
-        if (tag_content.size() && tag_content[0] == '/') {
+        if (inline_end) {
           *tail = std::move(new_shape);
           tail = &(*tail)->next;
         } else {
           new_shape->next = std::move(stack);
           stack = std::move(new_shape);
+        }
+      } else if (inline_end) {
+        if (tag_name == other_tags_str[OTHER_TAG_LINEAR_GRADIENT] ||
+            tag_name == other_tags_str[OTHER_TAG_RADIAL_GRADIENT]) {
+          current_gradient = "";
         }
       }
     } else {
@@ -277,7 +294,7 @@ ParseResult parse_xml(std::string_view content) {
 
   return ParseResult {
     std::move(head),
-    std::move(gradient_map),
+    link_gradients(std::move(gradient_map)),
     std::move(stylesheet),
     nullptr
   };

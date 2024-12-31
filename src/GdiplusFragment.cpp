@@ -4,7 +4,6 @@
 
 #include <string>
 #include <string_view>
-#include <iostream>
 #include <cmath>
 
 enum GenericFont {
@@ -142,6 +141,8 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           };
 
           size_t stop_count = gradient->stops.len();
+
+          if (stop_count == 0) return nullptr;
 
           std::unique_ptr<Gdiplus::Color[]> colors = std::make_unique<Gdiplus::Color[]>(stop_count + 2);
           std::unique_ptr<Gdiplus::REAL[]> blendPositions = std::make_unique<Gdiplus::REAL[]>(stop_count + 2);
@@ -464,7 +465,6 @@ void GdiplusFragment::render(Gdiplus::Graphics *graphics) {
   if (this->fill_brush) {
     graphics->FillPath(this->fill_brush.get(), &this->path);
   }
-  // std::cout << this->pen.GetWidth() << "\n";
   if (this->pen.GetWidth() > 0)
     graphics->DrawPath(&this->pen, &this->path);
 }
