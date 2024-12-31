@@ -99,30 +99,6 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
       double width = (size.max[0] - size.min[0]);
       double height = (size.max[1] - size.min[1]);
 
-      Point p0 = {
-        apply_percent(gradient->variants.linear.x1.val, gradient->variants.linear.x1.percent, svg->root->width, gradient->gradient_units),
-        apply_percent(gradient->variants.linear.y1.val, gradient->variants.linear.y1.percent, svg->root->height, gradient->gradient_units),
-      };
-
-      Point p1 = {
-        apply_percent(gradient->variants.linear.x2.val, gradient->variants.linear.x2.percent, svg->root->width, gradient->gradient_units),
-        apply_percent(gradient->variants.linear.y2.val, gradient->variants.linear.y2.percent, svg->root->height, gradient->gradient_units),
-      };
-
-      p0 = gradient->transform * p0;
-      p1 = gradient->transform * p1;
-
-      if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
-        p0[0] = (size.min[0] + p0[0] * width);
-        p0[1] = (size.min[1] + p0[1] * height);
-
-        p1[0] = (size.min[0] + p1[0] * width);
-        p1[1] = (size.min[1] + p1[1] * height);
-      }
-
-      p0 = shape->transform * p0;
-      p1 = shape->transform * p1;
-
       Point vertices[4] = {
         shape->transform * Point {size.min[0], size.min[1]},
         shape->transform * Point {size.min[0], size.max[1]},
@@ -141,6 +117,29 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
       }
       switch (gradient->type) {
         case GRADIENT_TYPE_LINEAR: {
+          Point p0 = {
+            apply_percent(gradient->variants.linear.x1.val, gradient->variants.linear.x1.percent, svg->root->width, gradient->gradient_units),
+            apply_percent(gradient->variants.linear.y1.val, gradient->variants.linear.y1.percent, svg->root->height, gradient->gradient_units),
+          };
+
+          Point p1 = {
+            apply_percent(gradient->variants.linear.x2.val, gradient->variants.linear.x2.percent, svg->root->width, gradient->gradient_units),
+            apply_percent(gradient->variants.linear.y2.val, gradient->variants.linear.y2.percent, svg->root->height, gradient->gradient_units),
+          };
+
+          p0 = gradient->transform * p0;
+          p1 = gradient->transform * p1;
+
+          if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
+            p0[0] = (size.min[0] + p0[0] * width);
+            p0[1] = (size.min[1] + p0[1] * height);
+
+            p1[0] = (size.min[0] + p1[0] * width);
+            p1[1] = (size.min[1] + p1[1] * height);
+          }
+
+          p0 = shape->transform * p0;
+          p1 = shape->transform * p1;
 
           double pad = tmax[0] - tmin[0] + tmax[1] - tmin[1];
           Point d = p1 - p0;
