@@ -42,6 +42,30 @@ static double apply_percent(double val, bool percent, double max_val, GradientUn
   }
 }
 
+static void add_bezier_transformed(Gdiplus::GraphicsPath *path, BezierCurve curve, Transform matrix) {
+  Point start = matrix * curve.start;
+  Point end = matrix * curve.end;
+
+  Point control_start = matrix * curve.control_start;
+  Point control_end = matrix * curve.control_end;
+
+  path->AddBezier(
+    (Gdiplus::REAL)start[0],
+    (Gdiplus::REAL)start[1],
+    (Gdiplus::REAL)control_start[0],
+    (Gdiplus::REAL)control_start[1],
+    (Gdiplus::REAL)control_end[0],
+    (Gdiplus::REAL)control_end[1],
+    (Gdiplus::REAL)end[0],
+    (Gdiplus::REAL)end[1]
+  );
+}
+
+static double distance(Point p1, Point p2) {
+  Point d = p1 - p2;
+  return std::hypot(d[0], d[1]);
+}
+
 static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double opacity, ParseResult *svg, const BaseShape *shape) {
   GradientMap *gradient_map = &svg->gradient_map;
   switch (paint.type) {
@@ -49,9 +73,9 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
       return nullptr;
     case PAINT_RGB:
       return std::make_unique<const Gdiplus::SolidBrush>(Gdiplus::Color{
-        (BYTE)(opacity * 255), 
-        (BYTE)(paint.variants.rgb_paint.r * 255), 
-        (BYTE)(paint.variants.rgb_paint.g * 255), 
+        (BYTE)(opacity * 255),
+        (BYTE)(paint.variants.rgb_paint.r * 255),
+        (BYTE)(paint.variants.rgb_paint.g * 255),
         (BYTE)(paint.variants.rgb_paint.b * 255)
       });
     case PAINT_URL: {
@@ -63,7 +87,7 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
       while (url.size() > 1 && url[0] != '#') {
         url = url.substr(1, url.size() - 2);
       }
-      
+
       if (url.size() <= 1 || url[0] != '#') return nullptr;
       url = url.substr(1);
 
@@ -71,60 +95,57 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
       if (it == gradient_map->end()) return nullptr;
 
       Gradient *gradient = &it->second;
+      AABB size = shape->get_bounding();
 
+      double width = (size.max[0] - size.min[0]);
+      double height = (size.max[1] - size.min[1]);
+
+      Point p0 = {
+        apply_percent(gradient->variants.linear.x1.val, gradient->variants.linear.x1.percent, svg->root->width, gradient->gradient_units),
+        apply_percent(gradient->variants.linear.y1.val, gradient->variants.linear.y1.percent, svg->root->height, gradient->gradient_units),
+      };
+
+      Point p1 = {
+        apply_percent(gradient->variants.linear.x2.val, gradient->variants.linear.x2.percent, svg->root->width, gradient->gradient_units),
+        apply_percent(gradient->variants.linear.y2.val, gradient->variants.linear.y2.percent, svg->root->height, gradient->gradient_units),
+      };
+
+      p0 = gradient->transform * p0;
+      p1 = gradient->transform * p1;
+
+      if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
+        p0[0] = (size.min[0] + p0[0] * width);
+        p0[1] = (size.min[1] + p0[1] * height);
+
+        p1[0] = (size.min[0] + p1[0] * width);
+        p1[1] = (size.min[1] + p1[1] * height);
+      }
+
+      p0 = shape->transform * p0;
+      p1 = shape->transform * p1;
+
+      Point vertices[4] = {
+        shape->transform * Point {size.min[0], size.min[1]},
+        shape->transform * Point {size.min[0], size.max[1]},
+        shape->transform * Point {size.max[0], size.min[1]},
+        shape->transform * Point {size.max[0], size.max[1]},
+      };
+
+      Point tmax = vertices[0];
+      Point tmin = vertices[0];
+
+      for (int i = 1; i < 4; ++i) {
+        tmin[0] = std::min(tmin[0], vertices[i][0]);
+        tmax[0] = std::max(tmax[0], vertices[i][0]);
+        tmin[1] = std::min(tmin[1], vertices[i][1]);
+        tmax[1] = std::max(tmax[1], vertices[i][1]);
+      }
       switch (gradient->type) {
         case GRADIENT_TYPE_LINEAR: {
-          AABB size = shape->get_bounding();
-
-          double width = (size.max[0] - size.min[0]);
-          double height = (size.max[1] - size.min[1]);
-
-          Point p0 = {
-            apply_percent(gradient->variants.linear.x1.val, gradient->variants.linear.x1.percent, svg->root->width, gradient->gradient_units),
-            apply_percent(gradient->variants.linear.y1.val, gradient->variants.linear.y1.percent, svg->root->height, gradient->gradient_units),
-          };
-
-          Point p1 = {
-            apply_percent(gradient->variants.linear.x2.val, gradient->variants.linear.x2.percent, svg->root->width, gradient->gradient_units),
-            apply_percent(gradient->variants.linear.y2.val, gradient->variants.linear.y2.percent, svg->root->height, gradient->gradient_units),
-          };
-
-          p0 = gradient->transform * p0;
-          p1 = gradient->transform * p1;
-
-          if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
-            p0[0] = (size.min[0] + p0[0] * width);
-            p0[1] = (size.min[1] + p0[1] * height);
-
-            p1[0] = (size.min[0] + p1[0] * width);
-            p1[1] = (size.min[1] + p1[1] * height);
-          }
-
-          p0 = shape->transform * p0;
-          p1 = shape->transform * p1;
-
-          Point vertices[4] = {
-            shape->transform * Point {size.min[0], size.min[1]},
-            shape->transform * Point {size.min[0], size.max[1]},
-            shape->transform * Point {size.max[0], size.min[1]},
-            shape->transform * Point {size.max[0], size.max[1]},
-          };
-
-          Point tmax = vertices[0];
-          Point tmin = vertices[0];
-
-          for (int i = 1; i < 4; ++i) {
-            tmin[0] = std::min(tmin[0], vertices[i][0]);
-            tmax[0] = std::max(tmax[0], vertices[i][0]);
-            tmin[1] = std::min(tmin[1], vertices[i][1]);
-            tmax[1] = std::max(tmax[1], vertices[i][1]);
-          }
 
           double pad = tmax[0] - tmin[0] + tmax[1] - tmin[1];
-
           Point d = p1 - p0;
-
-          double gap = std::sqrt(d[0] * d[0] + d[1] * d[1]);
+          double gap = std::hypot(d[0], d[1]);
 
           Point min = p0 - pad * d / gap;
           Point max = p1 + pad * d / gap;
@@ -147,10 +168,10 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           std::unique_ptr<Gdiplus::REAL[]> blendPositions = std::make_unique<Gdiplus::REAL[]>(stop_count + 2);
 
           colors[0] = Gdiplus::Color {
-            (BYTE)(gradient->stops[0].stop_opacity * opacity * 255),      
-            (BYTE)(gradient->stops[0].stop_color.r * 255),            
-            (BYTE)(gradient->stops[0].stop_color.g * 255),             
-            (BYTE)(gradient->stops[0].stop_color.b * 255),         
+            (BYTE)(gradient->stops[0].stop_opacity * opacity * 255),
+            (BYTE)(gradient->stops[0].stop_color.r * 255),
+            (BYTE)(gradient->stops[0].stop_color.g * 255),
+            (BYTE)(gradient->stops[0].stop_color.b * 255),
           };
           blendPositions[0] = 0.0f;
 
@@ -185,7 +206,135 @@ static std::unique_ptr<const Gdiplus::Brush> paint_to_brush(Paint paint, double 
           return brush;
         } break;
         case GRADIENT_TYPE_RADIAL: {
+          size_t stop_count = gradient->stops.len();
 
+          std::unique_ptr<Gdiplus::Color[]> colors = std::make_unique<Gdiplus::Color[]>(stop_count + 2);
+          std::unique_ptr<Gdiplus::REAL[]> iter_positions = std::make_unique<Gdiplus::REAL[]>(stop_count + 2);
+          RadialGradient radial_grad = gradient->variants.radial;
+          PercentUnit p_fx = radial_grad.fx || radial_grad.cx;
+          PercentUnit p_fy = radial_grad.fy || radial_grad.cy;
+
+          double fx = apply_percent(p_fx.val, p_fx.percent, width, gradient->gradient_units);
+          double fy = apply_percent(p_fy.val, p_fy.percent, height, gradient->gradient_units);
+          double cx = apply_percent(radial_grad.cx.val, radial_grad.cx.percent, width, gradient->gradient_units);
+          double cy = apply_percent(radial_grad.cy.val, radial_grad.cy.percent, height, gradient->gradient_units);
+          double r = apply_percent(radial_grad.r.val, radial_grad.r.percent, width, gradient->gradient_units);
+          Point f = {fx, fy};
+
+          Point center = {cx, cy};
+          Point high = {cx, cy - r};
+          Point right = {cx + r, cy};
+
+          center = gradient->transform * center;
+          high = gradient->transform * high;
+          right = gradient->transform * right;
+          f = gradient->transform * f;
+
+          if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
+            center[0] = (size.min[0] + center[0] * width);
+            center[1] = (size.min[1] + center[1] * height);
+            high[0] = (size.min[0] + high[0] * width);
+            high[1] = (size.min[1] + high[1] * height);
+            right[0] = (size.min[0] + right[0] * width);
+            right[1] = (size.min[1] + right[1] * height);
+            f[0] = (size.min[0] + f[0] * width);
+            f[1] = (size.min[1] + f[1] * height);
+          }
+
+          center = shape->transform * center;
+          high = shape->transform * high;
+          right = shape->transform * right;
+          f = shape->transform * f;
+
+          double height_out = 0, width_out = 0;
+          if (center[0] < tmin[0]) {
+            width_out = tmin[0] - center[0];
+          } else if (center[0] > tmax[0]) {
+            width_out = center[0] - tmax[0];
+          }
+
+          if (center[1] < tmin[1]) {
+            height_out = tmin[1] - center[1];
+          } else if (center[1] > tmax[1]) {
+            height_out = center[1] - tmax[1];
+          }
+
+          double max_r = height_out + width_out + tmax[1] - tmin[1] + tmax[0] - tmin[0];
+
+          double min_r = std::min(distance(high, center), distance(right, center));
+
+          double new_r = r * max_r / min_r;
+
+          Point brush_point[12];
+          brush_point[0] = {cx - new_r, cy};
+          brush_point[3] = {cx, cy + new_r};
+          brush_point[6] = {cx + new_r, cy};
+          brush_point[9] = {cx, cy - new_r};
+          brush_point[1] = brush_point[0] + Point{new_r * KX, new_r * KY};
+          brush_point[2] = brush_point[3] - Point{new_r * KY, new_r * KX};
+          brush_point[4] = brush_point[3] + Point{new_r * KY, -new_r * KX};
+          brush_point[5] = brush_point[6] - Point{new_r * KX, -new_r * KY};
+          brush_point[7] = brush_point[6] + Point{-new_r * KX, -new_r * KY};
+          brush_point[8] = brush_point[9] - Point{-new_r * KY, -new_r * KX};
+          brush_point[10] = brush_point[9] + Point{-new_r * KY, new_r * KX};
+          brush_point[11] = brush_point[0] - Point{-new_r * KX, new_r * KY};
+
+          for (size_t i = 0; i < 12; ++i) {
+            brush_point[i] = gradient->transform * brush_point[i];
+          }
+
+           if (gradient->gradient_units == GRADIENT_UNIT_OBJECT_BOUNDING_BOX) {
+             for (size_t i = 0; i < 12; ++i) {
+               brush_point[i][0] = (size.min[0] + brush_point[i][0] * width);
+               brush_point[i][1] = (size.min[1] + brush_point[i][1] * height);
+             }
+           }
+
+          BezierCurve brush_curve[4] = {
+            BezierCurve{brush_point[0], brush_point[3], brush_point[1], brush_point[2]},
+            BezierCurve{brush_point[3], brush_point[6], brush_point[4], brush_point[5]},
+            BezierCurve{brush_point[6], brush_point[9], brush_point[7], brush_point[8]},
+            BezierCurve{brush_point[9], brush_point[0], brush_point[10], brush_point[11]}
+          };
+
+          Gdiplus::GraphicsPath path;
+          for (size_t i = 0; i < 4; ++i) {
+            add_bezier_transformed(&path, brush_curve[i], shape->transform);
+          }
+          std::unique_ptr<Gdiplus::PathGradientBrush> brush = std::make_unique<Gdiplus::PathGradientBrush>(&path);
+          brush->SetCenterPoint(Gdiplus::PointF{(Gdiplus::REAL)f[0], (Gdiplus::REAL)f[1]});
+
+          iter_positions[0] = 0.0f;
+
+          colors[0] = Gdiplus::Color {
+            (BYTE)(gradient->stops[stop_count - 1].stop_opacity * opacity * 255),
+            (BYTE)(gradient->stops[stop_count - 1].stop_color.r * 255),
+            (BYTE)(gradient->stops[stop_count - 1].stop_color.g * 255),
+            (BYTE)(gradient->stops[stop_count - 1].stop_color.b * 255),
+          };
+
+          for (size_t i = 0; i < stop_count; ++i) {
+            colors[i + 1] = Gdiplus::Color{
+              (BYTE)(gradient->stops[stop_count - i - 1].stop_opacity * opacity * 255),
+              (BYTE)(gradient->stops[stop_count - i - 1].stop_color.r * 255),
+              (BYTE)(gradient->stops[stop_count - i - 1].stop_color.g * 255),
+              (BYTE)(gradient->stops[stop_count - i - 1].stop_color.b * 255),
+            };
+            iter_positions[i + 1] = (Gdiplus::REAL)((1 - ((gradient->stops[stop_count - i - 1].offset) * min_r / max_r)));
+          }
+
+          colors[stop_count + 1] =  Gdiplus::Color{
+            (BYTE)(gradient->stops[0].stop_opacity * opacity * 255),
+            (BYTE)(gradient->stops[0].stop_color.r * 255),
+            (BYTE)(gradient->stops[0].stop_color.g * 255),
+            (BYTE)(gradient->stops[0].stop_color.b * 255),
+          };
+
+          iter_positions[stop_count + 1] = 1.0f;
+          stop_count += 2;
+
+          brush->SetInterpolationColors(colors.get(), iter_positions.get(), (INT)stop_count);
+          return brush;
         } break;
         case GRADIENT_TYPE_COUNT: {
           __builtin_unreachable();
@@ -221,25 +370,6 @@ std::wstring string_to_wide_string(std::string_view string) {
   return result;
 }
 
-static void add_bezier_transformed(Gdiplus::GraphicsPath *path, BezierCurve curve, Transform matrix) {
-  Point start = matrix * curve.start;
-  Point end = matrix * curve.end;
-
-  Point control_start = matrix * curve.control_start;
-  Point control_end = matrix * curve.control_end;
-
-  path->AddBezier(
-    (Gdiplus::REAL)start[0],
-    (Gdiplus::REAL)start[1],
-    (Gdiplus::REAL)control_start[0],
-    (Gdiplus::REAL)control_start[1],
-    (Gdiplus::REAL)control_end[0],
-    (Gdiplus::REAL)control_end[1],
-    (Gdiplus::REAL)end[0],
-    (Gdiplus::REAL)end[1]
-  );
-}
-
 GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
   fill_brush{paint_to_brush(shape->fill, shape->fill_opacity * shape->opacity, svg, shape)},
   stroke_brush{paint_to_brush(shape->stroke, shape->stroke_opacity * shape->opacity, svg, shape)},
@@ -248,7 +378,7 @@ GdiplusFragment::GdiplusFragment(const BaseShape *shape, ParseResult *svg) :
     (Gdiplus::REAL)(shape->stroke_width * (std::sqrt(det(shape->transform)))),
   },
   path {get_gdiplus_fillmode(shape->fill_rule)} {
-  if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
+    if (const SVGShapes::Text *text = dynamic_cast<const SVGShapes::Text*>(shape)) {
     std::wstring str = string_to_wide_string(text->content);
 
     int font_style;
@@ -464,7 +594,6 @@ void GdiplusFragment::render(Gdiplus::Graphics *graphics) {
   if (this->fill_brush) {
     graphics->FillPath(this->fill_brush.get(), &this->path);
   }
-  // std::cout << this->pen.GetWidth() << "\n";
   if (this->pen.GetWidth() > 0)
-    graphics->DrawPath(&this->pen, &this->path);
+  graphics->DrawPath(&this->pen, &this->path);
 }

@@ -136,8 +136,8 @@ ParseResult parse_xml(std::string_view content) {
       if (tag_name[0] == '/') {
         tag_name = tag_name.substr(1);
         if (inv_shape_tags[tag_name] == -1) {
-          if (tag_name == other_tags_str[GRADIENT_TYPE_LINEAR] ||
-              tag_name == other_tags_str[GRADIENT_TYPE_RADIAL]) {
+          if (tag_name == other_tags_str[OTHER_TAG_LINEAR_GRADIENT] ||
+              tag_name == other_tags_str[OTHER_TAG_RADIAL_GRADIENT]) {
             current_gradient = "";
           }
           continue;
